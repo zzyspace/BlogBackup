@@ -106,5 +106,14 @@ require([], function (){
 	if(yiliaConfig.open_in_new == true){
 		$(".article a[href]").attr("target", "_blank")
 	}
-	
+
+	//随机取颜色
+	//$(".left-col .overlay").css({"background-color": '#'+('00000'+(Math.random()*0x1000000<<0).toString(16)).slice(-6),"opacity": 1});
+	//从给定的颜色值中选
+	var colorList = ["#FFF", "#ff945c", "#0099CC", "#996666", "#99CCCC", "#99CC99", "#CC6666", "#BEE7E9", "#BEEDC7", "#F4606C", "#8CC7B5", "#E6CEAC"];
+	var id = Math.ceil(Math.random()*(colorList.length-1));
+	//移动页面
+	$("#container #mobile-nav .overlay").css({"background-color": colorList[id],"opacity": 1});
+	//PC页面
+	$("#container .left-col .overlay").css({"background-color": colorList[id],"opacity": 1});
 });
