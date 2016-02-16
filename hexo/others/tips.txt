@@ -1,0 +1,7 @@
+1. 图片居中
+<div style="text-align: center">
+<img src="url"/>
+</div>
+
+2. 文章预览
+<!--more-->

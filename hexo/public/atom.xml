@@ -1,0 +1,98 @@
+<?xml version="1.0" encoding="utf-8"?>
+<feed xmlns="http://www.w3.org/2005/Atom">
+  <title>zzyspace</title>
+  <subtitle>iOS Developer</subtitle>
+  <link href="/atom.xml" rel="self"/>
+  
+  <link href="http://yoursite.com/"/>
+  <updated>2016-02-16T07:52:33.000Z</updated>
+  <id>http://yoursite.com/</id>
+  
+  <author>
+    <name>zzy</name>
+    <email>551854173@qq.com</email>
+  </author>
+  
+  <generator uri="http://hexo.io/">Hexo</generator>
+  
+  <entry>
+    <title>【iOS开发】Associated Objects-为分类添加属性</title>
+    <link href="http://yoursite.com/2016/01/25/AssociatedObjects/"/>
+    <id>http://yoursite.com/2016/01/25/AssociatedObjects/</id>
+    <published>2016-01-25T07:06:34.000Z</published>
+    <updated>2016-02-16T07:52:33.000Z</updated>
+    
+    <content type="html">&lt;p&gt;分类(&lt;code&gt;category&lt;/code&gt;)在iOS开发中的应用非常广泛, 优点譬如给现有的类拓展更多的方法、对一个类的多种功能进行局部化封装等等, 都是非常方便的. 但是也有一个痛点, 就是分类中无法添加属性. 但是&lt;code&gt;Objective-C&lt;/code&gt;的&lt;code&gt;runtime&lt;/code&gt;中有许多黑科技可以帮我们实现很多常规方法下几乎不可能的事情–比如在分类中添加属性.这个黑科技叫做&lt;strong&gt;关联对象&lt;/strong&gt;(&lt;code&gt;Associated Objects&lt;/code&gt;). &lt;/p&gt;
+&lt;h1 id=&quot;Associated-Objects&quot;&gt;&lt;a href=&quot;#Associated-Objects&quot; class=&quot;headerlink&quot; title=&quot;Associated Objects&quot;&gt;&lt;/a&gt;&lt;strong&gt;Associated Objects&lt;/strong&gt;&lt;/h1&gt;&lt;hr&gt;
+&lt;p&gt;关联对象相关的函数有以下3个:&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;&lt;code&gt;objc_setAssociatedObject&lt;/code&gt; : 设置关联对象&lt;/li&gt;
+&lt;li&gt;&lt;code&gt;objc_getAssociatedObject&lt;/code&gt; : 获取关联对象&lt;/li&gt;
+&lt;li&gt;&lt;code&gt;objc_removeAssociatedObjects&lt;/code&gt; : 移除某个对象的所有关联对象&lt;/li&gt;
+&lt;/ul&gt;
+&lt;a id=&quot;more&quot;&gt;&lt;/a&gt;
+&lt;p&gt;从&lt;code&gt;&amp;lt;objc/runtime.h&amp;gt;&lt;/code&gt;中可以找到它的相关函数定义:&lt;/p&gt;
+&lt;h3 id=&quot;1-设置关联对象&quot;&gt;&lt;a href=&quot;#1-设置关联对象&quot; class=&quot;headerlink&quot; title=&quot;1. 设置关联对象&quot;&gt;&lt;/a&gt;&lt;strong&gt;1. 设置关联对象&lt;/strong&gt;&lt;/h3&gt;&lt;figure class=&quot;highlight objc&quot;&gt;&lt;table&gt;&lt;tr&gt;&lt;td class=&quot;code&quot;&gt;&lt;pre&gt;&lt;span class=&quot;line&quot;&gt;&lt;span class=&quot;keyword&quot;&gt;void&lt;/span&gt; objc_setAssociatedObject(&lt;span class=&quot;keyword&quot;&gt;id&lt;/span&gt; object, &lt;span class=&quot;keyword&quot;&gt;const&lt;/span&gt; &lt;span class=&quot;keyword&quot;&gt;void&lt;/span&gt; *key, &lt;span class=&quot;keyword&quot;&gt;id&lt;/span&gt; value, objc_AssociationPolicy policy)&lt;/span&gt;&lt;br&gt;&lt;/pre&gt;&lt;/td&gt;&lt;/tr&gt;&lt;/table&gt;&lt;/figure&gt;
+&lt;ul&gt;
+&lt;li&gt;&lt;code&gt;object&lt;/code&gt; : 需要设置关联对象的对象, &lt;code&gt;id&lt;/code&gt;类型&lt;/li&gt;
+&lt;li&gt;&lt;code&gt;key&lt;/code&gt; : 关联对象的key, &lt;code&gt;const void *&lt;/code&gt;类型 (&lt;em&gt;详细请看下文第4点&lt;/em&gt;)&lt;/li&gt;
+&lt;li&gt;&lt;code&gt;value&lt;/code&gt; : 关联对象的值, &lt;code&gt;id&lt;/code&gt;类型&lt;/li&gt;
+&lt;li&gt;&lt;code&gt;policy&lt;/code&gt; : 关联对象的策略, &lt;code&gt;objc_AssociationPolicy&lt;/code&gt;类型&lt;ul&gt;
+&lt;li&gt;&lt;code&gt;policy&lt;/code&gt;是一个枚举类型, 用于修饰关联对象:&lt;figure class=&quot;highlight objc&quot;&gt;&lt;table&gt;&lt;tr&gt;&lt;td class=&quot;code&quot;&gt;&lt;pre&gt;&lt;span class=&quot;line&quot;&gt;&lt;span class=&quot;keyword&quot;&gt;enum&lt;/span&gt; &amp;#123;&lt;/span&gt;&lt;br&gt;&lt;span class=&quot;line&quot;&gt;        OBJC_ASSO&lt;span class=&quot;built_in&quot;&gt;CIATION_ASSIGN&lt;/span&gt; = &lt;span class=&quot;number&quot;&gt;0&lt;/span&gt;,          &lt;span class=&quot;comment&quot;&gt;// 等价于 @property (assign) 或 @property (unsafe_unretained)&lt;/span&gt;&lt;/span&gt;&lt;br&gt;&lt;span class=&quot;line&quot;&gt;        OBJC_ASSO&lt;span class=&quot;built_in&quot;&gt;CIATION_RETAIN_NONATOMIC&lt;/span&gt; = &lt;span class=&quot;number&quot;&gt;1&lt;/span&gt;,&lt;span class=&quot;comment&quot;&gt;// 等价于 @property (nonatomic, strong)&lt;/span&gt;&lt;/span&gt;&lt;br&gt;&lt;span class=&quot;line&quot;&gt;        OBJC_ASSO&lt;span class=&quot;built_in&quot;&gt;CIATION_COPY_NONATOMIC&lt;/span&gt; = &lt;span class=&quot;number&quot;&gt;3&lt;/span&gt;,  &lt;span class=&quot;comment&quot;&gt;// 等价于 @property (nonatomic, copy)&lt;/span&gt;&lt;/span&gt;&lt;br&gt;&lt;span class=&quot;line&quot;&gt;        OBJC_ASSO&lt;span class=&quot;built_in&quot;&gt;CIATION_RETAIN&lt;/span&gt; = &lt;span class=&quot;number&quot;&gt;01401&lt;/span&gt;,      &lt;span class=&quot;comment&quot;&gt;// 等价于 @property (atomic, strong)&lt;/span&gt;&lt;/span&gt;&lt;br&gt;&lt;span class=&quot;line&quot;&gt;        OBJC_ASSO&lt;span class=&quot;built_in&quot;&gt;CIATION_COPY&lt;/span&gt; = &lt;span class=&quot;number&quot;&gt;01403&lt;/span&gt;         &lt;span class=&quot;comment&quot;&gt;// 等价于 @property (atomic, copy)&lt;/span&gt;&lt;/span&gt;&lt;br&gt;&lt;span class=&quot;line&quot;&gt;&amp;#125;;&lt;/span&gt;&lt;br&gt;&lt;/pre&gt;&lt;/td&gt;&lt;/tr&gt;&lt;/table&gt;&lt;/figure&gt;
+&lt;/li&gt;
+&lt;/ul&gt;
+&lt;/li&gt;
+&lt;/ul&gt;
+&lt;h3 id=&quot;2-获取关联对象&quot;&gt;&lt;a href=&quot;#2-获取关联对象&quot; class=&quot;headerlink&quot; title=&quot;2. 获取关联对象&quot;&gt;&lt;/a&gt;&lt;strong&gt;2. 获取关联对象&lt;/strong&gt;&lt;/h3&gt;&lt;figure class=&quot;highlight objc&quot;&gt;&lt;table&gt;&lt;tr&gt;&lt;td class=&quot;code&quot;&gt;&lt;pre&gt;&lt;span class=&quot;line&quot;&gt;&lt;span class=&quot;keyword&quot;&gt;id&lt;/span&gt; objc_getAssociatedObject(&lt;span class=&quot;keyword&quot;&gt;id&lt;/span&gt; object, &lt;span class=&quot;keyword&quot;&gt;const&lt;/span&gt; &lt;span class=&quot;keyword&quot;&gt;void&lt;/span&gt; *key)&lt;/span&gt;&lt;br&gt;&lt;/pre&gt;&lt;/td&gt;&lt;/tr&gt;&lt;/table&gt;&lt;/figure&gt;
+&lt;ul&gt;
+&lt;li&gt;&lt;code&gt;object&lt;/code&gt; : 获取关联对象的对象, &lt;code&gt;id&lt;/code&gt;类型&lt;/li&gt;
+&lt;li&gt;&lt;code&gt;key&lt;/code&gt; : 关联对象的key, &lt;code&gt;const void *&lt;/code&gt;类型&lt;/li&gt;
+&lt;/ul&gt;
+&lt;h3 id=&quot;3-移除某个对象的所有关联对象&quot;&gt;&lt;a href=&quot;#3-移除某个对象的所有关联对象&quot; class=&quot;headerlink&quot; title=&quot;3. 移除某个对象的所有关联对象&quot;&gt;&lt;/a&gt;&lt;strong&gt;3. 移除某个对象的所有关联对象&lt;/strong&gt;&lt;/h3&gt;&lt;figure class=&quot;highlight objc&quot;&gt;&lt;table&gt;&lt;tr&gt;&lt;td class=&quot;code&quot;&gt;&lt;pre&gt;&lt;span class=&quot;line&quot;&gt;&lt;span class=&quot;keyword&quot;&gt;void&lt;/span&gt; objc_removeAssociatedObjects(&lt;span class=&quot;keyword&quot;&gt;id&lt;/span&gt; object)&lt;/span&gt;&lt;br&gt;&lt;/pre&gt;&lt;/td&gt;&lt;/tr&gt;&lt;/table&gt;&lt;/figure&gt;
+&lt;ul&gt;
+&lt;li&gt;&lt;p&gt;&lt;code&gt;object&lt;/code&gt; : 需要移除所有关联对象的对象, &lt;code&gt;id&lt;/code&gt;类型&lt;/p&gt;
+&lt;p&gt;&lt;em&gt;注: 这个函数是用来移除对象的&lt;strong&gt;所有&lt;/strong&gt;关联对象, 而非移除对象的某个关联对象. 这个函数Apple官方文档是这么说的&lt;/em&gt; :&lt;/p&gt;
+&lt;blockquote&gt;
+&lt;p&gt;You should not use this function for general removal of associations from objects, since it also removes associations that other clients may have added to the object. Typically you should use objc_setAssociatedObject with a nil value to clear an association.&lt;/p&gt;
+&lt;/blockquote&gt;
+&lt;p&gt;&lt;em&gt;意思是如果要移除对象的某个关联对象, 应该使用&lt;code&gt;objc_setAssociatedObject&lt;/code&gt;对参数&lt;code&gt;value&lt;/code&gt;置nil.&lt;/em&gt;&lt;/p&gt;
+&lt;/li&gt;
+&lt;/ul&gt;
+&lt;h3 id=&quot;4-关于参数-key&quot;&gt;&lt;a href=&quot;#4-关于参数-key&quot; class=&quot;headerlink&quot; title=&quot;4. 关于参数-key&quot;&gt;&lt;/a&gt;&lt;strong&gt;4. 关于参数-key&lt;/strong&gt;&lt;/h3&gt;&lt;p&gt;这个key一般只要赋值一个&lt;code&gt;static char&lt;/code&gt;的地址就行, 比如:&lt;br&gt;&lt;figure class=&quot;highlight objc&quot;&gt;&lt;table&gt;&lt;tr&gt;&lt;td class=&quot;code&quot;&gt;&lt;pre&gt;&lt;span class=&quot;line&quot;&gt;&lt;span class=&quot;keyword&quot;&gt;static&lt;/span&gt; &lt;span class=&quot;keyword&quot;&gt;char&lt;/span&gt; kAssociatedObjectKey;&lt;/span&gt;&lt;br&gt;&lt;span class=&quot;line&quot;&gt;&lt;/span&gt;&lt;br&gt;&lt;span class=&quot;line&quot;&gt;objc_getAssociatedObject(&lt;span class=&quot;keyword&quot;&gt;self&lt;/span&gt;, &amp;amp;kAssociatedObjectKey);&lt;/span&gt;&lt;br&gt;&lt;/pre&gt;&lt;/td&gt;&lt;/tr&gt;&lt;/table&gt;&lt;/figure&gt;&lt;/p&gt;
+&lt;p&gt;但是还有更简单的方法, 可以使用&lt;code&gt;selector&lt;/code&gt;:&lt;br&gt;&lt;figure class=&quot;highlight objc&quot;&gt;&lt;table&gt;&lt;tr&gt;&lt;td class=&quot;code&quot;&gt;&lt;pre&gt;&lt;span class=&quot;line&quot;&gt;objc_getAssociatedObject(&lt;span class=&quot;keyword&quot;&gt;self&lt;/span&gt;, &lt;span class=&quot;keyword&quot;&gt;@selector&lt;/span&gt;(associatedObject));&lt;/span&gt;&lt;br&gt;&lt;/pre&gt;&lt;/td&gt;&lt;/tr&gt;&lt;/table&gt;&lt;/figure&gt;&lt;/p&gt;
+&lt;p&gt;或者直接使用&lt;code&gt;_cmd&lt;/code&gt;:&lt;br&gt;&lt;figure class=&quot;highlight objc&quot;&gt;&lt;table&gt;&lt;tr&gt;&lt;td class=&quot;code&quot;&gt;&lt;pre&gt;&lt;span class=&quot;line&quot;&gt;objc_getAssociatedObject(&lt;span class=&quot;keyword&quot;&gt;self&lt;/span&gt;, _cmd);&lt;/span&gt;&lt;br&gt;&lt;/pre&gt;&lt;/td&gt;&lt;/tr&gt;&lt;/table&gt;&lt;/figure&gt;&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;&lt;p&gt;&lt;em&gt;关于&lt;code&gt;_cmd&lt;/code&gt;&lt;/em&gt; :&lt;/p&gt;
+&lt;p&gt;&lt;em&gt;Apple的文档是是这么解释的: &lt;/em&gt;&lt;/p&gt;
+&lt;blockquote&gt;
+&lt;p&gt;The _cmd variable is a hidden argument passed to every method that is the current selector&lt;/p&gt;
+&lt;/blockquote&gt;
+&lt;p&gt;&lt;em&gt;意思就是&lt;code&gt;_cmd&lt;/code&gt;在Objective-C的方法中表示当前方法的&lt;code&gt;selector&lt;/code&gt;, 正如同&lt;code&gt;self&lt;/code&gt;表示调用当前方法的对象(类)一样.&lt;/em&gt;  &lt;/p&gt;
+&lt;/li&gt;
+&lt;/ul&gt;
+&lt;h1 id=&quot;Simple-Example&quot;&gt;&lt;a href=&quot;#Simple-Example&quot; class=&quot;headerlink&quot; title=&quot;Simple Example&quot;&gt;&lt;/a&gt;&lt;strong&gt;Simple Example&lt;/strong&gt;&lt;/h1&gt;&lt;hr&gt;
+&lt;figure class=&quot;highlight objc&quot;&gt;&lt;table&gt;&lt;tr&gt;&lt;td class=&quot;code&quot;&gt;&lt;pre&gt;&lt;span class=&quot;line&quot;&gt;&lt;span class=&quot;class&quot;&gt;&lt;span class=&quot;keyword&quot;&gt;@interface&lt;/span&gt; &lt;span class=&quot;title&quot;&gt;NSObject&lt;/span&gt; (&lt;span class=&quot;title&quot;&gt;AssociatedObject&lt;/span&gt;)&lt;/span&gt;&lt;/span&gt;&lt;br&gt;&lt;span class=&quot;line&quot;&gt;&lt;/span&gt;&lt;br&gt;&lt;span class=&quot;line&quot;&gt;&lt;span class=&quot;keyword&quot;&gt;@property&lt;/span&gt; (&lt;span class=&quot;keyword&quot;&gt;nonatomic&lt;/span&gt;, &lt;span class=&quot;keyword&quot;&gt;strong&lt;/span&gt;) &lt;span class=&quot;keyword&quot;&gt;id&lt;/span&gt; associatedObject;&lt;/span&gt;&lt;br&gt;&lt;span class=&quot;line&quot;&gt;&lt;/span&gt;&lt;br&gt;&lt;span class=&quot;line&quot;&gt;&lt;span class=&quot;keyword&quot;&gt;@end&lt;/span&gt;&lt;/span&gt;&lt;br&gt;&lt;span class=&quot;line&quot;&gt;&lt;/span&gt;&lt;br&gt;&lt;span class=&quot;line&quot;&gt;&lt;span class=&quot;class&quot;&gt;&lt;span class=&quot;keyword&quot;&gt;@implementation&lt;/span&gt; &lt;span class=&quot;title&quot;&gt;NSObject&lt;/span&gt; (&lt;span class=&quot;title&quot;&gt;AssociatedObject&lt;/span&gt;)&lt;/span&gt;&lt;/span&gt;&lt;br&gt;&lt;span class=&quot;line&quot;&gt;&lt;/span&gt;&lt;br&gt;&lt;span class=&quot;line&quot;&gt;&lt;span class=&quot;comment&quot;&gt;/**&lt;/span&gt;&lt;br&gt;&lt;span class=&quot;line&quot;&gt; *  对象的setter&lt;/span&gt;&lt;br&gt;&lt;span class=&quot;line&quot;&gt; */&lt;/span&gt;&lt;/span&gt;&lt;br&gt;&lt;span class=&quot;line&quot;&gt;- (&lt;span class=&quot;keyword&quot;&gt;void&lt;/span&gt;)setAssociatedObject:(&lt;span class=&quot;keyword&quot;&gt;id&lt;/span&gt;)object &amp;#123;&lt;/span&gt;&lt;br&gt;&lt;span class=&quot;line&quot;&gt;     objc_setAssociatedObject(&lt;span class=&quot;keyword&quot;&gt;self&lt;/span&gt;, &lt;span class=&quot;keyword&quot;&gt;@selector&lt;/span&gt;(associatedObject), object, OBJC_ASSO&lt;span class=&quot;built_in&quot;&gt;CIATION_RETAIN_NONATOMIC&lt;/span&gt;);&lt;/span&gt;&lt;br&gt;&lt;span class=&quot;line&quot;&gt;&amp;#125;&lt;/span&gt;&lt;br&gt;&lt;span class=&quot;line&quot;&gt;&lt;/span&gt;&lt;br&gt;&lt;span class=&quot;line&quot;&gt;&lt;span class=&quot;comment&quot;&gt;/**&lt;/span&gt;&lt;br&gt;&lt;span class=&quot;line&quot;&gt; *  对象的getter&lt;/span&gt;&lt;br&gt;&lt;span class=&quot;line&quot;&gt; */&lt;/span&gt;&lt;/span&gt;&lt;br&gt;&lt;span class=&quot;line&quot;&gt;- (&lt;span class=&quot;keyword&quot;&gt;id&lt;/span&gt;)associatedObject &amp;#123;&lt;/span&gt;&lt;br&gt;&lt;span class=&quot;line&quot;&gt;    &lt;span class=&quot;keyword&quot;&gt;return&lt;/span&gt; objc_getAssociatedObject(&lt;span class=&quot;keyword&quot;&gt;self&lt;/span&gt;, &lt;span class=&quot;keyword&quot;&gt;@selector&lt;/span&gt;(associatedObject));&lt;/span&gt;&lt;br&gt;&lt;span class=&quot;line&quot;&gt;&amp;#125;&lt;/span&gt;&lt;br&gt;&lt;span class=&quot;line&quot;&gt;&lt;/span&gt;&lt;br&gt;&lt;span class=&quot;line&quot;&gt;&lt;span class=&quot;keyword&quot;&gt;@end&lt;/span&gt;&lt;/span&gt;&lt;br&gt;&lt;/pre&gt;&lt;/td&gt;&lt;/tr&gt;&lt;/table&gt;&lt;/figure&gt;
+&lt;h3 id=&quot;参考&quot;&gt;&lt;a href=&quot;#参考&quot; class=&quot;headerlink&quot; title=&quot;参考&quot;&gt;&lt;/a&gt;参考&lt;/h3&gt;&lt;p&gt;1.&lt;a href=&quot;http://nshipster.com/associated-objects/&quot; target=&quot;_blank&quot; rel=&quot;external&quot;&gt;Associated Objects&lt;/a&gt; by Mattt&lt;br&gt;2.&lt;a href=&quot;https://developer.apple.com/library/mac/documentation/Cocoa/Reference/ObjCRuntimeRef/index.html#//apple_ref/c/func/objc_getAssociatedObject&quot; target=&quot;_blank&quot; rel=&quot;external&quot;&gt;Objective-C Runtime Reference&lt;/a&gt; by Apple&lt;/p&gt;
+</content>
+    
+    <summary type="html">
+    
+      &lt;p&gt;分类(&lt;code&gt;category&lt;/code&gt;)在iOS开发中的应用非常广泛, 优点譬如给现有的类拓展更多的方法、对一个类的多种功能进行局部化封装等等, 都是非常方便的. 但是也有一个痛点, 就是分类中无法添加属性. 但是&lt;code&gt;Objective-C&lt;/code&gt;的&lt;code&gt;runtime&lt;/code&gt;中有许多黑科技可以帮我们实现很多常规方法下几乎不可能的事情–比如在分类中添加属性.这个黑科技叫做&lt;strong&gt;关联对象&lt;/strong&gt;(&lt;code&gt;Associated Objects&lt;/code&gt;). &lt;/p&gt;
+&lt;h1 id=&quot;Associated-Objects&quot;&gt;&lt;a href=&quot;#Associated-Objects&quot; class=&quot;headerlink&quot; title=&quot;Associated Objects&quot;&gt;&lt;/a&gt;&lt;strong&gt;Associated Objects&lt;/strong&gt;&lt;/h1&gt;&lt;hr&gt;
+&lt;p&gt;关联对象相关的函数有以下3个:&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;&lt;code&gt;objc_setAssociatedObject&lt;/code&gt; : 设置关联对象&lt;/li&gt;
+&lt;li&gt;&lt;code&gt;objc_getAssociatedObject&lt;/code&gt; : 获取关联对象&lt;/li&gt;
+&lt;li&gt;&lt;code&gt;objc_removeAssociatedObjects&lt;/code&gt; : 移除某个对象的所有关联对象&lt;/li&gt;
+&lt;/ul&gt;
+    
+    </summary>
+    
+      <category term="iOS开发" scheme="http://yoursite.com/categories/iOS%E5%BC%80%E5%8F%91/"/>
+    
+    
+      <category term="runtime" scheme="http://yoursite.com/tags/runtime/"/>
+    
+  </entry>
+  
+</feed>
