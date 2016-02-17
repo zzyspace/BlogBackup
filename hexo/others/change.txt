@@ -1,0 +1,20 @@
+1. fix header menu height:
+在source/css/_partial/main.styl中,
+.header-menu{
+    min-height: 150px; 改为 height: auto;
+}
+
+2. 更改nav字体和图标颜色
+在source/css/_partial/mobile.styl中,
+.header-author{
+    &.fixed{
+        color值改为 #FFFFF;
+    }
+}
+.overlay{
+    .slider-trigger{
+        &:before{
+            color值改为 #FFFFF;
+        }
+    }
+}

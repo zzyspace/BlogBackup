@@ -7,7 +7,7 @@ title: zzyspace 		#站点名，站点左上角
 subtitle: iOS Developer		#副标题，站点左上角
 description: 这是一个神奇的博客	#给搜索引擎看的，对站点的描述，可以自定义
 author: zzy	 		#在站点左下角可以看到
-language: zh-CN 		#中文
+language: zh-Hans 		#中文
 email: 551854173@qq.com		#你的联系邮箱
 timezone:
 duoshuo_shortname: zzyspace	#多说站点的short_name
