@@ -712,6 +712,13 @@ a {
   text-align: left;
   line-height: 30px;
 }
+#header .switch-part5 {
+  left: 400%;
+  top: 20px;
+  overlay-x: hidden;
+  overflow-y: auto;
+  max-height: 200px;
+}
 .duoshuo {
   padding: 0 40px;
 }
@@ -1534,8 +1541,9 @@ a {
   text-shadow: none;
 }
 .article-entry .highlight .line {
-  font-size: 15px;
-  height: 15px;
+  font-size: 13px;
+  height: 13px;
+  text-shadow: none;
 }
 .article-entry .gist {
   margin: 0 -20px;
@@ -1589,7 +1597,7 @@ pre .comment {
 pre .keyword,
 pre .function .keyword,
 pre .class .params {
-  color: #66d9ef;
+  color: #f92672;
 }
 pre .tag,
 pre .doctype,
@@ -1604,7 +1612,7 @@ pre .at_rule,
 pre .at_rule .keyword,
 pre .preprocessor,
 pre .preprocessor .keyword {
-  color: #f92672;
+  color: #66d9ef;
 }
 pre .attribute,
 pre .built_in,

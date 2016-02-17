@@ -78,9 +78,7 @@ objc_getAssociatedObject(self, _cmd);
 ***
 ```objc
 @interface NSObject (AssociatedObject)
-
 @property (nonatomic, strong) id associatedObject;
-
 @end
 
 @implementation NSObject (AssociatedObject)
