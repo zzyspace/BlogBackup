@@ -277,7 +277,7 @@ a {
     position: fixed;
     top: -13px;
     width: 100%;
-    color: #ddd;
+    color: #fff;
   }
   #container .overlay .slider-trigger {
     position: absolute;
@@ -291,7 +291,7 @@ a {
     background: #444;
   }
   #container .overlay .slider-trigger:before {
-    color: #ddd;
+    color: #fff;
     content: "\f00b";
     font: 16px FontAwesome;
     width: 16px;

@@ -12,6 +12,7 @@ email: 551854173@qq.com		#你的联系邮箱
 timezone:
 duoshuo_shortname: zzyspace	#多说站点的short_name
 theme: hexo-theme-yilia		#主题
+baidu_tongji: true		#百度统计
 
 # URL
 ## If your site is put in a subdirectory, set url as 'http://yoursite.com/child' and root as '/child/'
