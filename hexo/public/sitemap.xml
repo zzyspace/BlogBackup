@@ -2,9 +2,23 @@
 <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
   
   <url>
+    <loc>http://yoursite.com/2016/02/18/ApplePay/</loc>
+    
+    <lastmod>2016-02-29T08:32:01.000Z</lastmod>
+    
+  </url>
+  
+  <url>
+    <loc>http://yoursite.com/2015/03/29/UIImageRenderingMode/</loc>
+    
+    <lastmod>2016-02-29T08:05:46.000Z</lastmod>
+    
+  </url>
+  
+  <url>
     <loc>http://yoursite.com/2016/01/25/AssociatedObjects/</loc>
     
-    <lastmod>2016-02-17T07:58:31.000Z</lastmod>
+    <lastmod>2016-02-29T07:10:02.000Z</lastmod>
     
   </url>
   

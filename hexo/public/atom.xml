@@ -5,7 +5,7 @@
   <link href="/atom.xml" rel="self"/>
   
   <link href="http://yoursite.com/"/>
-  <updated>2016-02-17T07:58:31.000Z</updated>
+  <updated>2016-02-29T08:32:01.000Z</updated>
   <id>http://yoursite.com/</id>
   
   <author>
@@ -16,11 +16,59 @@
   <generator uri="http://hexo.io/">Hexo</generator>
   
   <entry>
+    <title>【iOS开发】Apple Pay 的集成</title>
+    <link href="http://yoursite.com/2016/02/18/ApplePay/"/>
+    <id>http://yoursite.com/2016/02/18/ApplePay/</id>
+    <published>2016-02-18T13:19:14.000Z</published>
+    <updated>2016-02-29T08:32:01.000Z</updated>
+    
+    <content type="html">&lt;p&gt;&lt;img src=&quot;/img/ApplePay/header.jpg&quot; alt=&quot;&quot;&gt;&lt;br&gt;Apple Pay在今天终于在中国大陆地区正式开通. Apple Pay不仅仅在线下支付中可以让你通过指纹刷(zhuang)卡(bi), 更可以在线上支付(App中支付)时, 节省掉很多多余的步骤, 让支付宝与微信支付哭晕在厕所… 蛋扯远了, 接下来我们来看看怎么让你的App也支持Apple Pay吧!&lt;/p&gt;
+&lt;a id=&quot;more&quot;&gt;&lt;/a&gt;
+&lt;h1 id=&quot;App集成Apple-Pay&quot;&gt;&lt;a href=&quot;#App集成Apple-Pay&quot; class=&quot;headerlink&quot; title=&quot;App集成Apple Pay&quot;&gt;&lt;/a&gt;&lt;strong&gt;App集成Apple Pay&lt;/strong&gt;&lt;/h1&gt;&lt;hr&gt;
+&lt;h3 id=&quot;1-创建Merchant-ID&quot;&gt;&lt;a href=&quot;#1-创建Merchant-ID&quot; class=&quot;headerlink&quot; title=&quot;1. 创建Merchant ID&quot;&gt;&lt;/a&gt;&lt;strong&gt;1. 创建Merchant ID&lt;/strong&gt;&lt;/h3&gt;&lt;p&gt;在iOS开发者中心的&lt;a href=&quot;https://developer.apple.com/account/ios/identifiers/merchant/merchantCreate.action&quot; target=&quot;_blank&quot; rel=&quot;external&quot;&gt;Certificates, Identifiers &amp;amp; Profiles页面&lt;/a&gt;中创建一个Merchant ID. (PS:前提是你得有开发者帐号= =)&lt;br&gt;&lt;code&gt;Description&lt;/code&gt;: 这个ID的描述, 建议填写App名称.&lt;br&gt;&lt;code&gt;ID&lt;/code&gt;: Merchent ID的标识符, 一般填写”merchant.&lt;code&gt;BundleID&lt;/code&gt;“, 比如&lt;code&gt;merchant.com.apple.passbook&lt;/code&gt;.&lt;/p&gt;
+&lt;h3 id=&quot;2-工程中配置Apple-Pay&quot;&gt;&lt;a href=&quot;#2-工程中配置Apple-Pay&quot; class=&quot;headerlink&quot; title=&quot;2. 工程中配置Apple Pay&quot;&gt;&lt;/a&gt;&lt;strong&gt;2. 工程中配置Apple Pay&lt;/strong&gt;&lt;/h3&gt;&lt;p&gt;你的开发者帐号拥有Merchant ID之后, 就需要在工程中配置你刚刚创建的Merchant ID.&lt;br&gt;&lt;img src=&quot;/img/ApplePay/image_1.png&quot; alt=&quot;&quot;&gt;&lt;br&gt;按照如图顺序即可在你的工程中激活你的Merchant ID.&lt;/p&gt;
+&lt;hr&gt;
+&lt;h2 id=&quot;未完待续…&quot;&gt;&lt;a href=&quot;#未完待续…&quot; class=&quot;headerlink&quot; title=&quot;未完待续…&quot;&gt;&lt;/a&gt;&lt;strong&gt;未完待续…&lt;/strong&gt;&lt;/h2&gt;&lt;p&gt;Apple Pay需要在支付提供商上面注册商户. 目前Apple Pay支持的提供商有&lt;/p&gt;
+&lt;ol&gt;
+&lt;li&gt;&lt;a href=&quot;https://open.unionpay.com/ajweb/product/detail?id=80&quot; target=&quot;_blank&quot; rel=&quot;external&quot;&gt;CUP&lt;/a&gt; (中国银联) &lt;/li&gt;
+&lt;li&gt;&lt;a href=&quot;https://apple.lianlianpay.com/OpenPlatform/&quot; target=&quot;_blank&quot; rel=&quot;external&quot;&gt;Lianlian Pay&lt;/a&gt; (连连支付) &lt;/li&gt;
+&lt;li&gt;&lt;a href=&quot;https://www.beijing.com.cn/product/ApplePay_ch.jsp&quot; target=&quot;_blank&quot; rel=&quot;external&quot;&gt;PayEase&lt;/a&gt; (首信易支付) &lt;/li&gt;
+&lt;li&gt;&lt;a href=&quot;https://www.yeepay.com/article/specialActivities/queryArticle/56c676b814a6d961550c90eb&quot; target=&quot;_blank&quot; rel=&quot;external&quot;&gt;YeePay&lt;/a&gt; (易宝支付) &lt;/li&gt;
+&lt;/ol&gt;
+&lt;p&gt;如果你的App要上架App Store的话, 在苹果官方&lt;a href=&quot;https://developer.apple.com/app-store/review/guidelines/#apple-pay&quot; target=&quot;_blank&quot; rel=&quot;external&quot;&gt;App Store Review Guidelines&lt;/a&gt;中关于Apple Pay的条款需要特别注意:&lt;/p&gt;
+&lt;blockquote&gt;
+&lt;p&gt;29.1 使用Apple Pay的应用程序必须在出售任何商品或者服务之前为用户提供所有材料的购买信息，否则将会被拒绝。使用Apple Pay的应用程序提供多次付款的，至少要公开再次支付的时间长度，和这种状态将持续到取消为止的每一个时期需要用户提供什么，和将产生的费用，以及如何取消。&lt;/p&gt;
+&lt;p&gt;29.2 使用Apple Pay的应用程序必须正确使用 Apple Pay Human Interface Guidelines 中的Apple Pay标识和用户界面元素，否则将会被拒绝。&lt;/p&gt;
+&lt;p&gt;29.3 使用Apple Pay的应用程序不能提供触犯任何领域范围法律的用于交付的商品或者服务，也不能用作任何非法目的。&lt;/p&gt;
+&lt;p&gt;29.4 使用Apple Pay的应用程序必须提供隐私政策，否则将会被拒绝。 &lt;/p&gt;
+&lt;p&gt;29.5 只有为了促进或提高商品和服务的交付，或者依照法律要求，使用Apple Pay的应用程序才能与第三方分享通过Apple Pay获得的数据&lt;/p&gt;
+&lt;/blockquote&gt;
+&lt;h1 id=&quot;设计规范&quot;&gt;&lt;a href=&quot;#设计规范&quot; class=&quot;headerlink&quot; title=&quot;设计规范&quot;&gt;&lt;/a&gt;&lt;strong&gt;设计规范&lt;/strong&gt;&lt;/h1&gt;&lt;hr&gt;
+&lt;ol&gt;
+&lt;li&gt;&lt;a href=&quot;https://developer.apple.com/apple-pay/Apple-Pay-Identity-Guidelines.pdf&quot; target=&quot;_blank&quot; rel=&quot;external&quot;&gt;Apple Pay 标识指南&lt;/a&gt;&lt;/li&gt;
+&lt;li&gt;&lt;a href=&quot;https://developer.apple.com/services-account/download?path=/ios/apple_pay_resources/Apple_Pay_Resources.zip&quot; target=&quot;_blank&quot; rel=&quot;external&quot;&gt;Apple Pay 图标资源包&lt;/a&gt;&lt;/li&gt;
+&lt;/ol&gt;
+</content>
+    
+    <summary type="html">
+    
+      &lt;p&gt;&lt;img src=&quot;/img/ApplePay/header.jpg&quot; alt=&quot;&quot;&gt;&lt;br&gt;Apple Pay在今天终于在中国大陆地区正式开通. Apple Pay不仅仅在线下支付中可以让你通过指纹刷(zhuang)卡(bi), 更可以在线上支付(App中支付)时, 节省掉很多多余的步骤, 让支付宝与微信支付哭晕在厕所… 蛋扯远了, 接下来我们来看看怎么让你的App也支持Apple Pay吧!&lt;/p&gt;
+    
+    </summary>
+    
+      <category term="iOS开发" scheme="http://yoursite.com/categories/iOS%E5%BC%80%E5%8F%91/"/>
+    
+    
+      <category term="Apple Pay" scheme="http://yoursite.com/tags/Apple-Pay/"/>
+    
+  </entry>
+  
+  <entry>
     <title>【iOS开发】Associated Objects-为分类添加属性</title>
     <link href="http://yoursite.com/2016/01/25/AssociatedObjects/"/>
     <id>http://yoursite.com/2016/01/25/AssociatedObjects/</id>
     <published>2016-01-25T07:06:34.000Z</published>
-    <updated>2016-02-17T07:58:31.000Z</updated>
+    <updated>2016-02-29T07:10:02.000Z</updated>
     
     <content type="html">&lt;p&gt;分类(&lt;code&gt;category&lt;/code&gt;)在iOS开发中的应用非常广泛, 优点譬如给现有的类拓展更多的方法、对一个类的多种功能进行局部化封装等等, 都是非常方便的. 但是也有一个痛点, 就是分类中无法添加属性. 但是&lt;code&gt;Objective-C&lt;/code&gt;的&lt;code&gt;runtime&lt;/code&gt;中有许多黑科技可以帮我们实现很多常规方法下几乎不可能的事情–比如在分类中添加属性.这个黑科技叫做&lt;strong&gt;关联对象&lt;/strong&gt;(&lt;code&gt;Associated Objects&lt;/code&gt;). &lt;/p&gt;
 &lt;h1 id=&quot;Associated-Objects&quot;&gt;&lt;a href=&quot;#Associated-Objects&quot; class=&quot;headerlink&quot; title=&quot;Associated Objects&quot;&gt;&lt;/a&gt;&lt;strong&gt;Associated Objects&lt;/strong&gt;&lt;/h1&gt;&lt;hr&gt;
@@ -92,6 +140,46 @@
     
     
       <category term="runtime" scheme="http://yoursite.com/tags/runtime/"/>
+    
+  </entry>
+  
+  <entry>
+    <title>【iOS Tip】UIImage的renderingMode</title>
+    <link href="http://yoursite.com/2015/03/29/UIImageRenderingMode/"/>
+    <id>http://yoursite.com/2015/03/29/UIImageRenderingMode/</id>
+    <published>2015-03-29T06:32:22.000Z</published>
+    <updated>2016-02-29T08:05:46.000Z</updated>
+    
+    <content type="html">&lt;p&gt;很多人在第一次使用UITabBar的时候, 都会遇到一个摸不着头脑的问题:&lt;br&gt;明明UI给的图片是这样的 ↓&lt;br&gt;&lt;img src=&quot;/img/UIImageRenderingMode/renderingMode_0.png&quot; alt=&quot;&quot;&gt;&lt;br&gt;可是用到tabBar中却变成了这样 ↓&lt;br&gt;&lt;img src=&quot;/img/UIImageRenderingMode/renderingMode_1.png&quot; alt=&quot;&quot;&gt;&lt;br&gt;wtf! 咋还自己变色了呢? &lt;img src=&quot;/img/UIImageRenderingMode/renderingMode_2.jpg&quot; alt=&quot;&quot;&gt;&lt;br&gt;其实以上的现象都是源于UIImage的一个属性&lt;code&gt;renderingMode&lt;/code&gt;.&lt;/p&gt;
+&lt;h1 id=&quot;UIImageRenderingMode&quot;&gt;&lt;a href=&quot;#UIImageRenderingMode&quot; class=&quot;headerlink&quot; title=&quot;UIImageRenderingMode&quot;&gt;&lt;/a&gt;&lt;strong&gt;UIImageRenderingMode&lt;/strong&gt;&lt;/h1&gt;&lt;hr&gt;
+&lt;h3 id=&quot;1-概念&quot;&gt;&lt;a href=&quot;#1-概念&quot; class=&quot;headerlink&quot; title=&quot;1. 概念&quot;&gt;&lt;/a&gt;&lt;strong&gt;1. 概念&lt;/strong&gt;&lt;/h3&gt;&lt;figure class=&quot;highlight objc&quot;&gt;&lt;table&gt;&lt;tr&gt;&lt;td class=&quot;code&quot;&gt;&lt;pre&gt;&lt;span class=&quot;line&quot;&gt;&lt;span class=&quot;keyword&quot;&gt;@property&lt;/span&gt;(&lt;span class=&quot;keyword&quot;&gt;nonatomic&lt;/span&gt;, &lt;span class=&quot;keyword&quot;&gt;readonly&lt;/span&gt;) &lt;span class=&quot;built_in&quot;&gt;UIImageRenderingMode&lt;/span&gt; renderingMode &lt;span class=&quot;built_in&quot;&gt;NS_AVAILABLE_IOS&lt;/span&gt;(&lt;span class=&quot;number&quot;&gt;7&lt;/span&gt;_0);&lt;/span&gt;&lt;br&gt;&lt;/pre&gt;&lt;/td&gt;&lt;/tr&gt;&lt;/table&gt;&lt;/figure&gt;
+&lt;a id=&quot;more&quot;&gt;&lt;/a&gt;
+&lt;p&gt;&lt;code&gt;UIImageRenderingMode&lt;/code&gt;是一个枚举值, 如下:&lt;br&gt;&lt;figure class=&quot;highlight objc&quot;&gt;&lt;table&gt;&lt;tr&gt;&lt;td class=&quot;code&quot;&gt;&lt;pre&gt;&lt;span class=&quot;line&quot;&gt;&lt;span class=&quot;keyword&quot;&gt;typedef&lt;/span&gt; &lt;span class=&quot;built_in&quot;&gt;NS_ENUM&lt;/span&gt;(&lt;span class=&quot;built_in&quot;&gt;NSInteger&lt;/span&gt;, &lt;span class=&quot;built_in&quot;&gt;UIImageRenderingMode&lt;/span&gt;) &amp;#123;&lt;/span&gt;&lt;br&gt;&lt;span class=&quot;line&quot;&gt;    &lt;span class=&quot;built_in&quot;&gt;UIImageRenderingModeAutomatic&lt;/span&gt;,      &lt;span class=&quot;comment&quot;&gt;// 根据图片的使用环境和所处的绘图上下文自动调整渲染模式.&lt;/span&gt;&lt;/span&gt;&lt;br&gt;&lt;span class=&quot;line&quot;&gt;    &lt;span class=&quot;built_in&quot;&gt;UIImageRenderingModeAlwaysOriginal&lt;/span&gt;, &lt;span class=&quot;comment&quot;&gt;// 始终渲染图片的原始状态, 不会将其当做一个模板(template).&lt;/span&gt;&lt;/span&gt;&lt;br&gt;&lt;span class=&quot;line&quot;&gt;    &lt;span class=&quot;built_in&quot;&gt;UIImageRenderingModeAlwaysTemplate&lt;/span&gt;, &lt;span class=&quot;comment&quot;&gt;// 始终把图片当做模板来渲染, 忽略掉了图片的颜色信息.&lt;/span&gt;&lt;/span&gt;&lt;br&gt;&lt;span class=&quot;line&quot;&gt;&amp;#125; &lt;span class=&quot;built_in&quot;&gt;NS_ENUM_AVAILABLE_IOS&lt;/span&gt;(&lt;span class=&quot;number&quot;&gt;7&lt;/span&gt;_0);&lt;/span&gt;&lt;br&gt;&lt;/pre&gt;&lt;/td&gt;&lt;/tr&gt;&lt;/table&gt;&lt;/figure&gt;&lt;/p&gt;
+&lt;p&gt;创建一个UIImage的时候, 默认的&lt;strong&gt;renderingMode&lt;/strong&gt;为&lt;code&gt;UIImageRenderingModeAutomatic&lt;/code&gt;. 这种情况下, 图片会根据当前所处的上下文来决定是渲染图片的原始状态或是当做模板来渲染.&lt;br&gt;例如&lt;code&gt;UINavigationBar&lt;/code&gt;、&lt;code&gt;UITabBar&lt;/code&gt;、&lt;code&gt;UIToolBar&lt;/code&gt;、&lt;code&gt;UISegmentedControl&lt;/code&gt;这些控件, 会自动把其上面的图片(foreground images)当做模板来渲染; 而&lt;code&gt;UIImageView&lt;/code&gt;、&lt;code&gt;UIWebView&lt;/code&gt;则会渲染图片的原始状态.&lt;/p&gt;
+&lt;blockquote&gt;
+&lt;p&gt;关于&lt;strong&gt;模板(template)&lt;/strong&gt;: 上文中提到的模板, 其实作用就是忽略掉了图片的所有不透明的颜色信息, 取而代之的是它所在的控件的&lt;code&gt;tintColor&lt;/code&gt;. &lt;/p&gt;
+&lt;/blockquote&gt;
+&lt;h3 id=&quot;2-应用&quot;&gt;&lt;a href=&quot;#2-应用&quot; class=&quot;headerlink&quot; title=&quot;2. 应用&quot;&gt;&lt;/a&gt;&lt;strong&gt;2. 应用&lt;/strong&gt;&lt;/h3&gt;&lt;p&gt;根据上面对&lt;strong&gt;renderingMode&lt;/strong&gt;的描述, 我们就可以很容易联想到导致文章开头那个现象的原因:&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;UITabBar会自动将图片当做模板来渲染&lt;/li&gt;
+&lt;li&gt;UITabBar默认的&lt;code&gt;tintColor&lt;/code&gt;是系统的亮蓝色&lt;/li&gt;
+&lt;/ul&gt;
+&lt;p&gt;所以, 相应的解决方法也有两种:&lt;br&gt;&lt;strong&gt;1.设置图片的renderingMode为&lt;code&gt;UIImageRenderingModeAlwaysOriginal&lt;/code&gt;&lt;/strong&gt;&lt;br&gt;&lt;figure class=&quot;highlight objc&quot;&gt;&lt;table&gt;&lt;tr&gt;&lt;td class=&quot;code&quot;&gt;&lt;pre&gt;&lt;span class=&quot;line&quot;&gt;&lt;span class=&quot;built_in&quot;&gt;UIImage&lt;/span&gt; *selectedImage = [&lt;span class=&quot;built_in&quot;&gt;UIImage&lt;/span&gt; imageNamed:selectedImageName];&lt;/span&gt;&lt;br&gt;&lt;span class=&quot;line&quot;&gt;originalSelectedImage = [selectedImage imageWithRenderingMode:&lt;span class=&quot;built_in&quot;&gt;UIImageRenderingModeAlwaysOriginal&lt;/span&gt;];&lt;/span&gt;&lt;br&gt;&lt;span class=&quot;line&quot;&gt;&lt;/span&gt;&lt;br&gt;&lt;span class=&quot;line&quot;&gt;viewController&lt;span class=&quot;variable&quot;&gt;.tabBarItem&lt;/span&gt;&lt;span class=&quot;variable&quot;&gt;.selectedImage&lt;/span&gt; = originalSelectedImage;&lt;/span&gt;&lt;br&gt;&lt;/pre&gt;&lt;/td&gt;&lt;/tr&gt;&lt;/table&gt;&lt;/figure&gt;&lt;/p&gt;
+&lt;p&gt;&lt;strong&gt;2.设置UITabBar的&lt;code&gt;tintColor&lt;/code&gt;为我们所要的颜色.&lt;/strong&gt;&lt;br&gt;&lt;figure class=&quot;highlight objc&quot;&gt;&lt;table&gt;&lt;tr&gt;&lt;td class=&quot;code&quot;&gt;&lt;pre&gt;&lt;span class=&quot;line&quot;&gt;tabBar&lt;span class=&quot;variable&quot;&gt;.tintColor&lt;/span&gt; = kAppMainColor;&lt;/span&gt;&lt;br&gt;&lt;/pre&gt;&lt;/td&gt;&lt;/tr&gt;&lt;/table&gt;&lt;/figure&gt;&lt;/p&gt;
+</content>
+    
+    <summary type="html">
+    
+      &lt;p&gt;很多人在第一次使用UITabBar的时候, 都会遇到一个摸不着头脑的问题:&lt;br&gt;明明UI给的图片是这样的 ↓&lt;br&gt;&lt;img src=&quot;/img/UIImageRenderingMode/renderingMode_0.png&quot; alt=&quot;&quot;&gt;&lt;br&gt;可是用到tabBar中却变成了这样 ↓&lt;br&gt;&lt;img src=&quot;/img/UIImageRenderingMode/renderingMode_1.png&quot; alt=&quot;&quot;&gt;&lt;br&gt;wtf! 咋还自己变色了呢? &lt;img src=&quot;/img/UIImageRenderingMode/renderingMode_2.jpg&quot; alt=&quot;&quot;&gt;&lt;br&gt;其实以上的现象都是源于UIImage的一个属性&lt;code&gt;renderingMode&lt;/code&gt;.&lt;/p&gt;
+&lt;h1 id=&quot;UIImageRenderingMode&quot;&gt;&lt;a href=&quot;#UIImageRenderingMode&quot; class=&quot;headerlink&quot; title=&quot;UIImageRenderingMode&quot;&gt;&lt;/a&gt;&lt;strong&gt;UIImageRenderingMode&lt;/strong&gt;&lt;/h1&gt;&lt;hr&gt;
+&lt;h3 id=&quot;1-概念&quot;&gt;&lt;a href=&quot;#1-概念&quot; class=&quot;headerlink&quot; title=&quot;1. 概念&quot;&gt;&lt;/a&gt;&lt;strong&gt;1. 概念&lt;/strong&gt;&lt;/h3&gt;&lt;figure class=&quot;highlight objc&quot;&gt;&lt;table&gt;&lt;tr&gt;&lt;td class=&quot;code&quot;&gt;&lt;pre&gt;&lt;span class=&quot;line&quot;&gt;&lt;span class=&quot;keyword&quot;&gt;@property&lt;/span&gt;(&lt;span class=&quot;keyword&quot;&gt;nonatomic&lt;/span&gt;, &lt;span class=&quot;keyword&quot;&gt;readonly&lt;/span&gt;) &lt;span class=&quot;built_in&quot;&gt;UIImageRenderingMode&lt;/span&gt; renderingMode &lt;span class=&quot;built_in&quot;&gt;NS_AVAILABLE_IOS&lt;/span&gt;(&lt;span class=&quot;number&quot;&gt;7&lt;/span&gt;_0);&lt;/span&gt;&lt;br&gt;&lt;/pre&gt;&lt;/td&gt;&lt;/tr&gt;&lt;/table&gt;&lt;/figure&gt;
+    
+    </summary>
+    
+      <category term="iOS Tips" scheme="http://yoursite.com/categories/iOS-Tips/"/>
+    
+    
+      <category term="UI" scheme="http://yoursite.com/tags/UI/"/>
     
   </entry>
   

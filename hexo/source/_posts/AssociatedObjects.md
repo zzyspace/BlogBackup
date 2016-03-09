@@ -6,7 +6,7 @@ tags: [runtime]
 分类(`category`)在iOS开发中的应用非常广泛, 优点譬如给现有的类拓展更多的方法、对一个类的多种功能进行局部化封装等等, 都是非常方便的. 但是也有一个痛点, 就是分类中无法添加属性. 但是`Objective-C`的`runtime`中有许多黑科技可以帮我们实现很多常规方法下几乎不可能的事情--比如在分类中添加属性.这个黑科技叫做**关联对象**(`Associated Objects`). 
 
 # **Associated Objects**
-***
+---
 关联对象相关的函数有以下3个:
 - `objc_setAssociatedObject` : 设置关联对象
 - `objc_getAssociatedObject ` : 获取关联对象
@@ -75,7 +75,7 @@ objc_getAssociatedObject(self, _cmd);
   *意思就是`_cmd`在Objective-C的方法中表示当前方法的`selector`, 正如同`self`表示调用当前方法的对象(类)一样.*  
 
 # **Simple Example**
-***
+---
 ```objc
 @interface NSObject (AssociatedObject)
 @property (nonatomic, strong) id associatedObject;
