@@ -5,7 +5,7 @@
   <link href="/atom.xml" rel="self"/>
   
   <link href="http://yoursite.com/"/>
-  <updated>2016-02-29T08:32:01.000Z</updated>
+  <updated>2016-03-17T12:10:10.000Z</updated>
   <id>http://yoursite.com/</id>
   
   <author>
@@ -16,9 +16,87 @@
   <generator uri="http://hexo.io/">Hexo</generator>
   
   <entry>
+    <title>【iOS开发】Objective-c Runtime小记</title>
+    <link href="http://yoursite.com/2016/03/16/objective-c-runtime/"/>
+    <id>http://yoursite.com/2016/03/16/objective-c-runtime/</id>
+    <published>2016-03-16T09:16:08.000Z</published>
+    <updated>2016-03-17T12:10:10.000Z</updated>
+    
+    <content type="html">&lt;h1 id=&quot;一-Runtime&quot;&gt;&lt;a href=&quot;#一-Runtime&quot; class=&quot;headerlink&quot; title=&quot;一. Runtime&quot;&gt;&lt;/a&gt;&lt;strong&gt;一. Runtime&lt;/strong&gt;&lt;/h1&gt;&lt;p&gt;Runtime是一套底层的C语言API. 实际上, 平时我们编写的Objective-C代码, 底层都是基于runtime实现的, 也就是说, 平时我们编写的Objective-C代码, 最终都是转成了底层的runtime代码(C语言代码). Runtime使得Objective-C这门语言的灵活性大大地提升. 有了runtime, 我们可以在应用运行的时候动态操作对象、类、方法, 也因为这个原因, 使得编程有了更多的可能性, 对于开发中遇到的一些比较棘手的问题, 往往用runtime可以优雅地解决, 接下来让我们看看runtime是为何可以如此牛x.&lt;/p&gt;
+&lt;h1 id=&quot;二-Objective-C中类和对象的本质&quot;&gt;&lt;a href=&quot;#二-Objective-C中类和对象的本质&quot; class=&quot;headerlink&quot; title=&quot;二. Objective-C中类和对象的本质&quot;&gt;&lt;/a&gt;&lt;strong&gt;二. Objective-C中类和对象的本质&lt;/strong&gt;&lt;/h1&gt;&lt;h3 id=&quot;1-对象-Instance&quot;&gt;&lt;a href=&quot;#1-对象-Instance&quot; class=&quot;headerlink&quot; title=&quot;1. 对象(Instance)&quot;&gt;&lt;/a&gt;&lt;strong&gt;1. 对象(Instance)&lt;/strong&gt;&lt;/h3&gt;&lt;p&gt;&lt;strong&gt;概念:&lt;/strong&gt;&lt;br&gt;对象的本质是一个结构体, 在&lt;code&gt;&amp;lt;objc/objc.h&amp;gt;&lt;/code&gt;中可以找到它的声明:&lt;br&gt;&lt;figure class=&quot;highlight objc&quot;&gt;&lt;table&gt;&lt;tr&gt;&lt;td class=&quot;code&quot;&gt;&lt;pre&gt;&lt;span class=&quot;line&quot;&gt;&lt;span class=&quot;keyword&quot;&gt;struct&lt;/span&gt; objc_object &amp;#123;&lt;/span&gt;&lt;br&gt;&lt;span class=&quot;line&quot;&gt;    Class isa  OBJC_ISA_&lt;span class=&quot;built_in&quot;&gt;AVAILABILITY&lt;/span&gt;;&lt;/span&gt;&lt;br&gt;&lt;span class=&quot;line&quot;&gt;&amp;#125;;&lt;/span&gt;&lt;br&gt;&lt;/pre&gt;&lt;/td&gt;&lt;/tr&gt;&lt;/table&gt;&lt;/figure&gt;&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;&lt;code&gt;isa&lt;/code&gt;: 指针指向对象所属的类(Class), Class结构体中包含了成员变量、对象方法等等.  &lt;/li&gt;
+&lt;/ul&gt;
+&lt;a id=&quot;more&quot;&gt;&lt;/a&gt;
+&lt;p&gt;&lt;strong&gt;补充:&lt;/strong&gt;&lt;br&gt;平常我们常常使用&lt;code&gt;id&lt;/code&gt;来作为对象的指针, 原因就是&lt;code&gt;&amp;lt;objc/objc.h&amp;gt;&lt;/code&gt;中定义&lt;code&gt;id&lt;/code&gt;类型来代替&lt;code&gt;struct objc_object *&lt;/code&gt;:&lt;br&gt;&lt;figure class=&quot;highlight objc&quot;&gt;&lt;table&gt;&lt;tr&gt;&lt;td class=&quot;code&quot;&gt;&lt;pre&gt;&lt;span class=&quot;line&quot;&gt;&lt;span class=&quot;keyword&quot;&gt;typedef&lt;/span&gt; &lt;span class=&quot;keyword&quot;&gt;struct&lt;/span&gt; objc_object *&lt;span class=&quot;keyword&quot;&gt;id&lt;/span&gt;;&lt;/span&gt;&lt;br&gt;&lt;/pre&gt;&lt;/td&gt;&lt;/tr&gt;&lt;/table&gt;&lt;/figure&gt;&lt;/p&gt;
+&lt;p&gt;&lt;br&gt;&lt;/p&gt;
+&lt;h3 id=&quot;2-类-Class&quot;&gt;&lt;a href=&quot;#2-类-Class&quot; class=&quot;headerlink&quot; title=&quot;2. 类(Class)&quot;&gt;&lt;/a&gt;&lt;strong&gt;2. 类(Class)&lt;/strong&gt;&lt;/h3&gt;&lt;p&gt;&lt;strong&gt;概念:&lt;/strong&gt;&lt;br&gt;类的本质是一个Class类型的对象. 在&lt;code&gt;&amp;lt;objc/runtime.h&amp;gt;&lt;/code&gt;中, 对类的声明如下:&lt;br&gt;&lt;figure class=&quot;highlight objc&quot;&gt;&lt;table&gt;&lt;tr&gt;&lt;td class=&quot;code&quot;&gt;&lt;pre&gt;&lt;span class=&quot;line&quot;&gt;&lt;span class=&quot;keyword&quot;&gt;struct&lt;/span&gt; objc_class &amp;#123;&lt;/span&gt;&lt;br&gt;&lt;span class=&quot;line&quot;&gt;    Class isa  OBJC_ISA_&lt;span class=&quot;built_in&quot;&gt;AVAILABILITY&lt;/span&gt;;&lt;/span&gt;&lt;br&gt;&lt;span class=&quot;line&quot;&gt;&lt;span class=&quot;preprocessor&quot;&gt;#if !__OBJC2__&lt;/span&gt;&lt;/span&gt;&lt;br&gt;&lt;span class=&quot;line&quot;&gt;    Class super_class                                        OBJC2_UN&lt;span class=&quot;built_in&quot;&gt;AVAILABLE&lt;/span&gt;;&lt;/span&gt;&lt;br&gt;&lt;span class=&quot;line&quot;&gt;    &lt;span class=&quot;keyword&quot;&gt;const&lt;/span&gt; &lt;span class=&quot;keyword&quot;&gt;char&lt;/span&gt; *name                                         OBJC2_UN&lt;span class=&quot;built_in&quot;&gt;AVAILABLE&lt;/span&gt;;&lt;/span&gt;&lt;br&gt;&lt;span class=&quot;line&quot;&gt;    &lt;span class=&quot;keyword&quot;&gt;long&lt;/span&gt; version                                             OBJC2_UN&lt;span class=&quot;built_in&quot;&gt;AVAILABLE&lt;/span&gt;;&lt;/span&gt;&lt;br&gt;&lt;span class=&quot;line&quot;&gt;    &lt;span class=&quot;keyword&quot;&gt;long&lt;/span&gt; info                                                OBJC2_UN&lt;span class=&quot;built_in&quot;&gt;AVAILABLE&lt;/span&gt;;&lt;/span&gt;&lt;br&gt;&lt;span class=&quot;line&quot;&gt;    &lt;span class=&quot;keyword&quot;&gt;long&lt;/span&gt; instance_size                                       OBJC2_UN&lt;span class=&quot;built_in&quot;&gt;AVAILABLE&lt;/span&gt;;&lt;/span&gt;&lt;br&gt;&lt;span class=&quot;line&quot;&gt;    &lt;span class=&quot;keyword&quot;&gt;struct&lt;/span&gt; objc_ivar_list *ivars                             OBJC2_UN&lt;span class=&quot;built_in&quot;&gt;AVAILABLE&lt;/span&gt;;&lt;/span&gt;&lt;br&gt;&lt;span class=&quot;line&quot;&gt;    &lt;span class=&quot;keyword&quot;&gt;struct&lt;/span&gt; objc_method_list **methodLists                    OBJC2_UN&lt;span class=&quot;built_in&quot;&gt;AVAILABLE&lt;/span&gt;;&lt;/span&gt;&lt;br&gt;&lt;span class=&quot;line&quot;&gt;    &lt;span class=&quot;keyword&quot;&gt;struct&lt;/span&gt; objc_cache *cache                                 OBJC2_UN&lt;span class=&quot;built_in&quot;&gt;AVAILABLE&lt;/span&gt;;&lt;/span&gt;&lt;br&gt;&lt;span class=&quot;line&quot;&gt;    &lt;span class=&quot;keyword&quot;&gt;struct&lt;/span&gt; objc_protocol_list *protocols                     OBJC2_UN&lt;span class=&quot;built_in&quot;&gt;AVAILABLE&lt;/span&gt;;&lt;/span&gt;&lt;br&gt;&lt;span class=&quot;line&quot;&gt;&lt;span class=&quot;preprocessor&quot;&gt;#endif&lt;/span&gt;&lt;/span&gt;&lt;br&gt;&lt;span class=&quot;line&quot;&gt;&amp;#125; OBJC2_UN&lt;span class=&quot;built_in&quot;&gt;AVAILABLE&lt;/span&gt;;&lt;/span&gt;&lt;br&gt;&lt;/pre&gt;&lt;/td&gt;&lt;/tr&gt;&lt;/table&gt;&lt;/figure&gt;&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;&lt;code&gt;isa&lt;/code&gt;: 指针指向Class对象的元类(MetaClass), 元类中记录了类方法列表.&lt;/li&gt;
+&lt;li&gt;&lt;code&gt;super_class&lt;/code&gt;: 指针指向父类. 根类(NSObject)中的super_class指针为空.&lt;/li&gt;
+&lt;li&gt;&lt;code&gt;name&lt;/code&gt;: 类名&lt;/li&gt;
+&lt;li&gt;&lt;code&gt;version&lt;/code&gt;: 类的版本, 默认为0&lt;/li&gt;
+&lt;li&gt;&lt;code&gt;info&lt;/code&gt;: 类的信息, 因为是long型的, 推测是作为标识使用&lt;/li&gt;
+&lt;li&gt;&lt;code&gt;instance_size&lt;/code&gt;: 类的对象的大小&lt;/li&gt;
+&lt;li&gt;&lt;code&gt;ivars&lt;/code&gt;: 存放该类所有成员变量的链表&lt;/li&gt;
+&lt;li&gt;&lt;code&gt;methodLists&lt;/code&gt;: 存放该类所有对象方法的链表&lt;/li&gt;
+&lt;li&gt;&lt;code&gt;cache&lt;/code&gt;: 缓存常用的对象方法, 提高消息分发的效率&lt;/li&gt;
+&lt;li&gt;&lt;code&gt;protocols&lt;/code&gt;: 存放该类的协议的链表&lt;/li&gt;
+&lt;/ul&gt;
+&lt;p&gt;&lt;strong&gt;补充:&lt;/strong&gt;&lt;br&gt;就像&lt;code&gt;id&lt;/code&gt;类型代表对象指针一样, &lt;code&gt;&amp;lt;objc/objc.h&amp;gt;&lt;/code&gt;中定义&lt;code&gt;Class&lt;/code&gt;类型来代替&lt;code&gt;struct objc_class *&lt;/code&gt;:&lt;br&gt;&lt;figure class=&quot;highlight objc&quot;&gt;&lt;table&gt;&lt;tr&gt;&lt;td class=&quot;code&quot;&gt;&lt;pre&gt;&lt;span class=&quot;line&quot;&gt;&lt;span class=&quot;keyword&quot;&gt;typedef&lt;/span&gt; &lt;span class=&quot;keyword&quot;&gt;struct&lt;/span&gt; objc_class *Class;&lt;/span&gt;&lt;br&gt;&lt;/pre&gt;&lt;/td&gt;&lt;/tr&gt;&lt;/table&gt;&lt;/figure&gt;&lt;/p&gt;
+&lt;p&gt;&lt;br&gt;&lt;/p&gt;
+&lt;h3 id=&quot;3-元类-MetaClass&quot;&gt;&lt;a href=&quot;#3-元类-MetaClass&quot; class=&quot;headerlink&quot; title=&quot;3. 元类(MetaClass)&quot;&gt;&lt;/a&gt;&lt;strong&gt;3. 元类(MetaClass)&lt;/strong&gt;&lt;/h3&gt;&lt;p&gt;&lt;strong&gt;概念:&lt;/strong&gt;&lt;br&gt;元类也是一个类, 每个类都有对应的一个元类. 可以通过类中的isa指针找到其对应的元类. 虽然在runtime相关头文件中没有找到MetaClass的声明, 但是在&lt;a href=&quot;http://www.sealiesoftware.com/blog/archive/2009/04/14/objc_explain_Classes_and_metaclasses.html&quot; target=&quot;_blank&quot; rel=&quot;external&quot;&gt;这个博客&lt;/a&gt;中对元类的与类的关系解释中, 我们可以推测出元类结构体和类是相似的, 包含(但不仅有)如下成员:&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;&lt;code&gt;isa&lt;/code&gt;: 指针都是指向根元类(NSObject的元类), 即使是根元类本身的isa也是指向自己&lt;/li&gt;
+&lt;li&gt;&lt;code&gt;super_class&lt;/code&gt;: 指针指向父元类, 根元类指向根类(NSObject)&lt;/li&gt;
+&lt;li&gt;&lt;code&gt;methodLists&lt;/code&gt;: 存放该类的所有类方法的链表&lt;/li&gt;
+&lt;/ul&gt;
+&lt;p&gt;&lt;strong&gt;对象、类、元类的关系图：&lt;/strong&gt;&lt;/p&gt;
+&lt;div style=&quot;text-align: center&quot;&gt;&lt;br&gt;&lt;img src=&quot;/img/runtime/runtime_0.pdf&quot;&gt;&lt;br&gt;&lt;/div&gt;
+
+&lt;h1 id=&quot;三-消息机制&quot;&gt;&lt;a href=&quot;#三-消息机制&quot; class=&quot;headerlink&quot; title=&quot;三. 消息机制&quot;&gt;&lt;/a&gt;&lt;strong&gt;三. 消息机制&lt;/strong&gt;&lt;/h1&gt;&lt;p&gt;我们平常所说的”方法调用”, 其实是不准确的, 因为在Objective-C中, 所谓的”方法调用”本质是消息分发. 比如下面这个”方法调用”:&lt;br&gt;&lt;figure class=&quot;highlight objc&quot;&gt;&lt;table&gt;&lt;tr&gt;&lt;td class=&quot;code&quot;&gt;&lt;pre&gt;&lt;span class=&quot;line&quot;&gt;[receiver message]&lt;/span&gt;&lt;br&gt;&lt;/pre&gt;&lt;/td&gt;&lt;/tr&gt;&lt;/table&gt;&lt;/figure&gt;&lt;/p&gt;
+&lt;p&gt;最终会被编译器转化为:&lt;br&gt;&lt;figure class=&quot;highlight objc&quot;&gt;&lt;table&gt;&lt;tr&gt;&lt;td class=&quot;code&quot;&gt;&lt;pre&gt;&lt;span class=&quot;line&quot;&gt;objc_msgSend(receiver, &lt;span class=&quot;keyword&quot;&gt;@selector&lt;/span&gt;(message))&lt;/span&gt;&lt;br&gt;&lt;/pre&gt;&lt;/td&gt;&lt;/tr&gt;&lt;/table&gt;&lt;/figure&gt;&lt;/p&gt;
+&lt;p&gt;所以说, 消息分发是通过定义在&lt;code&gt;&amp;lt;objc/message.h&amp;gt;&lt;/code&gt;中的&lt;code&gt;objc_msgSend()&lt;/code&gt;方法以及相关的方法来实现的. &lt;/p&gt;
+&lt;p&gt;需要注意的是消息分发是运行时特性, 说白了就是运行的时候, 一条消息才会知道它所对应的方法的实现是什么. 所以运行的时候, 一条消息的传递过程是这样的:&lt;/p&gt;
+&lt;blockquote&gt;
+&lt;ol&gt;
+&lt;li&gt;向对象&lt;code&gt;receiver&lt;/code&gt;对象发送&lt;code&gt;message&lt;/code&gt;消息.&lt;/li&gt;
+&lt;li&gt;通过&lt;code&gt;receiver&lt;/code&gt;对象的&lt;code&gt;isa&lt;/code&gt;指针找到它的Class.&lt;/li&gt;
+&lt;li&gt;在Class结构体中的&lt;code&gt;cache&lt;/code&gt;中查找是否有的&lt;code&gt;message&lt;/code&gt;的selector, 没有的话到&lt;code&gt;methodLists&lt;/code&gt;里面查找. 若有找到&lt;code&gt;message&lt;/code&gt;的selector, 则跳转至对应的方法实现完成此次消息分发.&lt;/li&gt;
+&lt;li&gt;如果没有找到&lt;code&gt;message&lt;/code&gt;的实现, &lt;code&gt;objc_msgSend&lt;/code&gt;会通过当前的Class结构体中的&lt;code&gt;super_class&lt;/code&gt;指针找到它的父Class, 并重复第3点的动作. &lt;/li&gt;
+&lt;li&gt;如果一直没有找到&lt;code&gt;message&lt;/code&gt;的实现, 第3点与第4点会一直重复直到根类(NSObject).&lt;/li&gt;
+&lt;li&gt;如果在根类中依然没有找到&lt;code&gt;message&lt;/code&gt;的实现, 默认(未实现&lt;a href=&quot;https://developer.apple.com/library/ios/documentation/Cocoa/Conceptual/ObjCRuntimeGuide/Articles/ocrtForwarding.html#//apple_ref/doc/uid/TP40008048-CH105-SW1&quot; target=&quot;_blank&quot; rel=&quot;external&quot;&gt;消息转发&lt;/a&gt;方法的情况下)就会抛出&lt;code&gt;unrecognized selector send to instance xxxx&lt;/code&gt;的异常.&lt;/li&gt;
+&lt;/ol&gt;
+&lt;/blockquote&gt;
+&lt;p&gt;这里引用&lt;a href=&quot;https://developer.apple.com/library/ios/documentation/Cocoa/Conceptual/ObjCRuntimeGuide/Articles/ocrtHowMessagingWorks.html#//apple_ref/doc/uid/TP40008048-CH104-SW1&quot; target=&quot;_blank&quot; rel=&quot;external&quot;&gt;Apple官方文档&lt;/a&gt;的消息分发原理插图便于理解:&lt;/p&gt;
+&lt;div style=&quot;text-align: center&quot;&gt;&lt;br&gt;&lt;img src=&quot;/img/runtime/runtime_1.gif&quot;&gt;&lt;br&gt;&lt;/div&gt;
+
+&lt;p&gt;看到这里或许会担心消息分发的过程太过于繁琐, 以至于影响性能? 其实不会的, 一个类中常用的方法会缓存在&lt;code&gt;cache&lt;/code&gt;中, 如上面消息分发流程的第2点所说, 一个对象接收到一条消息之后, 并不是直接去&lt;code&gt;methodLists&lt;/code&gt;查找, 而是先在&lt;code&gt;cache&lt;/code&gt;中查找, 查找不到了再到&lt;code&gt;methodLists&lt;/code&gt;中查找. 这样就能使得消息转发的效率得到保障.&lt;/p&gt;
+&lt;h1 id=&quot;扩展阅读&quot;&gt;&lt;a href=&quot;#扩展阅读&quot; class=&quot;headerlink&quot; title=&quot;扩展阅读&quot;&gt;&lt;/a&gt;扩展阅读&lt;/h1&gt;&lt;hr&gt;
+&lt;p&gt;1.&lt;a href=&quot;https://developer.apple.com/library/mac/documentation/Cocoa/Conceptual/ObjCRuntimeGuide/Introduction/Introduction.html&quot; target=&quot;_blank&quot; rel=&quot;external&quot;&gt;Objective-C Runtime Programming Guide&lt;/a&gt; by Apple&lt;br&gt;2.&lt;a href=&quot;http://southpeak.github.io/blog/2014/10/25/objective-c-runtime-yun-xing-shi-zhi-lei-yu-dui-xiang/&quot; target=&quot;_blank&quot; rel=&quot;external&quot;&gt;Objective-C Runtime 运行时系列文章&lt;/a&gt; by 南峰子&lt;br&gt;3.&lt;a href=&quot;http://yulingtianxia.com/blog/2014/11/05/objective-c-runtime/&quot; target=&quot;_blank&quot; rel=&quot;external&quot;&gt;Objective-C Runtime&lt;/a&gt; by 玉令天下&lt;br&gt;4.&lt;a href=&quot;http://limboy.me/ios/2013/08/03/dynamic-tips-and-tricks-with-objective-c.html&quot; target=&quot;_blank&quot; rel=&quot;external&quot;&gt;(译)Objective-C的动态特性&lt;/a&gt; by Limboy’s HQ&lt;br&gt;5.&lt;a href=&quot;http://blog.ibireme.com/2013/11/26/objective-c-messaging/&quot; target=&quot;_blank&quot; rel=&quot;external&quot;&gt;Objective-C 中的消息与消息转发&lt;/a&gt; by ibireme&lt;br&gt;6.&lt;a href=&quot;http://tech.glowing.com/cn/objective-c-runtime/&quot; target=&quot;_blank&quot; rel=&quot;external&quot;&gt;Objective-C Runtime&lt;/a&gt; by Glow技术团队博客&lt;/p&gt;
+</content>
+    
+    <summary type="html">
+    
+      &lt;h1 id=&quot;一-Runtime&quot;&gt;&lt;a href=&quot;#一-Runtime&quot; class=&quot;headerlink&quot; title=&quot;一. Runtime&quot;&gt;&lt;/a&gt;&lt;strong&gt;一. Runtime&lt;/strong&gt;&lt;/h1&gt;&lt;p&gt;Runtime是一套底层的C语言API. 实际上, 平时我们编写的Objective-C代码, 底层都是基于runtime实现的, 也就是说, 平时我们编写的Objective-C代码, 最终都是转成了底层的runtime代码(C语言代码). Runtime使得Objective-C这门语言的灵活性大大地提升. 有了runtime, 我们可以在应用运行的时候动态操作对象、类、方法, 也因为这个原因, 使得编程有了更多的可能性, 对于开发中遇到的一些比较棘手的问题, 往往用runtime可以优雅地解决, 接下来让我们看看runtime是为何可以如此牛x.&lt;/p&gt;
+&lt;h1 id=&quot;二-Objective-C中类和对象的本质&quot;&gt;&lt;a href=&quot;#二-Objective-C中类和对象的本质&quot; class=&quot;headerlink&quot; title=&quot;二. Objective-C中类和对象的本质&quot;&gt;&lt;/a&gt;&lt;strong&gt;二. Objective-C中类和对象的本质&lt;/strong&gt;&lt;/h1&gt;&lt;h3 id=&quot;1-对象-Instance&quot;&gt;&lt;a href=&quot;#1-对象-Instance&quot; class=&quot;headerlink&quot; title=&quot;1. 对象(Instance)&quot;&gt;&lt;/a&gt;&lt;strong&gt;1. 对象(Instance)&lt;/strong&gt;&lt;/h3&gt;&lt;p&gt;&lt;strong&gt;概念:&lt;/strong&gt;&lt;br&gt;对象的本质是一个结构体, 在&lt;code&gt;&amp;lt;objc/objc.h&amp;gt;&lt;/code&gt;中可以找到它的声明:&lt;br&gt;&lt;figure class=&quot;highlight objc&quot;&gt;&lt;table&gt;&lt;tr&gt;&lt;td class=&quot;code&quot;&gt;&lt;pre&gt;&lt;span class=&quot;line&quot;&gt;&lt;span class=&quot;keyword&quot;&gt;struct&lt;/span&gt; objc_object &amp;#123;&lt;/span&gt;&lt;br&gt;&lt;span class=&quot;line&quot;&gt;    Class isa  OBJC_ISA_&lt;span class=&quot;built_in&quot;&gt;AVAILABILITY&lt;/span&gt;;&lt;/span&gt;&lt;br&gt;&lt;span class=&quot;line&quot;&gt;&amp;#125;;&lt;/span&gt;&lt;br&gt;&lt;/pre&gt;&lt;/td&gt;&lt;/tr&gt;&lt;/table&gt;&lt;/figure&gt;&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;&lt;code&gt;isa&lt;/code&gt;: 指针指向对象所属的类(Class), Class结构体中包含了成员变量、对象方法等等.  &lt;/li&gt;
+&lt;/ul&gt;
+    
+    </summary>
+    
+      <category term="iOS开发" scheme="http://yoursite.com/categories/iOS%E5%BC%80%E5%8F%91/"/>
+    
+    
+      <category term="runtime" scheme="http://yoursite.com/tags/runtime/"/>
+    
+  </entry>
+  
+  <entry>
     <title>【iOS开发】Apple Pay 的集成</title>
-    <link href="http://yoursite.com/2016/02/18/ApplePay/"/>
-    <id>http://yoursite.com/2016/02/18/ApplePay/</id>
+    <link href="http://yoursite.com/2016/02/18/apple-pay/"/>
+    <id>http://yoursite.com/2016/02/18/apple-pay/</id>
     <published>2016-02-18T13:19:14.000Z</published>
     <updated>2016-02-29T08:32:01.000Z</updated>
     
@@ -65,8 +143,8 @@
   
   <entry>
     <title>【iOS开发】Associated Objects-为分类添加属性</title>
-    <link href="http://yoursite.com/2016/01/25/AssociatedObjects/"/>
-    <id>http://yoursite.com/2016/01/25/AssociatedObjects/</id>
+    <link href="http://yoursite.com/2016/01/25/associated-objects/"/>
+    <id>http://yoursite.com/2016/01/25/associated-objects/</id>
     <published>2016-01-25T07:06:34.000Z</published>
     <updated>2016-02-29T07:10:02.000Z</updated>
     
@@ -145,12 +223,12 @@
   
   <entry>
     <title>【iOS Tip】UIImage的renderingMode</title>
-    <link href="http://yoursite.com/2015/03/29/UIImageRenderingMode/"/>
-    <id>http://yoursite.com/2015/03/29/UIImageRenderingMode/</id>
+    <link href="http://yoursite.com/2015/03/29/uiimage-rendering-mode/"/>
+    <id>http://yoursite.com/2015/03/29/uiimage-rendering-mode/</id>
     <published>2015-03-29T06:32:22.000Z</published>
-    <updated>2016-02-29T08:05:46.000Z</updated>
+    <updated>2016-03-09T08:21:45.000Z</updated>
     
-    <content type="html">&lt;p&gt;很多人在第一次使用UITabBar的时候, 都会遇到一个摸不着头脑的问题:&lt;br&gt;明明UI给的图片是这样的 ↓&lt;br&gt;&lt;img src=&quot;/img/UIImageRenderingMode/renderingMode_0.png&quot; alt=&quot;&quot;&gt;&lt;br&gt;可是用到tabBar中却变成了这样 ↓&lt;br&gt;&lt;img src=&quot;/img/UIImageRenderingMode/renderingMode_1.png&quot; alt=&quot;&quot;&gt;&lt;br&gt;wtf! 咋还自己变色了呢? &lt;img src=&quot;/img/UIImageRenderingMode/renderingMode_2.jpg&quot; alt=&quot;&quot;&gt;&lt;br&gt;其实以上的现象都是源于UIImage的一个属性&lt;code&gt;renderingMode&lt;/code&gt;.&lt;/p&gt;
+    <content type="html">&lt;p&gt;很多人在第一次使用UITabBar的时候, 都会遇到一个摸不着头脑的问题:&lt;br&gt;明明UI给的图片是这样的 ↓&lt;br&gt;&lt;img src=&quot;/img/UIImageRenderingMode/renderingMode_0.png&quot; alt=&quot;&quot;&gt;&lt;br&gt;可是用到tabBar中却变成了这样 ↓&lt;br&gt;&lt;img src=&quot;/img/UIImageRenderingMode/renderingMode_1.png&quot; alt=&quot;&quot;&gt;&lt;br&gt;&lt;strong&gt;WTF!&lt;/strong&gt; 咋还自己变色了呢? &lt;img src=&quot;/img/UIImageRenderingMode/renderingMode_2.jpg&quot; alt=&quot;&quot;&gt;&lt;br&gt;其实以上的现象都是源于UIImage的一个属性&lt;code&gt;renderingMode&lt;/code&gt;.&lt;/p&gt;
 &lt;h1 id=&quot;UIImageRenderingMode&quot;&gt;&lt;a href=&quot;#UIImageRenderingMode&quot; class=&quot;headerlink&quot; title=&quot;UIImageRenderingMode&quot;&gt;&lt;/a&gt;&lt;strong&gt;UIImageRenderingMode&lt;/strong&gt;&lt;/h1&gt;&lt;hr&gt;
 &lt;h3 id=&quot;1-概念&quot;&gt;&lt;a href=&quot;#1-概念&quot; class=&quot;headerlink&quot; title=&quot;1. 概念&quot;&gt;&lt;/a&gt;&lt;strong&gt;1. 概念&lt;/strong&gt;&lt;/h3&gt;&lt;figure class=&quot;highlight objc&quot;&gt;&lt;table&gt;&lt;tr&gt;&lt;td class=&quot;code&quot;&gt;&lt;pre&gt;&lt;span class=&quot;line&quot;&gt;&lt;span class=&quot;keyword&quot;&gt;@property&lt;/span&gt;(&lt;span class=&quot;keyword&quot;&gt;nonatomic&lt;/span&gt;, &lt;span class=&quot;keyword&quot;&gt;readonly&lt;/span&gt;) &lt;span class=&quot;built_in&quot;&gt;UIImageRenderingMode&lt;/span&gt; renderingMode &lt;span class=&quot;built_in&quot;&gt;NS_AVAILABLE_IOS&lt;/span&gt;(&lt;span class=&quot;number&quot;&gt;7&lt;/span&gt;_0);&lt;/span&gt;&lt;br&gt;&lt;/pre&gt;&lt;/td&gt;&lt;/tr&gt;&lt;/table&gt;&lt;/figure&gt;
 &lt;a id=&quot;more&quot;&gt;&lt;/a&gt;
@@ -166,11 +244,12 @@
 &lt;/ul&gt;
 &lt;p&gt;所以, 相应的解决方法也有两种:&lt;br&gt;&lt;strong&gt;1.设置图片的renderingMode为&lt;code&gt;UIImageRenderingModeAlwaysOriginal&lt;/code&gt;&lt;/strong&gt;&lt;br&gt;&lt;figure class=&quot;highlight objc&quot;&gt;&lt;table&gt;&lt;tr&gt;&lt;td class=&quot;code&quot;&gt;&lt;pre&gt;&lt;span class=&quot;line&quot;&gt;&lt;span class=&quot;built_in&quot;&gt;UIImage&lt;/span&gt; *selectedImage = [&lt;span class=&quot;built_in&quot;&gt;UIImage&lt;/span&gt; imageNamed:selectedImageName];&lt;/span&gt;&lt;br&gt;&lt;span class=&quot;line&quot;&gt;originalSelectedImage = [selectedImage imageWithRenderingMode:&lt;span class=&quot;built_in&quot;&gt;UIImageRenderingModeAlwaysOriginal&lt;/span&gt;];&lt;/span&gt;&lt;br&gt;&lt;span class=&quot;line&quot;&gt;&lt;/span&gt;&lt;br&gt;&lt;span class=&quot;line&quot;&gt;viewController&lt;span class=&quot;variable&quot;&gt;.tabBarItem&lt;/span&gt;&lt;span class=&quot;variable&quot;&gt;.selectedImage&lt;/span&gt; = originalSelectedImage;&lt;/span&gt;&lt;br&gt;&lt;/pre&gt;&lt;/td&gt;&lt;/tr&gt;&lt;/table&gt;&lt;/figure&gt;&lt;/p&gt;
 &lt;p&gt;&lt;strong&gt;2.设置UITabBar的&lt;code&gt;tintColor&lt;/code&gt;为我们所要的颜色.&lt;/strong&gt;&lt;br&gt;&lt;figure class=&quot;highlight objc&quot;&gt;&lt;table&gt;&lt;tr&gt;&lt;td class=&quot;code&quot;&gt;&lt;pre&gt;&lt;span class=&quot;line&quot;&gt;tabBar&lt;span class=&quot;variable&quot;&gt;.tintColor&lt;/span&gt; = kAppMainColor;&lt;/span&gt;&lt;br&gt;&lt;/pre&gt;&lt;/td&gt;&lt;/tr&gt;&lt;/table&gt;&lt;/figure&gt;&lt;/p&gt;
+&lt;h3 id=&quot;3-其他&quot;&gt;&lt;a href=&quot;#3-其他&quot; class=&quot;headerlink&quot; title=&quot;3. 其他&quot;&gt;&lt;/a&gt;&lt;strong&gt;3. 其他&lt;/strong&gt;&lt;/h3&gt;&lt;p&gt;如果总是在代码中设置&lt;strong&gt;renderingMode&lt;/strong&gt;也是比较麻烦的, 还有一个更佳便捷的设置方法, 如下图在&lt;code&gt;Images.xcassets&lt;/code&gt;里面选中相应的图片, 在右侧的工具栏中的&lt;code&gt;Render As&lt;/code&gt;字段选择相应的&lt;strong&gt;renderingMode&lt;/strong&gt;就可以了.&lt;br&gt;&lt;img src=&quot;/img/UIImageRenderingMode/renderingMode_3.png&quot; alt=&quot;&quot;&gt;&lt;/p&gt;
 </content>
     
     <summary type="html">
     
-      &lt;p&gt;很多人在第一次使用UITabBar的时候, 都会遇到一个摸不着头脑的问题:&lt;br&gt;明明UI给的图片是这样的 ↓&lt;br&gt;&lt;img src=&quot;/img/UIImageRenderingMode/renderingMode_0.png&quot; alt=&quot;&quot;&gt;&lt;br&gt;可是用到tabBar中却变成了这样 ↓&lt;br&gt;&lt;img src=&quot;/img/UIImageRenderingMode/renderingMode_1.png&quot; alt=&quot;&quot;&gt;&lt;br&gt;wtf! 咋还自己变色了呢? &lt;img src=&quot;/img/UIImageRenderingMode/renderingMode_2.jpg&quot; alt=&quot;&quot;&gt;&lt;br&gt;其实以上的现象都是源于UIImage的一个属性&lt;code&gt;renderingMode&lt;/code&gt;.&lt;/p&gt;
+      &lt;p&gt;很多人在第一次使用UITabBar的时候, 都会遇到一个摸不着头脑的问题:&lt;br&gt;明明UI给的图片是这样的 ↓&lt;br&gt;&lt;img src=&quot;/img/UIImageRenderingMode/renderingMode_0.png&quot; alt=&quot;&quot;&gt;&lt;br&gt;可是用到tabBar中却变成了这样 ↓&lt;br&gt;&lt;img src=&quot;/img/UIImageRenderingMode/renderingMode_1.png&quot; alt=&quot;&quot;&gt;&lt;br&gt;&lt;strong&gt;WTF!&lt;/strong&gt; 咋还自己变色了呢? &lt;img src=&quot;/img/UIImageRenderingMode/renderingMode_2.jpg&quot; alt=&quot;&quot;&gt;&lt;br&gt;其实以上的现象都是源于UIImage的一个属性&lt;code&gt;renderingMode&lt;/code&gt;.&lt;/p&gt;
 &lt;h1 id=&quot;UIImageRenderingMode&quot;&gt;&lt;a href=&quot;#UIImageRenderingMode&quot; class=&quot;headerlink&quot; title=&quot;UIImageRenderingMode&quot;&gt;&lt;/a&gt;&lt;strong&gt;UIImageRenderingMode&lt;/strong&gt;&lt;/h1&gt;&lt;hr&gt;
 &lt;h3 id=&quot;1-概念&quot;&gt;&lt;a href=&quot;#1-概念&quot; class=&quot;headerlink&quot; title=&quot;1. 概念&quot;&gt;&lt;/a&gt;&lt;strong&gt;1. 概念&lt;/strong&gt;&lt;/h3&gt;&lt;figure class=&quot;highlight objc&quot;&gt;&lt;table&gt;&lt;tr&gt;&lt;td class=&quot;code&quot;&gt;&lt;pre&gt;&lt;span class=&quot;line&quot;&gt;&lt;span class=&quot;keyword&quot;&gt;@property&lt;/span&gt;(&lt;span class=&quot;keyword&quot;&gt;nonatomic&lt;/span&gt;, &lt;span class=&quot;keyword&quot;&gt;readonly&lt;/span&gt;) &lt;span class=&quot;built_in&quot;&gt;UIImageRenderingMode&lt;/span&gt; renderingMode &lt;span class=&quot;built_in&quot;&gt;NS_AVAILABLE_IOS&lt;/span&gt;(&lt;span class=&quot;number&quot;&gt;7&lt;/span&gt;_0);&lt;/span&gt;&lt;br&gt;&lt;/pre&gt;&lt;/td&gt;&lt;/tr&gt;&lt;/table&gt;&lt;/figure&gt;
     

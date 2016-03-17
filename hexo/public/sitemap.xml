@@ -2,21 +2,28 @@
 <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
   
   <url>
-    <loc>http://yoursite.com/2016/02/18/ApplePay/</loc>
+    <loc>http://yoursite.com/2016/03/16/objective-c-runtime/</loc>
+    
+    <lastmod>2016-03-17T12:10:10.000Z</lastmod>
+    
+  </url>
+  
+  <url>
+    <loc>http://yoursite.com/2015/03/29/uiimage-rendering-mode/</loc>
+    
+    <lastmod>2016-03-09T08:21:45.000Z</lastmod>
+    
+  </url>
+  
+  <url>
+    <loc>http://yoursite.com/2016/02/18/apple-pay/</loc>
     
     <lastmod>2016-02-29T08:32:01.000Z</lastmod>
     
   </url>
   
   <url>
-    <loc>http://yoursite.com/2015/03/29/UIImageRenderingMode/</loc>
-    
-    <lastmod>2016-02-29T08:05:46.000Z</lastmod>
-    
-  </url>
-  
-  <url>
-    <loc>http://yoursite.com/2016/01/25/AssociatedObjects/</loc>
+    <loc>http://yoursite.com/2016/01/25/associated-objects/</loc>
     
     <lastmod>2016-02-29T07:10:02.000Z</lastmod>
     

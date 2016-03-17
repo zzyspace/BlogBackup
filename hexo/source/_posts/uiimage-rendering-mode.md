@@ -54,3 +54,8 @@ viewController.tabBarItem.selectedImage = originalSelectedImage;
 ```objc
 tabBar.tintColor = kAppMainColor;
 ```
+
+### **3. 其他**
+
+如果总是在代码中设置**renderingMode**也是比较麻烦的, 还有一个更佳便捷的设置方法, 如下图在`Images.xcassets`里面选中相应的图片, 在右侧的工具栏中的`Render As`字段选择相应的**renderingMode**就可以了.
+![](/img/UIImageRenderingMode/renderingMode_3.png)

@@ -123,7 +123,7 @@ var _hmt = _hmt || [];
 				
 				<section class="switch-part switch-part2">
 					<div class="widget tagcloud" id="js-tagcloud">
-						<a href="/tags/Apple-Pay/" style="font-size: 10px;">Apple Pay</a> <a href="/tags/UI/" style="font-size: 10px;">UI</a> <a href="/tags/runtime/" style="font-size: 10px;">runtime</a>
+						<a href="/tags/Apple-Pay/" style="font-size: 10px;">Apple Pay</a> <a href="/tags/UI/" style="font-size: 10px;">UI</a> <a href="/tags/runtime/" style="font-size: 20px;">runtime</a>
 					</div>
 				</section>
 				
@@ -197,10 +197,78 @@ var _hmt = _hmt || [];
 
       <div class="body-wrap">
   
-    <article id="post-ApplePay" class="article article-type-post" itemscope itemprop="blogPost">
+    <article id="post-objective-c-runtime" class="article article-type-post" itemscope itemprop="blogPost">
   
     <div class="article-meta">
-      <a href="/2016/02/18/ApplePay/" class="article-date">
+      <a href="/2016/03/16/objective-c-runtime/" class="article-date">
+  	<time datetime="2016-03-16T09:16:08.000Z" itemprop="datePublished">2016-03-16</time>
+</a>
+    </div>
+  
+  <div class="article-inner">
+    
+      <input type="hidden" class="isFancy" />
+    
+    
+      <header class="article-header">
+        
+  
+    <h1 itemprop="name">
+      <a class="article-title" href="/2016/03/16/objective-c-runtime/">【iOS开发】Objective-c Runtime小记</a>
+    </h1>
+  
+
+      </header>
+      
+    
+    <div class="article-entry" itemprop="articleBody">
+      
+        <h1 id="一-Runtime"><a href="#一-Runtime" class="headerlink" title="一. Runtime"></a><strong>一. Runtime</strong></h1><p>Runtime是一套底层的C语言API. 实际上, 平时我们编写的Objective-C代码, 底层都是基于runtime实现的, 也就是说, 平时我们编写的Objective-C代码, 最终都是转成了底层的runtime代码(C语言代码). Runtime使得Objective-C这门语言的灵活性大大地提升. 有了runtime, 我们可以在应用运行的时候动态操作对象、类、方法, 也因为这个原因, 使得编程有了更多的可能性, 对于开发中遇到的一些比较棘手的问题, 往往用runtime可以优雅地解决, 接下来让我们看看runtime是为何可以如此牛x.</p>
+<h1 id="二-Objective-C中类和对象的本质"><a href="#二-Objective-C中类和对象的本质" class="headerlink" title="二. Objective-C中类和对象的本质"></a><strong>二. Objective-C中类和对象的本质</strong></h1><h3 id="1-对象-Instance"><a href="#1-对象-Instance" class="headerlink" title="1. 对象(Instance)"></a><strong>1. 对象(Instance)</strong></h3><p><strong>概念:</strong><br>对象的本质是一个结构体, 在<code>&lt;objc/objc.h&gt;</code>中可以找到它的声明:<br><figure class="highlight objc"><table><tr><td class="code"><pre><span class="line"><span class="keyword">struct</span> objc_object &#123;</span><br><span class="line">    Class isa  OBJC_ISA_<span class="built_in">AVAILABILITY</span>;</span><br><span class="line">&#125;;</span><br></pre></td></tr></table></figure></p>
+<ul>
+<li><code>isa</code>: 指针指向对象所属的类(Class), Class结构体中包含了成员变量、对象方法等等.  </li>
+</ul>
+      
+    </div>
+    
+    <div class="article-info article-info-index">
+      
+      
+	<div class="article-tag tagcloud">
+		<ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/runtime/">runtime</a></li></ul>
+	</div>
+
+      
+	<div class="article-category tagcloud">
+	<a class="article-category-link" href="/categories/iOS开发/">iOS开发</a>
+	</div>
+
+
+      
+        <p class="article-more-link">
+          <a  href="/2016/03/16/objective-c-runtime/#more">more >></a>
+        </p>
+      
+      <div class="clearfix"></div>
+    </div>
+    
+  </div>
+  
+</article>
+
+
+
+
+
+
+
+
+
+  
+    <article id="post-apple-pay" class="article article-type-post" itemscope itemprop="blogPost">
+  
+    <div class="article-meta">
+      <a href="/2016/02/18/apple-pay/" class="article-date">
   	<time datetime="2016-02-18T13:19:14.000Z" itemprop="datePublished">2016-02-18</time>
 </a>
     </div>
@@ -214,7 +282,7 @@ var _hmt = _hmt || [];
         
   
     <h1 itemprop="name">
-      <a class="article-title" href="/2016/02/18/ApplePay/">【iOS开发】Apple Pay 的集成</a>
+      <a class="article-title" href="/2016/02/18/apple-pay/">【iOS开发】Apple Pay 的集成</a>
     </h1>
   
 
@@ -242,7 +310,7 @@ var _hmt = _hmt || [];
 
       
         <p class="article-more-link">
-          <a  href="/2016/02/18/ApplePay/#more">more >></a>
+          <a  href="/2016/02/18/apple-pay/#more">more >></a>
         </p>
       
       <div class="clearfix"></div>
@@ -261,10 +329,10 @@ var _hmt = _hmt || [];
 
 
   
-    <article id="post-AssociatedObjects" class="article article-type-post" itemscope itemprop="blogPost">
+    <article id="post-associated-objects" class="article article-type-post" itemscope itemprop="blogPost">
   
     <div class="article-meta">
-      <a href="/2016/01/25/AssociatedObjects/" class="article-date">
+      <a href="/2016/01/25/associated-objects/" class="article-date">
   	<time datetime="2016-01-25T07:06:34.000Z" itemprop="datePublished">2016-01-25</time>
 </a>
     </div>
@@ -278,7 +346,7 @@ var _hmt = _hmt || [];
         
   
     <h1 itemprop="name">
-      <a class="article-title" href="/2016/01/25/AssociatedObjects/">【iOS开发】Associated Objects-为分类添加属性</a>
+      <a class="article-title" href="/2016/01/25/associated-objects/">【iOS开发】Associated Objects-为分类添加属性</a>
     </h1>
   
 
@@ -313,7 +381,7 @@ var _hmt = _hmt || [];
 
       
         <p class="article-more-link">
-          <a  href="/2016/01/25/AssociatedObjects/#more">more >></a>
+          <a  href="/2016/01/25/associated-objects/#more">more >></a>
         </p>
       
       <div class="clearfix"></div>
@@ -332,10 +400,10 @@ var _hmt = _hmt || [];
 
 
   
-    <article id="post-UIImageRenderingMode" class="article article-type-post" itemscope itemprop="blogPost">
+    <article id="post-uiimage-rendering-mode" class="article article-type-post" itemscope itemprop="blogPost">
   
     <div class="article-meta">
-      <a href="/2015/03/29/UIImageRenderingMode/" class="article-date">
+      <a href="/2015/03/29/uiimage-rendering-mode/" class="article-date">
   	<time datetime="2015-03-29T06:32:22.000Z" itemprop="datePublished">2015-03-29</time>
 </a>
     </div>
@@ -349,7 +417,7 @@ var _hmt = _hmt || [];
         
   
     <h1 itemprop="name">
-      <a class="article-title" href="/2015/03/29/UIImageRenderingMode/">【iOS Tip】UIImage的renderingMode</a>
+      <a class="article-title" href="/2015/03/29/uiimage-rendering-mode/">【iOS Tip】UIImage的renderingMode</a>
     </h1>
   
 
@@ -358,7 +426,7 @@ var _hmt = _hmt || [];
     
     <div class="article-entry" itemprop="articleBody">
       
-        <p>很多人在第一次使用UITabBar的时候, 都会遇到一个摸不着头脑的问题:<br>明明UI给的图片是这样的 ↓<br><img src="/img/UIImageRenderingMode/renderingMode_0.png" alt=""><br>可是用到tabBar中却变成了这样 ↓<br><img src="/img/UIImageRenderingMode/renderingMode_1.png" alt=""><br>wtf! 咋还自己变色了呢? <img src="/img/UIImageRenderingMode/renderingMode_2.jpg" alt=""><br>其实以上的现象都是源于UIImage的一个属性<code>renderingMode</code>.</p>
+        <p>很多人在第一次使用UITabBar的时候, 都会遇到一个摸不着头脑的问题:<br>明明UI给的图片是这样的 ↓<br><img src="/img/UIImageRenderingMode/renderingMode_0.png" alt=""><br>可是用到tabBar中却变成了这样 ↓<br><img src="/img/UIImageRenderingMode/renderingMode_1.png" alt=""><br><strong>WTF!</strong> 咋还自己变色了呢? <img src="/img/UIImageRenderingMode/renderingMode_2.jpg" alt=""><br>其实以上的现象都是源于UIImage的一个属性<code>renderingMode</code>.</p>
 <h1 id="UIImageRenderingMode"><a href="#UIImageRenderingMode" class="headerlink" title="UIImageRenderingMode"></a><strong>UIImageRenderingMode</strong></h1><hr>
 <h3 id="1-概念"><a href="#1-概念" class="headerlink" title="1. 概念"></a><strong>1. 概念</strong></h3><figure class="highlight objc"><table><tr><td class="code"><pre><span class="line"><span class="keyword">@property</span>(<span class="keyword">nonatomic</span>, <span class="keyword">readonly</span>) <span class="built_in">UIImageRenderingMode</span> renderingMode <span class="built_in">NS_AVAILABLE_IOS</span>(<span class="number">7</span>_0);</span><br></pre></td></tr></table></figure>
       
@@ -379,7 +447,7 @@ var _hmt = _hmt || [];
 
       
         <p class="article-more-link">
-          <a  href="/2015/03/29/UIImageRenderingMode/#more">more >></a>
+          <a  href="/2015/03/29/uiimage-rendering-mode/#more">more >></a>
         </p>
       
       <div class="clearfix"></div>
