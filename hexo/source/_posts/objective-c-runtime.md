@@ -18,7 +18,7 @@ struct objc_object {
     Class isa  OBJC_ISA_AVAILABILITY;
 };
 ```
-- `isa`: 指针指向对象所属的类(Class), Class结构体中包含了成员变量、对象方法等等.  
+- `isa`: 指针指向对象所属的[类(Class)](#二.2), Class结构体中包含了成员变量、对象方法等等.  
 
 <!--more-->
 
@@ -30,7 +30,7 @@ typedef struct objc_object *id;
 
 <br/>
 
-### **2. 类(Class)**
+### <span id="二.2"> **2. 类(Class)** </span>
 **概念:**
 类的本质是一个Class类型的对象. 在`<objc/runtime.h>`中, 对类的声明如下:
 ```objc
@@ -49,7 +49,7 @@ struct objc_class {
 #endif
 } OBJC2_UNAVAILABLE;
 ```
-- `isa`: 指针指向Class对象的元类(MetaClass), 元类中记录了类方法列表.
+- `isa`: 指针指向Class对象的[元类(MetaClass)](#二.3), 元类中记录了类方法列表.
 - `super_class`: 指针指向父类. 根类(NSObject)中的super_class指针为空.
 - `name`: 类名
 - `version`: 类的版本, 默认为0
@@ -68,7 +68,7 @@ typedef struct objc_class *Class;
 
 <br/>
 
-### **3. 元类(MetaClass)**
+### <span id="二.3"> **3. 元类(MetaClass)** </span>
 **概念:**
 元类也是一个类, 每个类都有对应的一个元类. 可以通过类中的isa指针找到其对应的元类. 虽然在runtime相关头文件中没有找到MetaClass的声明, 但是在[这个博客](http://www.sealiesoftware.com/blog/archive/2009/04/14/objc_explain_Classes_and_metaclasses.html)中对元类的与类的关系解释中, 我们可以推测出元类结构体和类是相似的, 包含(但不仅有)如下成员:
 - `isa`: 指针都是指向根元类(NSObject的元类), 即使是根元类本身的isa也是指向自己

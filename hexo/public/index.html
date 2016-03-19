@@ -3,6 +3,7 @@
 <head>
   <meta charset="utf-8">
   
+  <meta name="google-site-verification" content="cM_VWDa2ALBhAiVFmXNORa2AGkYLRqxiHYkZPYtLIQ4" />
   <meta name="baidu-site-verification" content="G7AVOULiH8" />
   <meta http-equiv="X-UA-Compatible" content="IE=edge" >
   <title>zzyspace</title>
@@ -10,7 +11,7 @@
   <meta name="description" content="这是一个神奇的博客">
 <meta property="og:type" content="website">
 <meta property="og:title" content="zzyspace">
-<meta property="og:url" content="http://yoursite.com/index.html">
+<meta property="og:url" content="http://zzyspace.github.io/index.html">
 <meta property="og:site_name" content="zzyspace">
 <meta property="og:description" content="这是一个神奇的博客">
 <meta name="twitter:card" content="summary">
@@ -228,7 +229,7 @@ var _hmt = _hmt || [];
 <h1 id="二-Objective-C中类和对象的本质"><a href="#二-Objective-C中类和对象的本质" class="headerlink" title="二. Objective-C中类和对象的本质"></a><strong>二. Objective-C中类和对象的本质</strong></h1><hr>
 <h3 id="1-对象-Instance"><a href="#1-对象-Instance" class="headerlink" title="1. 对象(Instance)"></a><strong>1. 对象(Instance)</strong></h3><p><strong>概念:</strong><br>对象的本质是一个结构体, 在<code>&lt;objc/objc.h&gt;</code>中可以找到它的声明:<br><figure class="highlight objc"><table><tr><td class="code"><pre><span class="line"><span class="keyword">struct</span> objc_object &#123;</span><br><span class="line">    Class isa  OBJC_ISA_<span class="built_in">AVAILABILITY</span>;</span><br><span class="line">&#125;;</span><br></pre></td></tr></table></figure></p>
 <ul>
-<li><code>isa</code>: 指针指向对象所属的类(Class), Class结构体中包含了成员变量、对象方法等等.  </li>
+<li><code>isa</code>: 指针指向对象所属的<a href="#二.2">类(Class)</a>, Class结构体中包含了成员变量、对象方法等等.  </li>
 </ul>
       
     </div>

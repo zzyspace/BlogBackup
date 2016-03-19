@@ -5,3 +5,7 @@
 
 2. 文章预览
 <!--more-->
+
+3. 页内跳转
+[1.xxx](#1.xxx)
+### <span id="1.xxx">1.xxx</span>

@@ -4,9 +4,9 @@
   <subtitle>iOS Developer</subtitle>
   <link href="/atom.xml" rel="self"/>
   
-  <link href="http://yoursite.com/"/>
-  <updated>2016-03-19T07:29:41.000Z</updated>
-  <id>http://yoursite.com/</id>
+  <link href="http://zzyspace.github.io/"/>
+  <updated>2016-03-19T15:43:34.000Z</updated>
+  <id>http://zzyspace.github.io/</id>
   
   <author>
     <name>zzy</name>
@@ -17,24 +17,24 @@
   
   <entry>
     <title>【iOS开发】Objective-c Runtime小记</title>
-    <link href="http://yoursite.com/2016/03/16/objective-c-runtime/"/>
-    <id>http://yoursite.com/2016/03/16/objective-c-runtime/</id>
+    <link href="http://zzyspace.github.io/2016/03/16/objective-c-runtime/"/>
+    <id>http://zzyspace.github.io/2016/03/16/objective-c-runtime/</id>
     <published>2016-03-16T09:16:08.000Z</published>
-    <updated>2016-03-19T07:29:41.000Z</updated>
+    <updated>2016-03-19T15:43:34.000Z</updated>
     
     <content type="html">&lt;h1 id=&quot;一-Runtime&quot;&gt;&lt;a href=&quot;#一-Runtime&quot; class=&quot;headerlink&quot; title=&quot;一. Runtime&quot;&gt;&lt;/a&gt;&lt;strong&gt;一. Runtime&lt;/strong&gt;&lt;/h1&gt;&lt;hr&gt;
 &lt;p&gt;Runtime是一套底层的C语言API. 实际上, 平时我们编写的Objective-C代码, 底层都是基于runtime实现的, 也就是说, 平时我们编写的Objective-C代码, 最终都是转成了底层的runtime代码(C语言代码). Runtime使得Objective-C这门语言的灵活性大大地提升. 有了runtime, 我们可以在应用运行的时候动态操作对象、类、方法, 也因为这个原因, 使得编程有了更多的可能性, 对于开发中遇到的一些比较棘手的问题, 往往用runtime可以优雅地解决, 接下来让我们看看runtime是为何可以如此牛x.&lt;/p&gt;
 &lt;h1 id=&quot;二-Objective-C中类和对象的本质&quot;&gt;&lt;a href=&quot;#二-Objective-C中类和对象的本质&quot; class=&quot;headerlink&quot; title=&quot;二. Objective-C中类和对象的本质&quot;&gt;&lt;/a&gt;&lt;strong&gt;二. Objective-C中类和对象的本质&lt;/strong&gt;&lt;/h1&gt;&lt;hr&gt;
 &lt;h3 id=&quot;1-对象-Instance&quot;&gt;&lt;a href=&quot;#1-对象-Instance&quot; class=&quot;headerlink&quot; title=&quot;1. 对象(Instance)&quot;&gt;&lt;/a&gt;&lt;strong&gt;1. 对象(Instance)&lt;/strong&gt;&lt;/h3&gt;&lt;p&gt;&lt;strong&gt;概念:&lt;/strong&gt;&lt;br&gt;对象的本质是一个结构体, 在&lt;code&gt;&amp;lt;objc/objc.h&amp;gt;&lt;/code&gt;中可以找到它的声明:&lt;br&gt;&lt;figure class=&quot;highlight objc&quot;&gt;&lt;table&gt;&lt;tr&gt;&lt;td class=&quot;code&quot;&gt;&lt;pre&gt;&lt;span class=&quot;line&quot;&gt;&lt;span class=&quot;keyword&quot;&gt;struct&lt;/span&gt; objc_object &amp;#123;&lt;/span&gt;&lt;br&gt;&lt;span class=&quot;line&quot;&gt;    Class isa  OBJC_ISA_&lt;span class=&quot;built_in&quot;&gt;AVAILABILITY&lt;/span&gt;;&lt;/span&gt;&lt;br&gt;&lt;span class=&quot;line&quot;&gt;&amp;#125;;&lt;/span&gt;&lt;br&gt;&lt;/pre&gt;&lt;/td&gt;&lt;/tr&gt;&lt;/table&gt;&lt;/figure&gt;&lt;/p&gt;
 &lt;ul&gt;
-&lt;li&gt;&lt;code&gt;isa&lt;/code&gt;: 指针指向对象所属的类(Class), Class结构体中包含了成员变量、对象方法等等.  &lt;/li&gt;
+&lt;li&gt;&lt;code&gt;isa&lt;/code&gt;: 指针指向对象所属的&lt;a href=&quot;#二.2&quot;&gt;类(Class)&lt;/a&gt;, Class结构体中包含了成员变量、对象方法等等.  &lt;/li&gt;
 &lt;/ul&gt;
 &lt;a id=&quot;more&quot;&gt;&lt;/a&gt;
 &lt;p&gt;&lt;strong&gt;补充:&lt;/strong&gt;&lt;br&gt;平常我们常常使用&lt;code&gt;id&lt;/code&gt;来作为对象的指针, 原因就是&lt;code&gt;&amp;lt;objc/objc.h&amp;gt;&lt;/code&gt;中定义&lt;code&gt;id&lt;/code&gt;类型来代替&lt;code&gt;struct objc_object *&lt;/code&gt;:&lt;br&gt;&lt;figure class=&quot;highlight objc&quot;&gt;&lt;table&gt;&lt;tr&gt;&lt;td class=&quot;code&quot;&gt;&lt;pre&gt;&lt;span class=&quot;line&quot;&gt;&lt;span class=&quot;keyword&quot;&gt;typedef&lt;/span&gt; &lt;span class=&quot;keyword&quot;&gt;struct&lt;/span&gt; objc_object *&lt;span class=&quot;keyword&quot;&gt;id&lt;/span&gt;;&lt;/span&gt;&lt;br&gt;&lt;/pre&gt;&lt;/td&gt;&lt;/tr&gt;&lt;/table&gt;&lt;/figure&gt;&lt;/p&gt;
 &lt;p&gt;&lt;br&gt;&lt;/p&gt;
-&lt;h3 id=&quot;2-类-Class&quot;&gt;&lt;a href=&quot;#2-类-Class&quot; class=&quot;headerlink&quot; title=&quot;2. 类(Class)&quot;&gt;&lt;/a&gt;&lt;strong&gt;2. 类(Class)&lt;/strong&gt;&lt;/h3&gt;&lt;p&gt;&lt;strong&gt;概念:&lt;/strong&gt;&lt;br&gt;类的本质是一个Class类型的对象. 在&lt;code&gt;&amp;lt;objc/runtime.h&amp;gt;&lt;/code&gt;中, 对类的声明如下:&lt;br&gt;&lt;figure class=&quot;highlight objc&quot;&gt;&lt;table&gt;&lt;tr&gt;&lt;td class=&quot;code&quot;&gt;&lt;pre&gt;&lt;span class=&quot;line&quot;&gt;&lt;span class=&quot;keyword&quot;&gt;struct&lt;/span&gt; objc_class &amp;#123;&lt;/span&gt;&lt;br&gt;&lt;span class=&quot;line&quot;&gt;    Class isa  OBJC_ISA_&lt;span class=&quot;built_in&quot;&gt;AVAILABILITY&lt;/span&gt;;&lt;/span&gt;&lt;br&gt;&lt;span class=&quot;line&quot;&gt;&lt;span class=&quot;preprocessor&quot;&gt;#if !__OBJC2__&lt;/span&gt;&lt;/span&gt;&lt;br&gt;&lt;span class=&quot;line&quot;&gt;    Class super_class                                        OBJC2_UN&lt;span class=&quot;built_in&quot;&gt;AVAILABLE&lt;/span&gt;;&lt;/span&gt;&lt;br&gt;&lt;span class=&quot;line&quot;&gt;    &lt;span class=&quot;keyword&quot;&gt;const&lt;/span&gt; &lt;span class=&quot;keyword&quot;&gt;char&lt;/span&gt; *name                                         OBJC2_UN&lt;span class=&quot;built_in&quot;&gt;AVAILABLE&lt;/span&gt;;&lt;/span&gt;&lt;br&gt;&lt;span class=&quot;line&quot;&gt;    &lt;span class=&quot;keyword&quot;&gt;long&lt;/span&gt; version                                             OBJC2_UN&lt;span class=&quot;built_in&quot;&gt;AVAILABLE&lt;/span&gt;;&lt;/span&gt;&lt;br&gt;&lt;span class=&quot;line&quot;&gt;    &lt;span class=&quot;keyword&quot;&gt;long&lt;/span&gt; info                                                OBJC2_UN&lt;span class=&quot;built_in&quot;&gt;AVAILABLE&lt;/span&gt;;&lt;/span&gt;&lt;br&gt;&lt;span class=&quot;line&quot;&gt;    &lt;span class=&quot;keyword&quot;&gt;long&lt;/span&gt; instance_size                                       OBJC2_UN&lt;span class=&quot;built_in&quot;&gt;AVAILABLE&lt;/span&gt;;&lt;/span&gt;&lt;br&gt;&lt;span class=&quot;line&quot;&gt;    &lt;span class=&quot;keyword&quot;&gt;struct&lt;/span&gt; objc_ivar_list *ivars                             OBJC2_UN&lt;span class=&quot;built_in&quot;&gt;AVAILABLE&lt;/span&gt;;&lt;/span&gt;&lt;br&gt;&lt;span class=&quot;line&quot;&gt;    &lt;span class=&quot;keyword&quot;&gt;struct&lt;/span&gt; objc_method_list **methodLists                    OBJC2_UN&lt;span class=&quot;built_in&quot;&gt;AVAILABLE&lt;/span&gt;;&lt;/span&gt;&lt;br&gt;&lt;span class=&quot;line&quot;&gt;    &lt;span class=&quot;keyword&quot;&gt;struct&lt;/span&gt; objc_cache *cache                                 OBJC2_UN&lt;span class=&quot;built_in&quot;&gt;AVAILABLE&lt;/span&gt;;&lt;/span&gt;&lt;br&gt;&lt;span class=&quot;line&quot;&gt;    &lt;span class=&quot;keyword&quot;&gt;struct&lt;/span&gt; objc_protocol_list *protocols                     OBJC2_UN&lt;span class=&quot;built_in&quot;&gt;AVAILABLE&lt;/span&gt;;&lt;/span&gt;&lt;br&gt;&lt;span class=&quot;line&quot;&gt;&lt;span class=&quot;preprocessor&quot;&gt;#endif&lt;/span&gt;&lt;/span&gt;&lt;br&gt;&lt;span class=&quot;line&quot;&gt;&amp;#125; OBJC2_UN&lt;span class=&quot;built_in&quot;&gt;AVAILABLE&lt;/span&gt;;&lt;/span&gt;&lt;br&gt;&lt;/pre&gt;&lt;/td&gt;&lt;/tr&gt;&lt;/table&gt;&lt;/figure&gt;&lt;/p&gt;
+&lt;h3 id=&quot;2-类-Class&quot;&gt;&lt;a href=&quot;#2-类-Class&quot; class=&quot;headerlink&quot; title=&quot; 2. 类(Class) &quot;&gt;&lt;/a&gt;&lt;span id=&quot;二.2&quot;&gt; &lt;strong&gt;2. 类(Class)&lt;/strong&gt; &lt;/span&gt;&lt;/h3&gt;&lt;p&gt;&lt;strong&gt;概念:&lt;/strong&gt;&lt;br&gt;类的本质是一个Class类型的对象. 在&lt;code&gt;&amp;lt;objc/runtime.h&amp;gt;&lt;/code&gt;中, 对类的声明如下:&lt;br&gt;&lt;figure class=&quot;highlight objc&quot;&gt;&lt;table&gt;&lt;tr&gt;&lt;td class=&quot;code&quot;&gt;&lt;pre&gt;&lt;span class=&quot;line&quot;&gt;&lt;span class=&quot;keyword&quot;&gt;struct&lt;/span&gt; objc_class &amp;#123;&lt;/span&gt;&lt;br&gt;&lt;span class=&quot;line&quot;&gt;    Class isa  OBJC_ISA_&lt;span class=&quot;built_in&quot;&gt;AVAILABILITY&lt;/span&gt;;&lt;/span&gt;&lt;br&gt;&lt;span class=&quot;line&quot;&gt;&lt;span class=&quot;preprocessor&quot;&gt;#if !__OBJC2__&lt;/span&gt;&lt;/span&gt;&lt;br&gt;&lt;span class=&quot;line&quot;&gt;    Class super_class                                        OBJC2_UN&lt;span class=&quot;built_in&quot;&gt;AVAILABLE&lt;/span&gt;;&lt;/span&gt;&lt;br&gt;&lt;span class=&quot;line&quot;&gt;    &lt;span class=&quot;keyword&quot;&gt;const&lt;/span&gt; &lt;span class=&quot;keyword&quot;&gt;char&lt;/span&gt; *name                                         OBJC2_UN&lt;span class=&quot;built_in&quot;&gt;AVAILABLE&lt;/span&gt;;&lt;/span&gt;&lt;br&gt;&lt;span class=&quot;line&quot;&gt;    &lt;span class=&quot;keyword&quot;&gt;long&lt;/span&gt; version                                             OBJC2_UN&lt;span class=&quot;built_in&quot;&gt;AVAILABLE&lt;/span&gt;;&lt;/span&gt;&lt;br&gt;&lt;span class=&quot;line&quot;&gt;    &lt;span class=&quot;keyword&quot;&gt;long&lt;/span&gt; info                                                OBJC2_UN&lt;span class=&quot;built_in&quot;&gt;AVAILABLE&lt;/span&gt;;&lt;/span&gt;&lt;br&gt;&lt;span class=&quot;line&quot;&gt;    &lt;span class=&quot;keyword&quot;&gt;long&lt;/span&gt; instance_size                                       OBJC2_UN&lt;span class=&quot;built_in&quot;&gt;AVAILABLE&lt;/span&gt;;&lt;/span&gt;&lt;br&gt;&lt;span class=&quot;line&quot;&gt;    &lt;span class=&quot;keyword&quot;&gt;struct&lt;/span&gt; objc_ivar_list *ivars                             OBJC2_UN&lt;span class=&quot;built_in&quot;&gt;AVAILABLE&lt;/span&gt;;&lt;/span&gt;&lt;br&gt;&lt;span class=&quot;line&quot;&gt;    &lt;span class=&quot;keyword&quot;&gt;struct&lt;/span&gt; objc_method_list **methodLists                    OBJC2_UN&lt;span class=&quot;built_in&quot;&gt;AVAILABLE&lt;/span&gt;;&lt;/span&gt;&lt;br&gt;&lt;span class=&quot;line&quot;&gt;    &lt;span class=&quot;keyword&quot;&gt;struct&lt;/span&gt; objc_cache *cache                                 OBJC2_UN&lt;span class=&quot;built_in&quot;&gt;AVAILABLE&lt;/span&gt;;&lt;/span&gt;&lt;br&gt;&lt;span class=&quot;line&quot;&gt;    &lt;span class=&quot;keyword&quot;&gt;struct&lt;/span&gt; objc_protocol_list *protocols                     OBJC2_UN&lt;span class=&quot;built_in&quot;&gt;AVAILABLE&lt;/span&gt;;&lt;/span&gt;&lt;br&gt;&lt;span class=&quot;line&quot;&gt;&lt;span class=&quot;preprocessor&quot;&gt;#endif&lt;/span&gt;&lt;/span&gt;&lt;br&gt;&lt;span class=&quot;line&quot;&gt;&amp;#125; OBJC2_UN&lt;span class=&quot;built_in&quot;&gt;AVAILABLE&lt;/span&gt;;&lt;/span&gt;&lt;br&gt;&lt;/pre&gt;&lt;/td&gt;&lt;/tr&gt;&lt;/table&gt;&lt;/figure&gt;&lt;/p&gt;
 &lt;ul&gt;
-&lt;li&gt;&lt;code&gt;isa&lt;/code&gt;: 指针指向Class对象的元类(MetaClass), 元类中记录了类方法列表.&lt;/li&gt;
+&lt;li&gt;&lt;code&gt;isa&lt;/code&gt;: 指针指向Class对象的&lt;a href=&quot;#二.3&quot;&gt;元类(MetaClass)&lt;/a&gt;, 元类中记录了类方法列表.&lt;/li&gt;
 &lt;li&gt;&lt;code&gt;super_class&lt;/code&gt;: 指针指向父类. 根类(NSObject)中的super_class指针为空.&lt;/li&gt;
 &lt;li&gt;&lt;code&gt;name&lt;/code&gt;: 类名&lt;/li&gt;
 &lt;li&gt;&lt;code&gt;version&lt;/code&gt;: 类的版本, 默认为0&lt;/li&gt;
@@ -47,7 +47,7 @@
 &lt;/ul&gt;
 &lt;p&gt;&lt;strong&gt;补充:&lt;/strong&gt;&lt;br&gt;就像&lt;code&gt;id&lt;/code&gt;类型代表对象指针一样, &lt;code&gt;&amp;lt;objc/objc.h&amp;gt;&lt;/code&gt;中定义&lt;code&gt;Class&lt;/code&gt;类型来代替&lt;code&gt;struct objc_class *&lt;/code&gt;:&lt;br&gt;&lt;figure class=&quot;highlight objc&quot;&gt;&lt;table&gt;&lt;tr&gt;&lt;td class=&quot;code&quot;&gt;&lt;pre&gt;&lt;span class=&quot;line&quot;&gt;&lt;span class=&quot;keyword&quot;&gt;typedef&lt;/span&gt; &lt;span class=&quot;keyword&quot;&gt;struct&lt;/span&gt; objc_class *Class;&lt;/span&gt;&lt;br&gt;&lt;/pre&gt;&lt;/td&gt;&lt;/tr&gt;&lt;/table&gt;&lt;/figure&gt;&lt;/p&gt;
 &lt;p&gt;&lt;br&gt;&lt;/p&gt;
-&lt;h3 id=&quot;3-元类-MetaClass&quot;&gt;&lt;a href=&quot;#3-元类-MetaClass&quot; class=&quot;headerlink&quot; title=&quot;3. 元类(MetaClass)&quot;&gt;&lt;/a&gt;&lt;strong&gt;3. 元类(MetaClass)&lt;/strong&gt;&lt;/h3&gt;&lt;p&gt;&lt;strong&gt;概念:&lt;/strong&gt;&lt;br&gt;元类也是一个类, 每个类都有对应的一个元类. 可以通过类中的isa指针找到其对应的元类. 虽然在runtime相关头文件中没有找到MetaClass的声明, 但是在&lt;a href=&quot;http://www.sealiesoftware.com/blog/archive/2009/04/14/objc_explain_Classes_and_metaclasses.html&quot; target=&quot;_blank&quot; rel=&quot;external&quot;&gt;这个博客&lt;/a&gt;中对元类的与类的关系解释中, 我们可以推测出元类结构体和类是相似的, 包含(但不仅有)如下成员:&lt;/p&gt;
+&lt;h3 id=&quot;3-元类-MetaClass&quot;&gt;&lt;a href=&quot;#3-元类-MetaClass&quot; class=&quot;headerlink&quot; title=&quot; 3. 元类(MetaClass) &quot;&gt;&lt;/a&gt;&lt;span id=&quot;二.3&quot;&gt; &lt;strong&gt;3. 元类(MetaClass)&lt;/strong&gt; &lt;/span&gt;&lt;/h3&gt;&lt;p&gt;&lt;strong&gt;概念:&lt;/strong&gt;&lt;br&gt;元类也是一个类, 每个类都有对应的一个元类. 可以通过类中的isa指针找到其对应的元类. 虽然在runtime相关头文件中没有找到MetaClass的声明, 但是在&lt;a href=&quot;http://www.sealiesoftware.com/blog/archive/2009/04/14/objc_explain_Classes_and_metaclasses.html&quot; target=&quot;_blank&quot; rel=&quot;external&quot;&gt;这个博客&lt;/a&gt;中对元类的与类的关系解释中, 我们可以推测出元类结构体和类是相似的, 包含(但不仅有)如下成员:&lt;/p&gt;
 &lt;ul&gt;
 &lt;li&gt;&lt;code&gt;isa&lt;/code&gt;: 指针都是指向根元类(NSObject的元类), 即使是根元类本身的isa也是指向自己&lt;/li&gt;
 &lt;li&gt;&lt;code&gt;super_class&lt;/code&gt;: 指针指向父元类, 根元类指向根类(NSObject)&lt;/li&gt;
@@ -86,22 +86,22 @@
 &lt;h1 id=&quot;二-Objective-C中类和对象的本质&quot;&gt;&lt;a href=&quot;#二-Objective-C中类和对象的本质&quot; class=&quot;headerlink&quot; title=&quot;二. Objective-C中类和对象的本质&quot;&gt;&lt;/a&gt;&lt;strong&gt;二. Objective-C中类和对象的本质&lt;/strong&gt;&lt;/h1&gt;&lt;hr&gt;
 &lt;h3 id=&quot;1-对象-Instance&quot;&gt;&lt;a href=&quot;#1-对象-Instance&quot; class=&quot;headerlink&quot; title=&quot;1. 对象(Instance)&quot;&gt;&lt;/a&gt;&lt;strong&gt;1. 对象(Instance)&lt;/strong&gt;&lt;/h3&gt;&lt;p&gt;&lt;strong&gt;概念:&lt;/strong&gt;&lt;br&gt;对象的本质是一个结构体, 在&lt;code&gt;&amp;lt;objc/objc.h&amp;gt;&lt;/code&gt;中可以找到它的声明:&lt;br&gt;&lt;figure class=&quot;highlight objc&quot;&gt;&lt;table&gt;&lt;tr&gt;&lt;td class=&quot;code&quot;&gt;&lt;pre&gt;&lt;span class=&quot;line&quot;&gt;&lt;span class=&quot;keyword&quot;&gt;struct&lt;/span&gt; objc_object &amp;#123;&lt;/span&gt;&lt;br&gt;&lt;span class=&quot;line&quot;&gt;    Class isa  OBJC_ISA_&lt;span class=&quot;built_in&quot;&gt;AVAILABILITY&lt;/span&gt;;&lt;/span&gt;&lt;br&gt;&lt;span class=&quot;line&quot;&gt;&amp;#125;;&lt;/span&gt;&lt;br&gt;&lt;/pre&gt;&lt;/td&gt;&lt;/tr&gt;&lt;/table&gt;&lt;/figure&gt;&lt;/p&gt;
 &lt;ul&gt;
-&lt;li&gt;&lt;code&gt;isa&lt;/code&gt;: 指针指向对象所属的类(Class), Class结构体中包含了成员变量、对象方法等等.  &lt;/li&gt;
+&lt;li&gt;&lt;code&gt;isa&lt;/code&gt;: 指针指向对象所属的&lt;a href=&quot;#二.2&quot;&gt;类(Class)&lt;/a&gt;, Class结构体中包含了成员变量、对象方法等等.  &lt;/li&gt;
 &lt;/ul&gt;
     
     </summary>
     
-      <category term="iOS开发" scheme="http://yoursite.com/categories/iOS%E5%BC%80%E5%8F%91/"/>
+      <category term="iOS开发" scheme="http://zzyspace.github.io/categories/iOS%E5%BC%80%E5%8F%91/"/>
     
     
-      <category term="runtime" scheme="http://yoursite.com/tags/runtime/"/>
+      <category term="runtime" scheme="http://zzyspace.github.io/tags/runtime/"/>
     
   </entry>
   
   <entry>
     <title>【iOS开发】Apple Pay 的集成</title>
-    <link href="http://yoursite.com/2016/02/18/apple-pay/"/>
-    <id>http://yoursite.com/2016/02/18/apple-pay/</id>
+    <link href="http://zzyspace.github.io/2016/02/18/apple-pay/"/>
+    <id>http://zzyspace.github.io/2016/02/18/apple-pay/</id>
     <published>2016-02-18T13:19:14.000Z</published>
     <updated>2016-03-19T06:38:57.000Z</updated>
     
@@ -139,17 +139,17 @@
     
     </summary>
     
-      <category term="iOS开发" scheme="http://yoursite.com/categories/iOS%E5%BC%80%E5%8F%91/"/>
+      <category term="iOS开发" scheme="http://zzyspace.github.io/categories/iOS%E5%BC%80%E5%8F%91/"/>
     
     
-      <category term="Apple Pay" scheme="http://yoursite.com/tags/Apple-Pay/"/>
+      <category term="Apple Pay" scheme="http://zzyspace.github.io/tags/Apple-Pay/"/>
     
   </entry>
   
   <entry>
     <title>【iOS开发】Associated Objects-为分类添加属性</title>
-    <link href="http://yoursite.com/2016/01/25/associated-objects/"/>
-    <id>http://yoursite.com/2016/01/25/associated-objects/</id>
+    <link href="http://zzyspace.github.io/2016/01/25/associated-objects/"/>
+    <id>http://zzyspace.github.io/2016/01/25/associated-objects/</id>
     <published>2016-01-25T07:06:34.000Z</published>
     <updated>2016-03-19T06:38:57.000Z</updated>
     
@@ -219,17 +219,17 @@
     
     </summary>
     
-      <category term="iOS开发" scheme="http://yoursite.com/categories/iOS%E5%BC%80%E5%8F%91/"/>
+      <category term="iOS开发" scheme="http://zzyspace.github.io/categories/iOS%E5%BC%80%E5%8F%91/"/>
     
     
-      <category term="runtime" scheme="http://yoursite.com/tags/runtime/"/>
+      <category term="runtime" scheme="http://zzyspace.github.io/tags/runtime/"/>
     
   </entry>
   
   <entry>
     <title>【iOS Tip】UIImage的renderingMode</title>
-    <link href="http://yoursite.com/2015/03/29/uiimage-rendering-mode/"/>
-    <id>http://yoursite.com/2015/03/29/uiimage-rendering-mode/</id>
+    <link href="http://zzyspace.github.io/2015/03/29/uiimage-rendering-mode/"/>
+    <id>http://zzyspace.github.io/2015/03/29/uiimage-rendering-mode/</id>
     <published>2015-03-29T06:32:22.000Z</published>
     <updated>2016-03-19T06:38:57.000Z</updated>
     
@@ -260,10 +260,10 @@
     
     </summary>
     
-      <category term="iOS Tips" scheme="http://yoursite.com/categories/iOS-Tips/"/>
+      <category term="iOS Tips" scheme="http://zzyspace.github.io/categories/iOS-Tips/"/>
     
     
-      <category term="UI" scheme="http://yoursite.com/tags/UI/"/>
+      <category term="UI" scheme="http://zzyspace.github.io/tags/UI/"/>
     
   </entry>
   
