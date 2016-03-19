@@ -140,7 +140,7 @@ body {
   font-family: "微软雅黑", "HelveticaNeue-Light", "Helvetica Neue Light", "Helvetica Neue", Helvetica, Arial, sans-serif;
   font-size: 16px;
   background: #fff;
-  color: rgba(0,0,0,0.6);
+  color: rgba(0,0,0,0.7);
   -webkit-overflow-scrolling: touch;
 }
 h1,
@@ -149,13 +149,13 @@ h3 {
   display: block;
 }
 h1 {
-  font-size: 1.5em;
+  font-size: 1.8em;
 }
 h2 {
-  font-size: 1.3em;
+  font-size: 1.6em;
 }
 h3 {
-  font-size: 1.1em;
+  font-size: 1.4em;
 }
 h4,
 h5,
@@ -932,12 +932,12 @@ a {
   color: #c8c8c8;
 }
 .article-title {
-  color: #696969;
+  color: #333;
   margin-left: 0px;
   font-weight: 300;
   line-height: 35px;
   margin-bottom: 20px;
-  font-size: 26px;
+  font-size: 30px;
   -webkit-transition: color 0.3s;
   -moz-transition: color 0.3s;
   -o-transition: color 0.3s;
@@ -981,13 +981,16 @@ a {
 }
 .article-entry p code,
 .article-entry li code {
-  padding: 1px 3px;
+  padding: 2px 3px;
   margin: 0 3px;
-  background: #ddd;
-  border: 1px solid #ccc;
+  background: #f6f6f6;
+  border: 1px solid #ddd;
+  -webkit-border-radius: 4px;
+  border-radius: 4px;
   font-family: Menlo, Monaco, "Andale Mono", "lucida console", "Courier New", monospace;
   word-wrap: break-word;
   font-size: 14px;
+  color: #c82850;
 }
 .article-entry blockquote {
   background: #ddd;
@@ -1010,7 +1013,7 @@ a {
   border: 1px solid #999;
   -webkit-border-radius: 10px;
   border-radius: 10px;
-  background: #aaa;
+  background: #999;
   display: inline-block;
   margin-right: 10px;
   float: left;
@@ -1032,13 +1035,12 @@ a {
 }
 .article-entry h1 {
   margin-top: 30px;
+  color: #393939;
 }
 .article-entry h2 {
   margin-top: 20px;
   font-weight: 300;
-  color: #574c4c;
-  padding-bottom: 5px;
-  border-bottom: 1px solid #ddd;
+  color: #393939;
 }
 .article-entry h3,
 .article-entry h4,
@@ -1046,9 +1048,7 @@ a {
 .article-entry h6 {
   margin-top: 20px;
   font-weight: 300;
-  color: #574c4c;
-  padding-bottom: 5px;
-  border-bottom: 1px solid #ddd;
+  color: #393939;
 }
 .article-entry video {
   max-width: 100%;

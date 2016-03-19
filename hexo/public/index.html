@@ -223,8 +223,10 @@ var _hmt = _hmt || [];
     
     <div class="article-entry" itemprop="articleBody">
       
-        <h1 id="一-Runtime"><a href="#一-Runtime" class="headerlink" title="一. Runtime"></a><strong>一. Runtime</strong></h1><p>Runtime是一套底层的C语言API. 实际上, 平时我们编写的Objective-C代码, 底层都是基于runtime实现的, 也就是说, 平时我们编写的Objective-C代码, 最终都是转成了底层的runtime代码(C语言代码). Runtime使得Objective-C这门语言的灵活性大大地提升. 有了runtime, 我们可以在应用运行的时候动态操作对象、类、方法, 也因为这个原因, 使得编程有了更多的可能性, 对于开发中遇到的一些比较棘手的问题, 往往用runtime可以优雅地解决, 接下来让我们看看runtime是为何可以如此牛x.</p>
-<h1 id="二-Objective-C中类和对象的本质"><a href="#二-Objective-C中类和对象的本质" class="headerlink" title="二. Objective-C中类和对象的本质"></a><strong>二. Objective-C中类和对象的本质</strong></h1><h3 id="1-对象-Instance"><a href="#1-对象-Instance" class="headerlink" title="1. 对象(Instance)"></a><strong>1. 对象(Instance)</strong></h3><p><strong>概念:</strong><br>对象的本质是一个结构体, 在<code>&lt;objc/objc.h&gt;</code>中可以找到它的声明:<br><figure class="highlight objc"><table><tr><td class="code"><pre><span class="line"><span class="keyword">struct</span> objc_object &#123;</span><br><span class="line">    Class isa  OBJC_ISA_<span class="built_in">AVAILABILITY</span>;</span><br><span class="line">&#125;;</span><br></pre></td></tr></table></figure></p>
+        <h1 id="一-Runtime"><a href="#一-Runtime" class="headerlink" title="一. Runtime"></a><strong>一. Runtime</strong></h1><hr>
+<p>Runtime是一套底层的C语言API. 实际上, 平时我们编写的Objective-C代码, 底层都是基于runtime实现的, 也就是说, 平时我们编写的Objective-C代码, 最终都是转成了底层的runtime代码(C语言代码). Runtime使得Objective-C这门语言的灵活性大大地提升. 有了runtime, 我们可以在应用运行的时候动态操作对象、类、方法, 也因为这个原因, 使得编程有了更多的可能性, 对于开发中遇到的一些比较棘手的问题, 往往用runtime可以优雅地解决, 接下来让我们看看runtime是为何可以如此牛x.</p>
+<h1 id="二-Objective-C中类和对象的本质"><a href="#二-Objective-C中类和对象的本质" class="headerlink" title="二. Objective-C中类和对象的本质"></a><strong>二. Objective-C中类和对象的本质</strong></h1><hr>
+<h3 id="1-对象-Instance"><a href="#1-对象-Instance" class="headerlink" title="1. 对象(Instance)"></a><strong>1. 对象(Instance)</strong></h3><p><strong>概念:</strong><br>对象的本质是一个结构体, 在<code>&lt;objc/objc.h&gt;</code>中可以找到它的声明:<br><figure class="highlight objc"><table><tr><td class="code"><pre><span class="line"><span class="keyword">struct</span> objc_object &#123;</span><br><span class="line">    Class isa  OBJC_ISA_<span class="built_in">AVAILABILITY</span>;</span><br><span class="line">&#125;;</span><br></pre></td></tr></table></figure></p>
 <ul>
 <li><code>isa</code>: 指针指向对象所属的类(Class), Class结构体中包含了成员变量、对象方法等等.  </li>
 </ul>

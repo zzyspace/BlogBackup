@@ -21,3 +21,10 @@
 
 3. 字体高亮
 source/css/_partial/highlight.styl
+
+4. Markdown样式
+source/css/style.styl
+source/css/_partial/article.styl
+
+5. 博客搬家, hexo d 出现index.lock错误解决方法:
+删除.deploy_git

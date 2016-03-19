@@ -5,9 +5,11 @@ tags: [runtime]
 ---
 
 # **一. Runtime**
+---
 Runtime是一套底层的C语言API. 实际上, 平时我们编写的Objective-C代码, 底层都是基于runtime实现的, 也就是说, 平时我们编写的Objective-C代码, 最终都是转成了底层的runtime代码(C语言代码). Runtime使得Objective-C这门语言的灵活性大大地提升. 有了runtime, 我们可以在应用运行的时候动态操作对象、类、方法, 也因为这个原因, 使得编程有了更多的可能性, 对于开发中遇到的一些比较棘手的问题, 往往用runtime可以优雅地解决, 接下来让我们看看runtime是为何可以如此牛x.
 
 # **二. Objective-C中类和对象的本质**
+---
 ### **1. 对象(Instance)**
 **概念:**
 对象的本质是一个结构体, 在`<objc/objc.h>`中可以找到它的声明:
@@ -79,6 +81,7 @@ typedef struct objc_class *Class;
 </div>
 
 # **三. 消息机制**
+---
 我们平常所说的"方法调用", 其实是不准确的, 因为在Objective-C中, 所谓的"方法调用"本质是消息分发. 比如下面这个"方法调用":
 ```objc
 [receiver message]

@@ -1,36 +1,49 @@
 module.exports = function(hljs) {
   var BACKTICK_ESCAPE = {
-    begin: /`[\s\S]/
+    className: 'escape',
+    begin: '`[\\s\\S]'
   };
+  var COMMENTS = hljs.COMMENT(
+    ';',
+    '$',
+    {
+      relevance: 0
+    }
+  );
+  var BUILT_IN = [
+    {
+      className: 'built_in',
+      begin: 'A_[a-zA-Z0-9]+'
+    },
+    {
+      className: 'built_in',
+      beginKeywords: 'ComSpec Clipboard ClipboardAll ErrorLevel'
+    }
+  ];
 
   return {
     case_insensitive: true,
     keywords: {
       keyword: 'Break Continue Else Gosub If Loop Return While',
-      literal: 'A|0 true false NOT AND OR',
-      built_in: 'ComSpec Clipboard ClipboardAll ErrorLevel',
+      literal: 'A true false NOT AND OR'
     },
-    contains: [
-      {
-        className: 'built_in',
-        begin: 'A_[a-zA-Z0-9]+'
-      },
+    contains: BUILT_IN.concat([
       BACKTICK_ESCAPE,
       hljs.inherit(hljs.QUOTE_STRING_MODE, {contains: [BACKTICK_ESCAPE]}),
-      hljs.COMMENT(';', '$', {relevance: 0}),
+      COMMENTS,
       {
         className: 'number',
         begin: hljs.NUMBER_RE,
         relevance: 0
       },
       {
-        className: 'variable', // FIXME
+        className: 'var_expand', // FIXME
         begin: '%', end: '%',
         illegal: '\\n',
         contains: [BACKTICK_ESCAPE]
       },
       {
-        className: 'symbol',
+        className: 'label',
         contains: [BACKTICK_ESCAPE],
         variants: [
           {begin: '^[^\\n";]+::(?!=)'},
@@ -40,8 +53,9 @@ module.exports = function(hljs) {
       },
       {
         // consecutive commas, not for highlighting but just for relevance
-        begin: ',\\s*,'
+        begin: ',\\s*,',
+        relevance: 10
       }
-    ]
+    ])
   }
 };
