@@ -5,7 +5,7 @@
   <link href="/atom.xml" rel="self"/>
   
   <link href="http://zzyspace.github.io/"/>
-  <updated>2016-03-19T15:43:34.000Z</updated>
+  <updated>2016-03-20T08:27:09.000Z</updated>
   <id>http://zzyspace.github.io/</id>
   
   <author>
@@ -14,6 +14,70 @@
   </author>
   
   <generator uri="http://hexo.io/">Hexo</generator>
+  
+  <entry>
+    <title>【iOS Tip】提高Xcode编译速度</title>
+    <link href="http://zzyspace.github.io/2016/03/20/reduce-xcode-build-times/"/>
+    <id>http://zzyspace.github.io/2016/03/20/reduce-xcode-build-times/</id>
+    <published>2016-03-20T07:46:56.000Z</published>
+    <updated>2016-03-20T08:27:09.000Z</updated>
+    
+    <content type="html">&lt;p&gt;&lt;img src=&quot;/img/reduce-xcode-build-times/title.png&quot; alt=&quot;&quot;&gt;&lt;br&gt;平常在调试工程的时候, 特别是大工程, 浪费在编译上的时间加起来也是个不小的数目. 我戏成它为&lt;strong&gt;带薪编译&lt;/strong&gt;. 带薪编译一来呢浪费公司资源, 二来使得开发效率大大降低. 所以提高Xcode的编译速度还是非常有必要的. 关于通过更改一些Xcode的配置来提升编译速度&lt;a href=&quot;http://blog.csdn.net/zhaoxy_thu/article/details/30073485?utm_source=tuicool&amp;amp;utm_medium=referral&quot; target=&quot;_blank&quot; rel=&quot;external&quot;&gt;这篇文章&lt;/a&gt;已经列举除了几个不错的方法, 这里就不再多说.&lt;/p&gt;
+&lt;p&gt;这篇文章主要讲的是从&lt;strong&gt;硬件方面&lt;/strong&gt;来提升Xcode的编译速度. 因为对比了现在日常使用的Mac mini和MacBook Pro, 在CPU和内存基本没有差别的情况下, 相比MacBook Pro的SSD, Mac mini的机械硬盘的表现实在是惨不忍睹. 这也是拖慢了编译速度的主要元凶. &lt;del&gt;所以, 去换一个SSD吧.(Excuse me?)&lt;/del&gt;&lt;/p&gt;
+&lt;p&gt;本文所讲的方法理论上编译速度是可以超过SSD的. 在说具体方法之前, 先来了解一下拖慢编译速度的元凶Derived Data:&lt;/p&gt;
+&lt;h1 id=&quot;Derived-Data&quot;&gt;&lt;a href=&quot;#Derived-Data&quot; class=&quot;headerlink&quot; title=&quot;Derived Data&quot;&gt;&lt;/a&gt;&lt;strong&gt;Derived Data&lt;/strong&gt;&lt;/h1&gt;&lt;hr&gt;
+&lt;p&gt;Derived Data是Xcode自动生成的一些派生数据的文件夹. 里面包含有一些索引文件、Log、&lt;strong&gt;编译时产生的文件&lt;/strong&gt;. 编译时候产生的文件包括:&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;第三方库的&lt;code&gt;.a&lt;/code&gt;文件&lt;/li&gt;
+&lt;li&gt;应用程序&lt;code&gt;.app&lt;/code&gt;文件&lt;/li&gt;
+&lt;li&gt;保存函数地址映射信息的中转文件&lt;code&gt;.dSYM&lt;/code&gt;文件&lt;/li&gt;
+&lt;/ul&gt;
+&lt;p&gt;所以, 写这些数据的时候, 写得越快, 编译的时间也就能越少. 如何让数据写入得更快呢? 可以把Derived Data的路径换到内存中. 换句话说, 将Derived Data的读写从硬盘移动到内存中.&lt;/p&gt;
+&lt;a id=&quot;more&quot;&gt;&lt;/a&gt;
+&lt;h1 id=&quot;在内存中创建虚拟磁盘&quot;&gt;&lt;a href=&quot;#在内存中创建虚拟磁盘&quot; class=&quot;headerlink&quot; title=&quot;在内存中创建虚拟磁盘&quot;&gt;&lt;/a&gt;&lt;strong&gt;在内存中创建虚拟磁盘&lt;/strong&gt;&lt;/h1&gt;&lt;hr&gt;
+&lt;p&gt;What? 内存当硬盘用? 是的你没听错, 其实OS X系统是允许在内存中创建一个可以高速存取的虚拟磁盘的. 通过以下两种方法可以实现在内存中创建虚拟磁盘:&lt;/p&gt;
+&lt;h3 id=&quot;1-iRamDisk&quot;&gt;&lt;a href=&quot;#1-iRamDisk&quot; class=&quot;headerlink&quot; title=&quot;1. iRamDisk&quot;&gt;&lt;/a&gt;&lt;strong&gt;1. iRamDisk&lt;/strong&gt;&lt;/h3&gt;&lt;p&gt;在AppStore上找到了这么一个神器, 叫&lt;a href=&quot;https://itunes.apple.com/us/app/iramdisk/id492615400?mt=12&quot; target=&quot;_blank&quot; rel=&quot;external&quot;&gt;iRamDisk&lt;/a&gt;, 14.99刀. 使用它可以非常简单地创建一个Xcode的DerivedData的虚拟磁盘, 如下. 都是图形化界面, 很好操作, 就不多赘述了.&lt;br&gt;&lt;img src=&quot;/img/reduce-xcode-build-times/iramdisk.png&quot; alt=&quot;&quot;&gt;&lt;br&gt;这里分享一个&lt;a href=&quot;http://pan.baidu.com/s/1hqLLc3a&quot; target=&quot;_blank&quot; rel=&quot;external&quot;&gt;破解版&lt;/a&gt;(提取码&lt;code&gt;9u38&lt;/code&gt;)仅供学习交流使用, 建议购买正版支持开发者.&lt;/p&gt;
+&lt;h3 id=&quot;2-命令行创建&quot;&gt;&lt;a href=&quot;#2-命令行创建&quot; class=&quot;headerlink&quot; title=&quot;2. 命令行创建&quot;&gt;&lt;/a&gt;&lt;strong&gt;2. 命令行创建&lt;/strong&gt;&lt;/h3&gt;&lt;p&gt;&lt;strong&gt;① 创建RAM disk并分配空间&lt;/strong&gt;&lt;br&gt;size的计算公式 &lt;code&gt;size = 需要分配的空间(M) * 1024 * 1024 / 512&lt;/code&gt;. 例如下面分配的空间为2GB: &lt;code&gt;2048 * 1024 * 1024 / 512 = 4194304&lt;/code&gt;.&lt;br&gt;&lt;figure class=&quot;highlight&quot;&gt;&lt;table&gt;&lt;tr&gt;&lt;td class=&quot;code&quot;&gt;&lt;pre&gt;&lt;span class=&quot;line&quot;&gt;$ hdid -nomount ram://4194304&lt;/span&gt;&lt;br&gt;&lt;/pre&gt;&lt;/td&gt;&lt;/tr&gt;&lt;/table&gt;&lt;/figure&gt;&lt;/p&gt;
+&lt;p&gt;执行完这个命令之后, 终端会输出&lt;code&gt;/dev/diskN&lt;/code&gt;, &lt;code&gt;N&lt;/code&gt;是一个数字, 记下它, 后面两步有用.&lt;/p&gt;
+&lt;p&gt;&lt;strong&gt;② 在RAM disk上创建HFS&lt;/strong&gt;&lt;br&gt;给虚拟磁盘创建名字, 如下为&lt;code&gt;DerivedData&lt;/code&gt;, 并将&lt;code&gt;rdiskN&lt;/code&gt;的&lt;code&gt;N&lt;/code&gt;改为第一步中的&lt;code&gt;N&lt;/code&gt;的数字. (&lt;em&gt;注意: &lt;code&gt;rdiskN&lt;/code&gt;不要错写成&lt;code&gt;diskN&lt;/code&gt;&lt;/em&gt;)&lt;br&gt;&lt;figure class=&quot;highlight vim&quot;&gt;&lt;table&gt;&lt;tr&gt;&lt;td class=&quot;code&quot;&gt;&lt;pre&gt;&lt;span class=&quot;line&quot;&gt;$ newfs_hfs -&lt;span class=&quot;keyword&quot;&gt;v&lt;/span&gt; DerivedData /dev/rdiskN&lt;/span&gt;&lt;br&gt;&lt;/pre&gt;&lt;/td&gt;&lt;/tr&gt;&lt;/table&gt;&lt;/figure&gt;&lt;/p&gt;
+&lt;p&gt;&lt;strong&gt;③ 把虚拟磁盘安装到Xcode的DerivedData目录下&lt;/strong&gt;&lt;br&gt;如下命令, 同样把&lt;code&gt;diskN&lt;/code&gt;中的&lt;code&gt;N&lt;/code&gt;替换成第一步中&lt;code&gt;N&lt;/code&gt;的数字. (&lt;em&gt;注意: 此时是&lt;code&gt;diskN&lt;/code&gt;&lt;/em&gt;)&lt;br&gt;&lt;figure class=&quot;highlight vim&quot;&gt;&lt;table&gt;&lt;tr&gt;&lt;td class=&quot;code&quot;&gt;&lt;pre&gt;&lt;span class=&quot;line&quot;&gt;$ diskutil mount -mountPoint ~/Library/Developer/Xcode/DerivedData /dev/diskN&lt;/span&gt;&lt;br&gt;&lt;/pre&gt;&lt;/td&gt;&lt;/tr&gt;&lt;/table&gt;&lt;/figure&gt;&lt;/p&gt;
+&lt;p&gt;这样就大功告成了! 不出意外就可以在桌面(或者Finder)上看到&lt;code&gt;DerivedData&lt;/code&gt;这个盘. 如果不要虚拟磁盘了, 可以在Finder中推出这个磁盘, 或者执行以下命令&lt;strong&gt;卸载&lt;/strong&gt;这个磁盘:&lt;br&gt;&lt;figure class=&quot;highlight vim&quot;&gt;&lt;table&gt;&lt;tr&gt;&lt;td class=&quot;code&quot;&gt;&lt;pre&gt;&lt;span class=&quot;line&quot;&gt;$ diskutil umount /dev/diskN&lt;/span&gt;&lt;br&gt;&lt;/pre&gt;&lt;/td&gt;&lt;/tr&gt;&lt;/table&gt;&lt;/figure&gt;&lt;/p&gt;
+&lt;h1 id=&quot;总结&quot;&gt;&lt;a href=&quot;#总结&quot; class=&quot;headerlink&quot; title=&quot;总结&quot;&gt;&lt;/a&gt;&lt;strong&gt;总结&lt;/strong&gt;&lt;/h1&gt;&lt;hr&gt;
+&lt;h3 id=&quot;1-优点&quot;&gt;&lt;a href=&quot;#1-优点&quot; class=&quot;headerlink&quot; title=&quot;1. 优点:&quot;&gt;&lt;/a&gt;&lt;strong&gt;1. 优点&lt;/strong&gt;:&lt;/h3&gt;&lt;ul&gt;
+&lt;li&gt;编译速度加快.&lt;/li&gt;
+&lt;li&gt;创建虚拟磁盘后, 并不是直接占用掉所有分配的空间, 而是根据虚拟磁盘中的文件总大小来逐渐占用内存.&lt;/li&gt;
+&lt;/ul&gt;
+&lt;h3 id=&quot;2-缺点&quot;&gt;&lt;a href=&quot;#2-缺点&quot; class=&quot;headerlink&quot; title=&quot;2. 缺点:&quot;&gt;&lt;/a&gt;&lt;strong&gt;2. 缺点&lt;/strong&gt;:&lt;/h3&gt;&lt;ul&gt;
+&lt;li&gt;每次关闭系统之后, 虚拟磁盘将会被卸载, 下次开机后需要重新创建虚拟磁盘. 同时因为Derived Data已经被删除.&lt;/li&gt;
+&lt;li&gt;内存有限, 不宜创建太大的虚拟磁盘, 需要在系统性能和需要的虚拟磁盘空间中找一个平衡点.&lt;/li&gt;
+&lt;/ul&gt;
+&lt;h3 id=&quot;3-可能遇到的坑&quot;&gt;&lt;a href=&quot;#3-可能遇到的坑&quot; class=&quot;headerlink&quot; title=&quot;3. 可能遇到的坑&quot;&gt;&lt;/a&gt;&lt;strong&gt;3. 可能遇到的坑&lt;/strong&gt;&lt;/h3&gt;&lt;ul&gt;
+&lt;li&gt;如果创建的虚拟磁盘已满, 会导致编译的失败. 此时清除掉Derived Data后重新编译, 就算有足够的空间也还是有可能会导致编译失败. 重启Xcode可以解决此问题.&lt;/li&gt;
+&lt;/ul&gt;
+</content>
+    
+    <summary type="html">
+    
+      &lt;p&gt;&lt;img src=&quot;/img/reduce-xcode-build-times/title.png&quot; alt=&quot;&quot;&gt;&lt;br&gt;平常在调试工程的时候, 特别是大工程, 浪费在编译上的时间加起来也是个不小的数目. 我戏成它为&lt;strong&gt;带薪编译&lt;/strong&gt;. 带薪编译一来呢浪费公司资源, 二来使得开发效率大大降低. 所以提高Xcode的编译速度还是非常有必要的. 关于通过更改一些Xcode的配置来提升编译速度&lt;a href=&quot;http://blog.csdn.net/zhaoxy_thu/article/details/30073485?utm_source=tuicool&amp;amp;utm_medium=referral&quot;&gt;这篇文章&lt;/a&gt;已经列举除了几个不错的方法, 这里就不再多说.&lt;/p&gt;
+&lt;p&gt;这篇文章主要讲的是从&lt;strong&gt;硬件方面&lt;/strong&gt;来提升Xcode的编译速度. 因为对比了现在日常使用的Mac mini和MacBook Pro, 在CPU和内存基本没有差别的情况下, 相比MacBook Pro的SSD, Mac mini的机械硬盘的表现实在是惨不忍睹. 这也是拖慢了编译速度的主要元凶. &lt;del&gt;所以, 去换一个SSD吧.(Excuse me?)&lt;/del&gt;&lt;/p&gt;
+&lt;p&gt;本文所讲的方法理论上编译速度是可以超过SSD的. 在说具体方法之前, 先来了解一下拖慢编译速度的元凶Derived Data:&lt;/p&gt;
+&lt;h1 id=&quot;Derived-Data&quot;&gt;&lt;a href=&quot;#Derived-Data&quot; class=&quot;headerlink&quot; title=&quot;Derived Data&quot;&gt;&lt;/a&gt;&lt;strong&gt;Derived Data&lt;/strong&gt;&lt;/h1&gt;&lt;hr&gt;
+&lt;p&gt;Derived Data是Xcode自动生成的一些派生数据的文件夹. 里面包含有一些索引文件、Log、&lt;strong&gt;编译时产生的文件&lt;/strong&gt;. 编译时候产生的文件包括:&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;第三方库的&lt;code&gt;.a&lt;/code&gt;文件&lt;/li&gt;
+&lt;li&gt;应用程序&lt;code&gt;.app&lt;/code&gt;文件&lt;/li&gt;
+&lt;li&gt;保存函数地址映射信息的中转文件&lt;code&gt;.dSYM&lt;/code&gt;文件&lt;/li&gt;
+&lt;/ul&gt;
+&lt;p&gt;所以, 写这些数据的时候, 写得越快, 编译的时间也就能越少. 如何让数据写入得更快呢? 可以把Derived Data的路径换到内存中. 换句话说, 将Derived Data的读写从硬盘移动到内存中.&lt;/p&gt;
+    
+    </summary>
+    
+      <category term="iOS Tips" scheme="http://zzyspace.github.io/categories/iOS-Tips/"/>
+    
+    
+      <category term="Xcode" scheme="http://zzyspace.github.io/tags/Xcode/"/>
+    
+  </entry>
   
   <entry>
     <title>【iOS开发】Objective-c Runtime小记</title>

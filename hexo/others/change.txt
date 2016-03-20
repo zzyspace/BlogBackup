@@ -1,3 +1,6 @@
+0. 右边栏的颜色
+source/js/main.js
+
 1. fix header menu height:
 在source/css/_partial/main.styl中,
 .header-menu{
