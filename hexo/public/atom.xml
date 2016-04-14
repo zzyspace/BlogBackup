@@ -5,7 +5,7 @@
   <link href="/atom.xml" rel="self"/>
   
   <link href="http://zzyspace.github.io/"/>
-  <updated>2016-03-20T08:27:09.000Z</updated>
+  <updated>2016-04-14T11:45:19.000Z</updated>
   <id>http://zzyspace.github.io/</id>
   
   <author>
@@ -20,7 +20,7 @@
     <link href="http://zzyspace.github.io/2016/03/20/reduce-xcode-build-times/"/>
     <id>http://zzyspace.github.io/2016/03/20/reduce-xcode-build-times/</id>
     <published>2016-03-20T07:46:56.000Z</published>
-    <updated>2016-03-20T08:27:09.000Z</updated>
+    <updated>2016-04-14T11:45:19.000Z</updated>
     
     <content type="html">&lt;p&gt;&lt;img src=&quot;/img/reduce-xcode-build-times/title.png&quot; alt=&quot;&quot;&gt;&lt;br&gt;平常在调试工程的时候, 特别是大工程, 浪费在编译上的时间加起来也是个不小的数目. 我戏成它为&lt;strong&gt;带薪编译&lt;/strong&gt;. 带薪编译一来呢浪费公司资源, 二来使得开发效率大大降低. 所以提高Xcode的编译速度还是非常有必要的. 关于通过更改一些Xcode的配置来提升编译速度&lt;a href=&quot;http://blog.csdn.net/zhaoxy_thu/article/details/30073485?utm_source=tuicool&amp;amp;utm_medium=referral&quot; target=&quot;_blank&quot; rel=&quot;external&quot;&gt;这篇文章&lt;/a&gt;已经列举除了几个不错的方法, 这里就不再多说.&lt;/p&gt;
 &lt;p&gt;这篇文章主要讲的是从&lt;strong&gt;硬件方面&lt;/strong&gt;来提升Xcode的编译速度. 因为对比了现在日常使用的Mac mini和MacBook Pro, 在CPU和内存基本没有差别的情况下, 相比MacBook Pro的SSD, Mac mini的机械硬盘的表现实在是惨不忍睹. 这也是拖慢了编译速度的主要元凶. &lt;del&gt;所以, 去换一个SSD吧.(Excuse me?)&lt;/del&gt;&lt;/p&gt;
@@ -84,7 +84,7 @@
     <link href="http://zzyspace.github.io/2016/03/16/objective-c-runtime/"/>
     <id>http://zzyspace.github.io/2016/03/16/objective-c-runtime/</id>
     <published>2016-03-16T09:16:08.000Z</published>
-    <updated>2016-03-19T15:43:34.000Z</updated>
+    <updated>2016-04-14T11:45:19.000Z</updated>
     
     <content type="html">&lt;h1 id=&quot;一-Runtime&quot;&gt;&lt;a href=&quot;#一-Runtime&quot; class=&quot;headerlink&quot; title=&quot;一. Runtime&quot;&gt;&lt;/a&gt;&lt;strong&gt;一. Runtime&lt;/strong&gt;&lt;/h1&gt;&lt;hr&gt;
 &lt;p&gt;Runtime是一套底层的C语言API. 实际上, 平时我们编写的Objective-C代码, 底层都是基于runtime实现的, 也就是说, 平时我们编写的Objective-C代码, 最终都是转成了底层的runtime代码(C语言代码). Runtime使得Objective-C这门语言的灵活性大大地提升. 有了runtime, 我们可以在应用运行的时候动态操作对象、类、方法, 也因为这个原因, 使得编程有了更多的可能性, 对于开发中遇到的一些比较棘手的问题, 往往用runtime可以优雅地解决, 接下来让我们看看runtime是为何可以如此牛x.&lt;/p&gt;
@@ -167,7 +167,7 @@
     <link href="http://zzyspace.github.io/2016/02/18/apple-pay/"/>
     <id>http://zzyspace.github.io/2016/02/18/apple-pay/</id>
     <published>2016-02-18T13:19:14.000Z</published>
-    <updated>2016-03-19T06:38:57.000Z</updated>
+    <updated>2016-04-14T11:45:19.000Z</updated>
     
     <content type="html">&lt;p&gt;&lt;img src=&quot;/img/ApplePay/header.jpg&quot; alt=&quot;&quot;&gt;&lt;br&gt;Apple Pay在今天终于在中国大陆地区正式开通. Apple Pay不仅仅在线下支付中可以让你通过指纹刷(zhuang)卡(bi), 更可以在线上支付(App中支付)时, 节省掉很多多余的步骤, 让支付宝与微信支付哭晕在厕所… 蛋扯远了, 接下来我们来看看怎么让你的App也支持Apple Pay吧!&lt;/p&gt;
 &lt;a id=&quot;more&quot;&gt;&lt;/a&gt;
@@ -302,7 +302,7 @@
     <link href="http://zzyspace.github.io/2015/10/12/openssh-debug-executable-file/"/>
     <id>http://zzyspace.github.io/2015/10/12/openssh-debug-executable-file/</id>
     <published>2015-10-11T16:04:56.000Z</published>
-    <updated>2016-03-21T16:17:00.000Z</updated>
+    <updated>2016-04-14T11:45:19.000Z</updated>
     
     <content type="html">&lt;h1 id=&quot;一-连接设备&quot;&gt;&lt;a href=&quot;#一-连接设备&quot; class=&quot;headerlink&quot; title=&quot;一. 连接设备&quot;&gt;&lt;/a&gt;&lt;strong&gt;一. 连接设备&lt;/strong&gt;&lt;/h1&gt;&lt;hr&gt;
 &lt;h3 id=&quot;1-连接&quot;&gt;&lt;a href=&quot;#1-连接&quot; class=&quot;headerlink&quot; title=&quot;1. 连接&quot;&gt;&lt;/a&gt;&lt;strong&gt;1. 连接&lt;/strong&gt;&lt;/h3&gt;&lt;p&gt;通过USB连接:&lt;/p&gt;
@@ -358,7 +358,7 @@
     <link href="http://zzyspace.github.io/2015/05/21/package-bundle/"/>
     <id>http://zzyspace.github.io/2015/05/21/package-bundle/</id>
     <published>2015-05-21T15:55:58.000Z</published>
-    <updated>2016-03-21T16:13:36.000Z</updated>
+    <updated>2016-04-14T11:45:19.000Z</updated>
     
     <content type="html">&lt;p&gt;在编写第三方库时, 如果需要用到一些图片、声音资源, 甚至是nib(xib), 就需要把这些资源打包成一个bundle. 一开始在其他第三方库中看到bundle的时候, 觉得它好像是一个很高级的东西. 但是事实上, bundle就是一个普通得不能再普通的文件夹, 只是加上了&lt;code&gt;.bundle&lt;/code&gt;后缀, 一下子就高大上了起来.&lt;br&gt;加上&lt;code&gt;.bundle&lt;/code&gt;后缀的文件夹, 会被Mac识别为一个包. 将文件夹以包的形式存在, 可以当作一个整体方便地移动, 也可以让别人不至于不小心改动到库所依赖的资源. &lt;/p&gt;
 &lt;h1 id=&quot;步骤&quot;&gt;&lt;a href=&quot;#步骤&quot; class=&quot;headerlink&quot; title=&quot;步骤&quot;&gt;&lt;/a&gt;&lt;strong&gt;步骤&lt;/strong&gt;&lt;/h1&gt;&lt;p&gt;1.将资源放到文件夹中, 重命名文件夹为&lt;code&gt;xxx.bundle&lt;/code&gt;&lt;/p&gt;
@@ -385,7 +385,7 @@
     <link href="http://zzyspace.github.io/2015/03/29/uiimage-rendering-mode/"/>
     <id>http://zzyspace.github.io/2015/03/29/uiimage-rendering-mode/</id>
     <published>2015-03-29T06:32:22.000Z</published>
-    <updated>2016-03-19T06:38:57.000Z</updated>
+    <updated>2016-04-14T11:45:19.000Z</updated>
     
     <content type="html">&lt;p&gt;很多人在第一次使用UITabBar的时候, 都会遇到一个摸不着头脑的问题:&lt;br&gt;明明UI给的图片是这样的 ↓&lt;br&gt;&lt;img src=&quot;/img/UIImageRenderingMode/renderingMode_0.png&quot; alt=&quot;&quot;&gt;&lt;br&gt;可是用到tabBar中却变成了这样 ↓&lt;br&gt;&lt;img src=&quot;/img/UIImageRenderingMode/renderingMode_1.png&quot; alt=&quot;&quot;&gt;&lt;br&gt;&lt;strong&gt;WTF!&lt;/strong&gt; 咋还自己变色了呢? &lt;img src=&quot;/img/UIImageRenderingMode/renderingMode_2.jpg&quot; alt=&quot;&quot;&gt;&lt;br&gt;其实以上的现象都是源于UIImage的一个属性&lt;code&gt;renderingMode&lt;/code&gt;.&lt;/p&gt;
 &lt;h1 id=&quot;UIImageRenderingMode&quot;&gt;&lt;a href=&quot;#UIImageRenderingMode&quot; class=&quot;headerlink&quot; title=&quot;UIImageRenderingMode&quot;&gt;&lt;/a&gt;&lt;strong&gt;UIImageRenderingMode&lt;/strong&gt;&lt;/h1&gt;&lt;hr&gt;
