@@ -100,6 +100,30 @@ objc_getAssociatedObject(self, _cmd);
 @end
 ```
 
+# **Tips**
+---
+最近看到[Sunny大神](http://blog.sunnyxx.com)说的一个关于Associated Object的巧妙运用:
+> 利用 association 防止多次调进一个方法，总觉得为这种事情去加一个成员变量会让一段逻辑的代码过于分散，喜欢能 self-managed 的函数
+
+```objc
+@interface Engine : NSObject
+@end
+
+@implementation Engine
+
+- (void)launch {
+     // 在对象生命周期内, 不增加 flag 属性的情况下, 放置多次调进这个方法
+     if (objc_getAssociatedObject(self, _cmd)) return;
+     else objc_setAssociatedObject(self, _cmd, @"Launched", OBJC_ASSOCIATION_RETAIN);
+
+     NSLog(@"launch only once");
+}
+
+@end
+```
+
+这个做法相当于是动态的添加了flag属性, 相对与直接使用flag属性来说简直是优雅多了. 我们甚至可以把这两行代码写作一个宏, 更方便于每次的使用.
+
 ### 参考
 1.[Associated Objects](http://nshipster.com/associated-objects/) by Mattt
 2.[Objective-C Runtime Reference](https://developer.apple.com/library/mac/documentation/Cocoa/Reference/ObjCRuntimeRef/index.html#//apple_ref/c/func/objc_getAssociatedObject) by Apple
