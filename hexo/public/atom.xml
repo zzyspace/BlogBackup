@@ -298,6 +298,61 @@
   </entry>
   
   <entry>
+    <title>【iOS开发】静态库导致的运行时崩溃问题</title>
+    <link href="http://zzyspace.github.io/2015/10/18/crash-with-static-library/"/>
+    <id>http://zzyspace.github.io/2015/10/18/crash-with-static-library/</id>
+    <published>2015-10-18T12:45:33.000Z</published>
+    <updated>2016-06-08T07:52:21.000Z</updated>
+    
+    <content type="html">&lt;p&gt;使用其他一些第三方静态库时, 如果没有注意按照文档中的提示进行配置, 很容易在程序运行过程中因 “unrecorgnized selector send to instance xxx” 的异常而崩溃. 而且可以发现, 导致崩溃的方法都是Category中的方法.&lt;br&gt;在&lt;a href=&quot;https://developer.apple.com/library/mac/qa/qa1490/_index.html&quot; target=&quot;_blank&quot; rel=&quot;external&quot;&gt;苹果官方文档&lt;/a&gt;中解释到: &lt;/p&gt;
+&lt;blockquote&gt;
+&lt;p&gt;The dynamic nature of Objective-C complicates things slightly. Because the code that implements a method is not determined until the method is actually called, Objective-C does not define linker symbols for methods. Linker symbols are only defined for classes.&lt;br&gt;Since categories are a collection of methods, using a category’s method does not generate an undefined symbol. This means the linker does not know to load an object file defining the category, if the class itself is already defined. This causes the same “selector not recognized” runtime exception you would see for any unimplemented method.&lt;/p&gt;
+&lt;/blockquote&gt;
+&lt;p&gt;翻译过来, 就是因为Objective-C的动态特性使得方法是在运行时才确定的, 所以链接的时候不会为方法(Method)定义连接符号, 而是为类(Class)定义连接符号. 这样当在一个静态库中使用类别来扩展已有类的时候，链接器不知道如何把类原有的方法和类别中的方法整合起来, 所以就导致运行的时候Category的方法无法被找到抛出异常.&lt;/p&gt;
+&lt;a id=&quot;more&quot;&gt;&lt;/a&gt;
+&lt;h1 id=&quot;解决方法-Other-Linker-Flags&quot;&gt;&lt;a href=&quot;#解决方法-Other-Linker-Flags&quot; class=&quot;headerlink&quot; title=&quot;解决方法: Other Linker Flags&quot;&gt;&lt;/a&gt;&lt;strong&gt;解决方法&lt;/strong&gt;: Other Linker Flags&lt;/h1&gt;&lt;hr&gt;
+&lt;ul&gt;
+&lt;li&gt;&lt;h3 id=&quot;ObjC&quot;&gt;&lt;a href=&quot;#ObjC&quot; class=&quot;headerlink&quot; title=&quot;-ObjC&quot;&gt;&lt;/a&gt;&lt;strong&gt;-ObjC&lt;/strong&gt;&lt;/h3&gt;&lt;/li&gt;
+&lt;/ul&gt;
+&lt;p&gt;&lt;a href=&quot;https://developer.apple.com/library/mac/qa/qa1490/_index.html&quot; target=&quot;_blank&quot; rel=&quot;external&quot;&gt;苹果官方文档&lt;/a&gt;对这个flag的解释是这样的:&lt;/p&gt;
+&lt;blockquote&gt;
+&lt;p&gt;Passing the -ObjC option to the linker causes it to load all members of static libraries that implement any Objective-C class or category. This will pickup any category method implementations. But it can make the resulting executable larger, and may pickup unnecessary objects. For this reason it is not on by default.&lt;/p&gt;
+&lt;/blockquote&gt;
+&lt;p&gt;  &lt;code&gt;-ObjC&lt;/code&gt;这个标志选项会让链接器加载静态库所有的Objective-C的类和Category, 这样就能把Category中实现的方法整合起来. 但是由于这样做会使可执行文件变大, 也会整合一些用不到的对象, 所以才没有默认使用-ObjC标志, 而是需要我们手动添加.&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;&lt;h3 id=&quot;all-load&quot;&gt;&lt;a href=&quot;#all-load&quot; class=&quot;headerlink&quot; title=&quot;-all_load&quot;&gt;&lt;/a&gt;&lt;strong&gt;-all_load&lt;/strong&gt;&lt;/h3&gt;&lt;/li&gt;
+&lt;/ul&gt;
+&lt;p&gt;加载所有静态库中的文件. 相比&lt;code&gt;-ObjC&lt;/code&gt;, 不同点就是&lt;code&gt;-all_load&lt;/code&gt;会将所有的(包括非Objective-C)文件都整合到静态库中.&lt;br&gt;&lt;em&gt;&lt;strong&gt;*注意&lt;/strong&gt; : 假如你使用了不止一个静态库，然后又使用了这个参数，那么你很有可能会遇到&lt;code&gt;duplicate symbol&lt;/code&gt;错误，因为不同的库文件里面可能会有相同的目标文件.&lt;/em&gt;&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;&lt;h3 id=&quot;force-load-path-to-archive&quot;&gt;&lt;a href=&quot;#force-load-path-to-archive&quot; class=&quot;headerlink&quot; title=&quot;-force_load (path_to_archive)&quot;&gt;&lt;/a&gt;&lt;strong&gt;-force_load (path_to_archive)&lt;/strong&gt;&lt;/h3&gt;&lt;/li&gt;
+&lt;/ul&gt;
+&lt;p&gt;加载指定路径的静态库. 相比&lt;code&gt;-all_load&lt;/code&gt;, 不同点就是&lt;code&gt;-force_load&lt;/code&gt;只是完全加载了一个库文件，不影响其余库文件的按需加载.&lt;/p&gt;
+&lt;h1 id=&quot;补充&quot;&gt;&lt;a href=&quot;#补充&quot; class=&quot;headerlink&quot; title=&quot;补充:&quot;&gt;&lt;/a&gt;&lt;strong&gt;补充:&lt;/strong&gt;&lt;/h1&gt;&lt;hr&gt;
+&lt;p&gt;使用&lt;code&gt;-all_load&lt;/code&gt;或者&lt;code&gt;-force_load&lt;/code&gt;大部分原因是因为&lt;strong&gt;Xcode4.2之前&lt;/strong&gt;的版本的链接器的bug, 在64位iOS应用环境下当静态库中只有分类而没有类的时候, &lt;code&gt;-ObjC&lt;/code&gt;参数就会失效了. 所以为了兼容&lt;strong&gt;Xcode4.2之前&lt;/strong&gt;的版本, 有两种解决方法:&lt;/p&gt;
+&lt;h4 id=&quot;1-静态库使用者&quot;&gt;&lt;a href=&quot;#1-静态库使用者&quot; class=&quot;headerlink&quot; title=&quot;1. 静态库使用者:&quot;&gt;&lt;/a&gt;&lt;strong&gt;1. 静态库使用者:&lt;/strong&gt;&lt;/h4&gt;&lt;p&gt;使用&lt;code&gt;-all_load&lt;/code&gt;或者&lt;code&gt;-force_load&lt;/code&gt;代替&lt;code&gt;-ObjC&lt;/code&gt;.&lt;/p&gt;
+&lt;h4 id=&quot;2-静态库开发者&quot;&gt;&lt;a href=&quot;#2-静态库开发者&quot; class=&quot;headerlink&quot; title=&quot;2. 静态库开发者:&quot;&gt;&lt;/a&gt;&lt;strong&gt;2. 静态库开发者:&lt;/strong&gt;&lt;/h4&gt;&lt;p&gt;可以通过在分类中添加一个类的声明和实现, 使得Category源文件中不仅仅只有分类, 同时还有类存在来避免链接器的bug, 从而避免了&lt;code&gt;-ObjC&lt;/code&gt;标志失效的麻烦:&lt;/p&gt;
+&lt;figure class=&quot;highlight objc&quot;&gt;&lt;table&gt;&lt;tr&gt;&lt;td class=&quot;code&quot;&gt;&lt;pre&gt;&lt;span class=&quot;line&quot;&gt;&lt;span class=&quot;comment&quot;&gt;/**&lt;/span&gt;&lt;br&gt;&lt;span class=&quot;line&quot;&gt; *   NSObject+Addition.m&lt;/span&gt;&lt;br&gt;&lt;span class=&quot;line&quot;&gt; */&lt;/span&gt;&lt;/span&gt;&lt;br&gt;&lt;span class=&quot;line&quot;&gt;&lt;/span&gt;&lt;br&gt;&lt;span class=&quot;line&quot;&gt;&lt;span class=&quot;comment&quot;&gt;// add a dummy class&lt;/span&gt;&lt;/span&gt;&lt;br&gt;&lt;span class=&quot;line&quot;&gt;&lt;span class=&quot;class&quot;&gt;&lt;span class=&quot;keyword&quot;&gt;@interface&lt;/span&gt; &lt;span class=&quot;title&quot;&gt;DUMMY_CLASS_NSObject_Addition&lt;/span&gt; : &lt;span class=&quot;title&quot;&gt;NSObject&lt;/span&gt;&lt;/span&gt;&lt;/span&gt;&lt;br&gt;&lt;span class=&quot;line&quot;&gt;&lt;span class=&quot;keyword&quot;&gt;@end&lt;/span&gt;&lt;/span&gt;&lt;br&gt;&lt;span class=&quot;line&quot;&gt;&lt;span class=&quot;class&quot;&gt;&lt;span class=&quot;keyword&quot;&gt;@implementation&lt;/span&gt; &lt;span class=&quot;title&quot;&gt;DUMMY_CLASS_NSObject_Addition&lt;/span&gt;&lt;/span&gt;&lt;/span&gt;&lt;br&gt;&lt;span class=&quot;line&quot;&gt;&lt;span class=&quot;keyword&quot;&gt;@end&lt;/span&gt;&lt;/span&gt;&lt;br&gt;&lt;span class=&quot;line&quot;&gt;&lt;/span&gt;&lt;br&gt;&lt;span class=&quot;line&quot;&gt;&lt;span class=&quot;class&quot;&gt;&lt;span class=&quot;keyword&quot;&gt;@implementation&lt;/span&gt; &lt;span class=&quot;title&quot;&gt;NSObject&lt;/span&gt; (&lt;span class=&quot;title&quot;&gt;Addition&lt;/span&gt;)&lt;/span&gt;&lt;/span&gt;&lt;br&gt;&lt;span class=&quot;line&quot;&gt;&lt;span class=&quot;comment&quot;&gt;// some category methods...&lt;/span&gt;&lt;/span&gt;&lt;br&gt;&lt;span class=&quot;line&quot;&gt;&lt;span class=&quot;keyword&quot;&gt;@end&lt;/span&gt;&lt;/span&gt;&lt;br&gt;&lt;/pre&gt;&lt;/td&gt;&lt;/tr&gt;&lt;/table&gt;&lt;/figure&gt;
+&lt;p&gt;但是&lt;strong&gt;Xcode4.2之后&lt;/strong&gt;, 只要使用&lt;code&gt;-ObjC&lt;/code&gt;即可. 具体可以参看stackoverflow的&lt;a href=&quot;http://stackoverflow.com/questions/2567498/objective-c-categories-in-static-library/2615407#2615407&quot; target=&quot;_blank&quot; rel=&quot;external&quot;&gt;这个回答&lt;/a&gt;.&lt;/p&gt;
+</content>
+    
+    <summary type="html">
+    
+      &lt;p&gt;使用其他一些第三方静态库时, 如果没有注意按照文档中的提示进行配置, 很容易在程序运行过程中因 “unrecorgnized selector send to instance xxx” 的异常而崩溃. 而且可以发现, 导致崩溃的方法都是Category中的方法.&lt;br&gt;在&lt;a href=&quot;https://developer.apple.com/library/mac/qa/qa1490/_index.html&quot;&gt;苹果官方文档&lt;/a&gt;中解释到: &lt;/p&gt;
+&lt;blockquote&gt;
+&lt;p&gt;The dynamic nature of Objective-C complicates things slightly. Because the code that implements a method is not determined until the method is actually called, Objective-C does not define linker symbols for methods. Linker symbols are only defined for classes.&lt;br&gt;Since categories are a collection of methods, using a category’s method does not generate an undefined symbol. This means the linker does not know to load an object file defining the category, if the class itself is already defined. This causes the same “selector not recognized” runtime exception you would see for any unimplemented method.&lt;/p&gt;
+&lt;/blockquote&gt;
+&lt;p&gt;翻译过来, 就是因为Objective-C的动态特性使得方法是在运行时才确定的, 所以链接的时候不会为方法(Method)定义连接符号, 而是为类(Class)定义连接符号. 这样当在一个静态库中使用类别来扩展已有类的时候，链接器不知道如何把类原有的方法和类别中的方法整合起来, 所以就导致运行的时候Category的方法无法被找到抛出异常.&lt;/p&gt;
+    
+    </summary>
+    
+      <category term="iOS开发" scheme="http://zzyspace.github.io/categories/iOS%E5%BC%80%E5%8F%91/"/>
+    
+    
+      <category term="Other Linker Flags" scheme="http://zzyspace.github.io/tags/Other-Linker-Flags/"/>
+    
+  </entry>
+  
+  <entry>
     <title>【iOS越狱】使用OpenSSH调试可执行文件</title>
     <link href="http://zzyspace.github.io/2015/10/12/openssh-debug-executable-file/"/>
     <id>http://zzyspace.github.io/2015/10/12/openssh-debug-executable-file/</id>
