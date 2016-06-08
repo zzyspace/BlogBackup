@@ -31,3 +31,6 @@ source/css/_partial/article.styl
 
 5. 博客搬家, hexo d 出现index.lock错误解决方法:
 删除.deploy_git
+
+6. ERROR Plugin load failed: hexo-deployer-git
+npm install hexo-deployer-git --save
