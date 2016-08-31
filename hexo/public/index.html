@@ -125,7 +125,7 @@ var _hmt = _hmt || [];
 				
 				<section class="switch-part switch-part2">
 					<div class="widget tagcloud" id="js-tagcloud">
-						<a href="/tags/Apple-Pay/" style="font-size: 10px;">Apple Pay</a> <a href="/tags/Other-Linker-Flags/" style="font-size: 10px;">Other Linker Flags</a> <a href="/tags/UI/" style="font-size: 10px;">UI</a> <a href="/tags/Xcode/" style="font-size: 10px;">Xcode</a> <a href="/tags/bundle/" style="font-size: 10px;">bundle</a> <a href="/tags/jailbreak/" style="font-size: 10px;">jailbreak</a> <a href="/tags/runtime/" style="font-size: 20px;">runtime</a>
+						<a href="/tags/Apple-Pay/" style="font-size: 10px;">Apple Pay</a> <a href="/tags/Linux/" style="font-size: 10px;">Linux</a> <a href="/tags/Other-Linker-Flags/" style="font-size: 10px;">Other Linker Flags</a> <a href="/tags/UI/" style="font-size: 10px;">UI</a> <a href="/tags/Xcode/" style="font-size: 10px;">Xcode</a> <a href="/tags/bundle/" style="font-size: 10px;">bundle</a> <a href="/tags/jailbreak/" style="font-size: 10px;">jailbreak</a> <a href="/tags/localization/" style="font-size: 10px;">localization</a> <a href="/tags/runtime/" style="font-size: 20px;">runtime</a>
 					</div>
 				</section>
 				
@@ -198,6 +198,146 @@ var _hmt = _hmt || [];
 </nav>
 
       <div class="body-wrap">
+  
+    <article id="post-summary-of-localization" class="article article-type-post" itemscope itemprop="blogPost">
+  
+    <div class="article-meta">
+      <a href="/2016/08/07/summary-of-localization/" class="article-date">
+  	<time datetime="2016-08-07T10:31:18.000Z" itemprop="datePublished">2016-08-07</time>
+</a>
+    </div>
+  
+  <div class="article-inner">
+    
+      <input type="hidden" class="isFancy" />
+    
+    
+      <header class="article-header">
+        
+  
+    <h1 itemprop="name">
+      <a class="article-title" href="/2016/08/07/summary-of-localization/">【iOS Tip】总结本地化的一些坑</a>
+    </h1>
+  
+
+      </header>
+      
+    
+    <div class="article-entry" itemprop="articleBody">
+      
+        <h3 id="默认语言"><a href="#默认语言" class="headerlink" title="默认语言"></a><strong>默认语言</strong></h3><hr>
+<p>如果一台设备的语言为法语, 但是你所做的本地化只有英语\中文\德语, 那么应用安装后会默认显示Info.plist中<code>Localization native development region</code>字段所设置的地区语言(如果没有这个字段就默认英语).</p>
+<p>另一种情况是应用安装后切换语言, 若切换后的语言不存在本地化文件, 则保留前一语言的本地化显示. 比如你所做的本地化只有英语\中文\德语, 设备从英语切换到法语, 那么应用还是显示为英语; 如果再从法语切换到日语, 应用还是现实为英语. 一直到你切换至英语\中文\德语中的某一个语言之后, 应用才会显示响应的语言.</p>
+<p>如果要自己设置默认语言的话, 可以使用以下的宏:</p>
+<figure class="highlight objc"><table><tr><td class="code"><pre><span class="line"><span class="comment">// 判断系统语言是否是中文@"zh-Hans"或者英文@"en", 如果不是中文或者英文其他一概用英文@"en"</span></span><br><span class="line"><span class="preprocessor">#define MYLocalizedString(key, comment) \</span></span><br><span class="line">(([[[<span class="built_in">NSLocale</span> preferredLanguages] objectAtIndex:<span class="number">0</span>] isEqual:<span class="string">@"zh-Hans"</span>] ||</span><br><span class="line">  [[[<span class="built_in">NSLocale</span> preferredLanguages] objectAtIndex:<span class="number">0</span>] isEqual:<span class="string">@"en"</span>]) ?</span><br><span class="line"> ([[<span class="built_in">NSBundle</span> mainBundle] localizedStringForKey:key value:<span class="string">@""</span> table:<span class="literal">nil</span>]) :</span><br><span class="line"> ([[<span class="built_in">NSBundle</span> bundleWithPath:[[<span class="built_in">NSBundle</span> mainBundle] pathForResource:<span class="string">@"en"</span> ofType:<span class="string">@"lproj"</span>]] localizedStringForKey:key value:<span class="string">@""</span> table:<span class="literal">nil</span>]))</span><br></pre></td></tr></table></figure>
+<p>但是由于宏替换的特性, 上面的方法会增加很多的代码量(想象一下你的代码里面有多少本地化字符串, 就会有多少份上面的代码), 作为处女座简直不能忍. 所以想到了hook<code>-localizedStringForKey:value:table:</code>方法来实现自定义的选择加载的语言包:</p>
+      
+    </div>
+    
+    <div class="article-info article-info-index">
+      
+      
+	<div class="article-tag tagcloud">
+		<ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/localization/">localization</a></li></ul>
+	</div>
+
+      
+	<div class="article-category tagcloud">
+	<a class="article-category-link" href="/categories/iOS-Tips/">iOS Tips</a>
+	</div>
+
+
+      
+        <p class="article-more-link">
+          <a  href="/2016/08/07/summary-of-localization/#more">more >></a>
+        </p>
+      
+      <div class="clearfix"></div>
+    </div>
+    
+  </div>
+  
+</article>
+
+
+
+
+
+
+
+
+
+  
+    <article id="post-frequently-used-terminal-command" class="article article-type-post" itemscope itemprop="blogPost">
+  
+    <div class="article-meta">
+      <a href="/2016/04/08/frequently-used-terminal-command/" class="article-date">
+  	<time datetime="2016-04-08T09:43:23.000Z" itemprop="datePublished">2016-04-08</time>
+</a>
+    </div>
+  
+  <div class="article-inner">
+    
+      <input type="hidden" class="isFancy" />
+    
+    
+      <header class="article-header">
+        
+  
+    <h1 itemprop="name">
+      <a class="article-title" href="/2016/04/08/frequently-used-terminal-command/">【Linux】常用命令行</a>
+    </h1>
+  
+
+      </header>
+      
+    
+    <div class="article-entry" itemprop="articleBody">
+      
+        <p><img src="/img/terminal-command/header.png" alt=""></p>
+<h3 id="热键"><a href="#热键" class="headerlink" title="热键"></a><strong>热键</strong></h3><hr>
+<ul>
+<li>自动补全: <code>tab</code></li>
+<li>终止命令: <code>ctrl</code>+<code>c</code></li>
+<li>光标移动至行首: <code>ctrl</code>+<code>a</code></li>
+<li>光标移动至行尾: <code>ctrl</code>+<code>e</code></li>
+</ul>
+      
+    </div>
+    
+    <div class="article-info article-info-index">
+      
+      
+	<div class="article-tag tagcloud">
+		<ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/Linux/">Linux</a></li></ul>
+	</div>
+
+      
+	<div class="article-category tagcloud">
+	<a class="article-category-link" href="/categories/iOS-Tips/">iOS Tips</a>
+	</div>
+
+
+      
+        <p class="article-more-link">
+          <a  href="/2016/04/08/frequently-used-terminal-command/#more">more >></a>
+        </p>
+      
+      <div class="clearfix"></div>
+    </div>
+    
+  </div>
+  
+</article>
+
+
+
+
+
+
+
+
+
   
     <article id="post-reduce-xcode-build-times" class="article article-type-post" itemscope itemprop="blogPost">
   

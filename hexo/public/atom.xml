@@ -5,7 +5,7 @@
   <link href="/atom.xml" rel="self"/>
   
   <link href="http://zzyspace.github.io/"/>
-  <updated>2016-04-14T11:45:19.000Z</updated>
+  <updated>2016-08-31T10:39:32.000Z</updated>
   <id>http://zzyspace.github.io/</id>
   
   <author>
@@ -16,11 +16,174 @@
   <generator uri="http://hexo.io/">Hexo</generator>
   
   <entry>
+    <title>【iOS Tip】总结本地化的一些坑</title>
+    <link href="http://zzyspace.github.io/2016/08/07/summary-of-localization/"/>
+    <id>http://zzyspace.github.io/2016/08/07/summary-of-localization/</id>
+    <published>2016-08-07T10:31:18.000Z</published>
+    <updated>2016-08-31T10:39:32.000Z</updated>
+    
+    <content type="html">&lt;h3 id=&quot;默认语言&quot;&gt;&lt;a href=&quot;#默认语言&quot; class=&quot;headerlink&quot; title=&quot;默认语言&quot;&gt;&lt;/a&gt;&lt;strong&gt;默认语言&lt;/strong&gt;&lt;/h3&gt;&lt;hr&gt;
+&lt;p&gt;如果一台设备的语言为法语, 但是你所做的本地化只有英语\中文\德语, 那么应用安装后会默认显示Info.plist中&lt;code&gt;Localization native development region&lt;/code&gt;字段所设置的地区语言(如果没有这个字段就默认英语).&lt;/p&gt;
+&lt;p&gt;另一种情况是应用安装后切换语言, 若切换后的语言不存在本地化文件, 则保留前一语言的本地化显示. 比如你所做的本地化只有英语\中文\德语, 设备从英语切换到法语, 那么应用还是显示为英语; 如果再从法语切换到日语, 应用还是现实为英语. 一直到你切换至英语\中文\德语中的某一个语言之后, 应用才会显示响应的语言.&lt;/p&gt;
+&lt;p&gt;如果要自己设置默认语言的话, 可以使用以下的宏:&lt;/p&gt;
+&lt;figure class=&quot;highlight objc&quot;&gt;&lt;table&gt;&lt;tr&gt;&lt;td class=&quot;code&quot;&gt;&lt;pre&gt;&lt;span class=&quot;line&quot;&gt;&lt;span class=&quot;comment&quot;&gt;// 判断系统语言是否是中文@&quot;zh-Hans&quot;或者英文@&quot;en&quot;, 如果不是中文或者英文其他一概用英文@&quot;en&quot;&lt;/span&gt;&lt;/span&gt;&lt;br&gt;&lt;span class=&quot;line&quot;&gt;&lt;span class=&quot;preprocessor&quot;&gt;#define MYLocalizedString(key, comment) \&lt;/span&gt;&lt;/span&gt;&lt;br&gt;&lt;span class=&quot;line&quot;&gt;(([[[&lt;span class=&quot;built_in&quot;&gt;NSLocale&lt;/span&gt; preferredLanguages] objectAtIndex:&lt;span class=&quot;number&quot;&gt;0&lt;/span&gt;] isEqual:&lt;span class=&quot;string&quot;&gt;@&quot;zh-Hans&quot;&lt;/span&gt;] ||&lt;/span&gt;&lt;br&gt;&lt;span class=&quot;line&quot;&gt;  [[[&lt;span class=&quot;built_in&quot;&gt;NSLocale&lt;/span&gt; preferredLanguages] objectAtIndex:&lt;span class=&quot;number&quot;&gt;0&lt;/span&gt;] isEqual:&lt;span class=&quot;string&quot;&gt;@&quot;en&quot;&lt;/span&gt;]) ?&lt;/span&gt;&lt;br&gt;&lt;span class=&quot;line&quot;&gt; ([[&lt;span class=&quot;built_in&quot;&gt;NSBundle&lt;/span&gt; mainBundle] localizedStringForKey:key value:&lt;span class=&quot;string&quot;&gt;@&quot;&quot;&lt;/span&gt; table:&lt;span class=&quot;literal&quot;&gt;nil&lt;/span&gt;]) :&lt;/span&gt;&lt;br&gt;&lt;span class=&quot;line&quot;&gt; ([[&lt;span class=&quot;built_in&quot;&gt;NSBundle&lt;/span&gt; bundleWithPath:[[&lt;span class=&quot;built_in&quot;&gt;NSBundle&lt;/span&gt; mainBundle] pathForResource:&lt;span class=&quot;string&quot;&gt;@&quot;en&quot;&lt;/span&gt; ofType:&lt;span class=&quot;string&quot;&gt;@&quot;lproj&quot;&lt;/span&gt;]] localizedStringForKey:key value:&lt;span class=&quot;string&quot;&gt;@&quot;&quot;&lt;/span&gt; table:&lt;span class=&quot;literal&quot;&gt;nil&lt;/span&gt;]))&lt;/span&gt;&lt;br&gt;&lt;/pre&gt;&lt;/td&gt;&lt;/tr&gt;&lt;/table&gt;&lt;/figure&gt;
+&lt;p&gt;但是由于宏替换的特性, 上面的方法会增加很多的代码量(想象一下你的代码里面有多少本地化字符串, 就会有多少份上面的代码), 作为处女座简直不能忍. 所以想到了hook&lt;code&gt;-localizedStringForKey:value:table:&lt;/code&gt;方法来实现自定义的选择加载的语言包:&lt;/p&gt;
+&lt;a id=&quot;more&quot;&gt;&lt;/a&gt;
+&lt;figure class=&quot;highlight objc&quot;&gt;&lt;table&gt;&lt;tr&gt;&lt;td class=&quot;code&quot;&gt;&lt;pre&gt;&lt;span class=&quot;line&quot;&gt;&lt;span class=&quot;class&quot;&gt;&lt;span class=&quot;keyword&quot;&gt;@implementation&lt;/span&gt; &lt;span class=&quot;title&quot;&gt;NSBundle&lt;/span&gt; (&lt;span class=&quot;title&quot;&gt;DBSwizzle&lt;/span&gt;)&lt;/span&gt;&lt;/span&gt;&lt;br&gt;&lt;span class=&quot;line&quot;&gt;&lt;/span&gt;&lt;br&gt;&lt;span class=&quot;line&quot;&gt;+ (&lt;span class=&quot;keyword&quot;&gt;void&lt;/span&gt;)load&lt;/span&gt;&lt;br&gt;&lt;span class=&quot;line&quot;&gt;&amp;#123;&lt;/span&gt;&lt;br&gt;&lt;span class=&quot;line&quot;&gt;    &lt;span class=&quot;keyword&quot;&gt;static&lt;/span&gt; &lt;span class=&quot;built_in&quot;&gt;dispatch_once_t&lt;/span&gt; &lt;span class=&quot;built_in&quot;&gt;NSBundleOnceToken&lt;/span&gt;;&lt;/span&gt;&lt;br&gt;&lt;span class=&quot;line&quot;&gt;    &lt;span class=&quot;built_in&quot;&gt;dispatch_once&lt;/span&gt;(&amp;amp;&lt;span class=&quot;built_in&quot;&gt;NSBundleOnceToken&lt;/span&gt;, ^&amp;#123;&lt;/span&gt;&lt;br&gt;&lt;span class=&quot;line&quot;&gt;        ZY_SwizzlesMethod([&lt;span class=&quot;keyword&quot;&gt;self&lt;/span&gt; class], &lt;span class=&quot;keyword&quot;&gt;@selector&lt;/span&gt;(localizedStringForKey:value:table:), &lt;span class=&quot;keyword&quot;&gt;@selector&lt;/span&gt;(zy_localizedStringForKey:value:table:));&lt;/span&gt;&lt;br&gt;&lt;span class=&quot;line&quot;&gt;    &amp;#125;);&lt;/span&gt;&lt;br&gt;&lt;span class=&quot;line&quot;&gt;&amp;#125;&lt;/span&gt;&lt;br&gt;&lt;span class=&quot;line&quot;&gt;&lt;/span&gt;&lt;br&gt;&lt;span class=&quot;line&quot;&gt;- (&lt;span class=&quot;built_in&quot;&gt;NSString&lt;/span&gt; *)zy_localizedStringForKey:(&lt;span class=&quot;built_in&quot;&gt;NSString&lt;/span&gt; *)key&lt;/span&gt;&lt;br&gt;&lt;span class=&quot;line&quot;&gt;                                 value:(nullable &lt;span class=&quot;built_in&quot;&gt;NSString&lt;/span&gt; *)value&lt;/span&gt;&lt;br&gt;&lt;span class=&quot;line&quot;&gt;                                 table:(nullable &lt;span class=&quot;built_in&quot;&gt;NSString&lt;/span&gt; *)tableName&lt;/span&gt;&lt;br&gt;&lt;span class=&quot;line&quot;&gt;&amp;#123;&lt;/span&gt;&lt;br&gt;&lt;span class=&quot;line&quot;&gt;    &lt;span class=&quot;comment&quot;&gt;// 判断系统语言是否是中文@&quot;zh-Hans&quot;或者英文@&quot;en&quot;, 如果不是中文或者英文其他一概用英文@&quot;en&quot;&lt;/span&gt;&lt;/span&gt;&lt;br&gt;&lt;span class=&quot;line&quot;&gt;    &lt;span class=&quot;keyword&quot;&gt;if&lt;/span&gt; ([[[&lt;span class=&quot;built_in&quot;&gt;NSLocale&lt;/span&gt; preferredLanguages] objectAtIndex:&lt;span class=&quot;number&quot;&gt;0&lt;/span&gt;] isEqual:&lt;span class=&quot;string&quot;&gt;@&quot;zh-Hans&quot;&lt;/span&gt;] ||&lt;/span&gt;&lt;br&gt;&lt;span class=&quot;line&quot;&gt;        [[[&lt;span class=&quot;built_in&quot;&gt;NSLocale&lt;/span&gt; preferredLanguages] objectAtIndex:&lt;span class=&quot;number&quot;&gt;0&lt;/span&gt;] isEqual:&lt;span class=&quot;string&quot;&gt;@&quot;en&quot;&lt;/span&gt;])    &lt;/span&gt;&lt;br&gt;&lt;span class=&quot;line&quot;&gt;    &amp;#123; &lt;/span&gt;&lt;br&gt;&lt;span class=&quot;line&quot;&gt;        &lt;span class=&quot;keyword&quot;&gt;return&lt;/span&gt; [&lt;span class=&quot;keyword&quot;&gt;self&lt;/span&gt; DB_localizedStringForKey:key value:value table:tableName];&lt;/span&gt;&lt;br&gt;&lt;span class=&quot;line&quot;&gt;    &amp;#125; &lt;span class=&quot;keyword&quot;&gt;else&lt;/span&gt; &amp;#123;&lt;/span&gt;&lt;br&gt;&lt;span class=&quot;line&quot;&gt;        &lt;span class=&quot;built_in&quot;&gt;NSString&lt;/span&gt; *bundlePath = [[&lt;span class=&quot;built_in&quot;&gt;NSBundle&lt;/span&gt; mainBundle] pathForResource:&lt;span class=&quot;string&quot;&gt;@&quot;en&quot;&lt;/span&gt; ofType:&lt;span class=&quot;string&quot;&gt;@&quot;lproj&quot;&lt;/span&gt;];&lt;/span&gt;&lt;br&gt;&lt;span class=&quot;line&quot;&gt;        &lt;span class=&quot;keyword&quot;&gt;return&lt;/span&gt; [[&lt;span class=&quot;built_in&quot;&gt;NSBundle&lt;/span&gt; bundleWithPath:bundlePath] DB_localizedStringForKey:key value:value table:tableName];&lt;/span&gt;&lt;br&gt;&lt;span class=&quot;line&quot;&gt;    &amp;#125;&lt;/span&gt;&lt;br&gt;&lt;span class=&quot;line&quot;&gt;&amp;#125;&lt;/span&gt;&lt;br&gt;&lt;span class=&quot;line&quot;&gt;&lt;/span&gt;&lt;br&gt;&lt;span class=&quot;line&quot;&gt;&lt;span class=&quot;keyword&quot;&gt;@end&lt;/span&gt;&lt;/span&gt;&lt;br&gt;&lt;/pre&gt;&lt;/td&gt;&lt;/tr&gt;&lt;/table&gt;&lt;/figure&gt;
+&lt;h3 id=&quot;CFBundleDisplayName&quot;&gt;&lt;a href=&quot;#CFBundleDisplayName&quot; class=&quot;headerlink&quot; title=&quot;CFBundleDisplayName&quot;&gt;&lt;/a&gt;&lt;strong&gt;CFBundleDisplayName&lt;/strong&gt;&lt;/h3&gt;&lt;hr&gt;
+&lt;p&gt;如果使用以下方法来获取应用名称的话, 是获取不到&lt;code&gt;InfoPlist.strings&lt;/code&gt;中的本地化应用名称的.&lt;/p&gt;
+&lt;figure class=&quot;highlight objc&quot;&gt;&lt;table&gt;&lt;tr&gt;&lt;td class=&quot;code&quot;&gt;&lt;pre&gt;&lt;span class=&quot;line&quot;&gt;[[[&lt;span class=&quot;built_in&quot;&gt;NSBundle&lt;/span&gt; mainBundle] infoDictionary] objectForKey:&lt;span class=&quot;string&quot;&gt;@&quot;CFBundleDisplayName&quot;&lt;/span&gt;];&lt;/span&gt;&lt;br&gt;&lt;/pre&gt;&lt;/td&gt;&lt;/tr&gt;&lt;/table&gt;&lt;/figure&gt;
+&lt;p&gt;可以使用以下方法来获取&lt;/p&gt;
+&lt;figure class=&quot;highlight objc&quot;&gt;&lt;table&gt;&lt;tr&gt;&lt;td class=&quot;code&quot;&gt;&lt;pre&gt;&lt;span class=&quot;line&quot;&gt;[[[&lt;span class=&quot;built_in&quot;&gt;NSBundle&lt;/span&gt; mainBundle] localizedInfoDictionary] objectForKey:&lt;span class=&quot;string&quot;&gt;@&quot;CFBundleDisplayName&quot;&lt;/span&gt;];&lt;/span&gt;&lt;br&gt;&lt;/pre&gt;&lt;/td&gt;&lt;/tr&gt;&lt;/table&gt;&lt;/figure&gt;
+&lt;p&gt;或者更加直接的使用以下方法(此方法会优先取本地化的值, 若没有本地化的值, 则取原值) &lt;code&gt;推荐&lt;/code&gt;&lt;/p&gt;
+&lt;figure class=&quot;highlight objc&quot;&gt;&lt;table&gt;&lt;tr&gt;&lt;td class=&quot;code&quot;&gt;&lt;pre&gt;&lt;span class=&quot;line&quot;&gt;[[&lt;span class=&quot;built_in&quot;&gt;NSBundle&lt;/span&gt; mainBundle] objectForInfoDictionaryKey:&lt;span class=&quot;string&quot;&gt;@&quot;CFBundleDisplayName&quot;&lt;/span&gt;];&lt;/span&gt;&lt;br&gt;&lt;/pre&gt;&lt;/td&gt;&lt;/tr&gt;&lt;/table&gt;&lt;/figure&gt;
+&lt;h3 id=&quot;UILabel调整字体适应Label宽度&quot;&gt;&lt;a href=&quot;#UILabel调整字体适应Label宽度&quot; class=&quot;headerlink&quot; title=&quot;UILabel调整字体适应Label宽度&quot;&gt;&lt;/a&gt;&lt;strong&gt;UILabel调整字体适应Label宽度&lt;/strong&gt;&lt;/h3&gt;&lt;hr&gt;
+&lt;p&gt;通过以下两个属性即可让字体根据UILabel的长度自适应大小&lt;/p&gt;
+&lt;figure class=&quot;highlight objc&quot;&gt;&lt;table&gt;&lt;tr&gt;&lt;td class=&quot;code&quot;&gt;&lt;pre&gt;&lt;span class=&quot;line&quot;&gt;&lt;span class=&quot;keyword&quot;&gt;@property&lt;/span&gt;(&lt;span class=&quot;keyword&quot;&gt;nonatomic&lt;/span&gt;) &lt;span class=&quot;built_in&quot;&gt;BOOL&lt;/span&gt; adjustsFontSizeToFitWidth;&lt;/span&gt;&lt;br&gt;&lt;span class=&quot;line&quot;&gt;&lt;span class=&quot;keyword&quot;&gt;@property&lt;/span&gt;(&lt;span class=&quot;keyword&quot;&gt;nonatomic&lt;/span&gt;) &lt;span class=&quot;built_in&quot;&gt;CGFloat&lt;/span&gt; minimumScaleFactor;&lt;/span&gt;&lt;br&gt;&lt;/pre&gt;&lt;/td&gt;&lt;/tr&gt;&lt;/table&gt;&lt;/figure&gt;
+&lt;h3 id=&quot;格式化字符串的坑&quot;&gt;&lt;a href=&quot;#格式化字符串的坑&quot; class=&quot;headerlink&quot; title=&quot;格式化字符串的坑&quot;&gt;&lt;/a&gt;&lt;strong&gt;格式化字符串的坑&lt;/strong&gt;&lt;/h3&gt;&lt;hr&gt;
+&lt;p&gt;很多情况下, 如果一个需要本地化的字符串中有多个格式化占位符的话, 因为各个语言的语法不同, 会有占位符顺序需要调整的问题. 比如以下栗子:&lt;/p&gt;
+&lt;figure class=&quot;highlight objc&quot;&gt;&lt;table&gt;&lt;tr&gt;&lt;td class=&quot;code&quot;&gt;&lt;pre&gt;&lt;span class=&quot;line&quot;&gt;[&lt;span class=&quot;built_in&quot;&gt;NSString&lt;/span&gt; stringWithFormat:&lt;span class=&quot;string&quot;&gt;@&quot;您的账号%@中仍有%@美元未使用&quot;&lt;/span&gt;, account, balance];&lt;/span&gt;&lt;br&gt;&lt;/pre&gt;&lt;/td&gt;&lt;/tr&gt;&lt;/table&gt;&lt;/figure&gt;
+&lt;p&gt;英文本地化字符串替换进去之后变成了&lt;/p&gt;
+&lt;figure class=&quot;highlight objc&quot;&gt;&lt;table&gt;&lt;tr&gt;&lt;td class=&quot;code&quot;&gt;&lt;pre&gt;&lt;span class=&quot;line&quot;&gt;[&lt;span class=&quot;built_in&quot;&gt;NSString&lt;/span&gt; stringWithFormat:&lt;span class=&quot;string&quot;&gt;@&quot;%@ dollars unused in your account %@&quot;&lt;/span&gt;, account, balance];&lt;/span&gt;&lt;br&gt;&lt;/pre&gt;&lt;/td&gt;&lt;/tr&gt;&lt;/table&gt;&lt;/figure&gt;
+&lt;p&gt;很明显语意已经跑偏了. 那么如何调整格式化占位符来适配不同的语法呢? 用以下方法即可:&lt;/p&gt;
+&lt;figure class=&quot;highlight objc&quot;&gt;&lt;table&gt;&lt;tr&gt;&lt;td class=&quot;code&quot;&gt;&lt;pre&gt;&lt;span class=&quot;line&quot;&gt;[&lt;span class=&quot;built_in&quot;&gt;NSString&lt;/span&gt; stringWithFormat:&lt;span class=&quot;string&quot;&gt;@&quot;%1$@ dollars unused in your account %2$@&quot;&lt;/span&gt;, account, balance];&lt;/span&gt;&lt;br&gt;&lt;/pre&gt;&lt;/td&gt;&lt;/tr&gt;&lt;/table&gt;&lt;/figure&gt;
+</content>
+    
+    <summary type="html">
+    
+      &lt;h3 id=&quot;默认语言&quot;&gt;&lt;a href=&quot;#默认语言&quot; class=&quot;headerlink&quot; title=&quot;默认语言&quot;&gt;&lt;/a&gt;&lt;strong&gt;默认语言&lt;/strong&gt;&lt;/h3&gt;&lt;hr&gt;
+&lt;p&gt;如果一台设备的语言为法语, 但是你所做的本地化只有英语\中文\德语, 那么应用安装后会默认显示Info.plist中&lt;code&gt;Localization native development region&lt;/code&gt;字段所设置的地区语言(如果没有这个字段就默认英语).&lt;/p&gt;
+&lt;p&gt;另一种情况是应用安装后切换语言, 若切换后的语言不存在本地化文件, 则保留前一语言的本地化显示. 比如你所做的本地化只有英语\中文\德语, 设备从英语切换到法语, 那么应用还是显示为英语; 如果再从法语切换到日语, 应用还是现实为英语. 一直到你切换至英语\中文\德语中的某一个语言之后, 应用才会显示响应的语言.&lt;/p&gt;
+&lt;p&gt;如果要自己设置默认语言的话, 可以使用以下的宏:&lt;/p&gt;
+&lt;figure class=&quot;highlight objc&quot;&gt;&lt;table&gt;&lt;tr&gt;&lt;td class=&quot;code&quot;&gt;&lt;pre&gt;&lt;span class=&quot;line&quot;&gt;&lt;span class=&quot;comment&quot;&gt;// 判断系统语言是否是中文@&quot;zh-Hans&quot;或者英文@&quot;en&quot;, 如果不是中文或者英文其他一概用英文@&quot;en&quot;&lt;/span&gt;&lt;/span&gt;&lt;br&gt;&lt;span class=&quot;line&quot;&gt;&lt;span class=&quot;preprocessor&quot;&gt;#define MYLocalizedString(key, comment) \&lt;/span&gt;&lt;/span&gt;&lt;br&gt;&lt;span class=&quot;line&quot;&gt;(([[[&lt;span class=&quot;built_in&quot;&gt;NSLocale&lt;/span&gt; preferredLanguages] objectAtIndex:&lt;span class=&quot;number&quot;&gt;0&lt;/span&gt;] isEqual:&lt;span class=&quot;string&quot;&gt;@&quot;zh-Hans&quot;&lt;/span&gt;] ||&lt;/span&gt;&lt;br&gt;&lt;span class=&quot;line&quot;&gt;  [[[&lt;span class=&quot;built_in&quot;&gt;NSLocale&lt;/span&gt; preferredLanguages] objectAtIndex:&lt;span class=&quot;number&quot;&gt;0&lt;/span&gt;] isEqual:&lt;span class=&quot;string&quot;&gt;@&quot;en&quot;&lt;/span&gt;]) ?&lt;/span&gt;&lt;br&gt;&lt;span class=&quot;line&quot;&gt; ([[&lt;span class=&quot;built_in&quot;&gt;NSBundle&lt;/span&gt; mainBundle] localizedStringForKey:key value:&lt;span class=&quot;string&quot;&gt;@&quot;&quot;&lt;/span&gt; table:&lt;span class=&quot;literal&quot;&gt;nil&lt;/span&gt;]) :&lt;/span&gt;&lt;br&gt;&lt;span class=&quot;line&quot;&gt; ([[&lt;span class=&quot;built_in&quot;&gt;NSBundle&lt;/span&gt; bundleWithPath:[[&lt;span class=&quot;built_in&quot;&gt;NSBundle&lt;/span&gt; mainBundle] pathForResource:&lt;span class=&quot;string&quot;&gt;@&quot;en&quot;&lt;/span&gt; ofType:&lt;span class=&quot;string&quot;&gt;@&quot;lproj&quot;&lt;/span&gt;]] localizedStringForKey:key value:&lt;span class=&quot;string&quot;&gt;@&quot;&quot;&lt;/span&gt; table:&lt;span class=&quot;literal&quot;&gt;nil&lt;/span&gt;]))&lt;/span&gt;&lt;br&gt;&lt;/pre&gt;&lt;/td&gt;&lt;/tr&gt;&lt;/table&gt;&lt;/figure&gt;
+&lt;p&gt;但是由于宏替换的特性, 上面的方法会增加很多的代码量(想象一下你的代码里面有多少本地化字符串, 就会有多少份上面的代码), 作为处女座简直不能忍. 所以想到了hook&lt;code&gt;-localizedStringForKey:value:table:&lt;/code&gt;方法来实现自定义的选择加载的语言包:&lt;/p&gt;
+    
+    </summary>
+    
+      <category term="iOS Tips" scheme="http://zzyspace.github.io/categories/iOS-Tips/"/>
+    
+    
+      <category term="localization" scheme="http://zzyspace.github.io/tags/localization/"/>
+    
+  </entry>
+  
+  <entry>
+    <title>【Linux】常用命令行</title>
+    <link href="http://zzyspace.github.io/2016/04/08/frequently-used-terminal-command/"/>
+    <id>http://zzyspace.github.io/2016/04/08/frequently-used-terminal-command/</id>
+    <published>2016-04-08T09:43:23.000Z</published>
+    <updated>2016-08-31T10:19:39.000Z</updated>
+    
+    <content type="html">&lt;p&gt;&lt;img src=&quot;/img/terminal-command/header.png&quot; alt=&quot;&quot;&gt;&lt;/p&gt;
+&lt;h3 id=&quot;热键&quot;&gt;&lt;a href=&quot;#热键&quot; class=&quot;headerlink&quot; title=&quot;热键&quot;&gt;&lt;/a&gt;&lt;strong&gt;热键&lt;/strong&gt;&lt;/h3&gt;&lt;hr&gt;
+&lt;ul&gt;
+&lt;li&gt;自动补全: &lt;code&gt;tab&lt;/code&gt;&lt;/li&gt;
+&lt;li&gt;终止命令: &lt;code&gt;ctrl&lt;/code&gt;+&lt;code&gt;c&lt;/code&gt;&lt;/li&gt;
+&lt;li&gt;光标移动至行首: &lt;code&gt;ctrl&lt;/code&gt;+&lt;code&gt;a&lt;/code&gt;&lt;/li&gt;
+&lt;li&gt;光标移动至行尾: &lt;code&gt;ctrl&lt;/code&gt;+&lt;code&gt;e&lt;/code&gt;&lt;/li&gt;
+&lt;/ul&gt;
+&lt;a id=&quot;more&quot;&gt;&lt;/a&gt;
+&lt;h3 id=&quot;路径操作&quot;&gt;&lt;a href=&quot;#路径操作&quot; class=&quot;headerlink&quot; title=&quot;路径操作&quot;&gt;&lt;/a&gt;&lt;strong&gt;路径操作&lt;/strong&gt;&lt;/h3&gt;&lt;hr&gt;
+&lt;ul&gt;
+&lt;li&gt;当前文件夹的内容: &lt;code&gt;ls&lt;/code&gt;&lt;/li&gt;
+&lt;li&gt;当前文件夹的内容(包括隐藏文件): &lt;code&gt;ls -a&lt;/code&gt;&lt;/li&gt;
+&lt;li&gt;当前文件夹的内容(包含其属性权限): &lt;code&gt;ls -l&lt;/code&gt;&lt;/li&gt;
+&lt;li&gt;当前文件夹下的所有内容(递归): &lt;code&gt;ls -R&lt;/code&gt;&lt;/li&gt;
+&lt;li&gt;当前路径: &lt;code&gt;pwd&lt;/code&gt;&lt;/li&gt;
+&lt;li&gt;当前路径的完整路径: &lt;code&gt;pwd -P&lt;/code&gt;&lt;/li&gt;
+&lt;li&gt;进入目录: &lt;code&gt;cd&lt;/code&gt;&lt;/li&gt;
+&lt;li&gt;进入上层目录: &lt;code&gt;cd ..&lt;/code&gt;&lt;/li&gt;
+&lt;li&gt;进入同级的其它目录: &lt;code&gt;cd ../xx&lt;/code&gt; (比如当前&lt;code&gt;/var/mail&lt;/code&gt;要跳转到&lt;code&gt;/var/msgs&lt;/code&gt;, 即&lt;code&gt;cd ../msgs&lt;/code&gt;)&lt;/li&gt;
+&lt;li&gt;回到前一个目录: &lt;code&gt;cd -&lt;/code&gt;&lt;/li&gt;
+&lt;li&gt;回到Home目录: &lt;code&gt;cd ~&lt;/code&gt;&lt;/li&gt;
+&lt;/ul&gt;
+&lt;h3 id=&quot;文件-文件夹操作&quot;&gt;&lt;a href=&quot;#文件-文件夹操作&quot; class=&quot;headerlink&quot; title=&quot;文件\文件夹操作&quot;&gt;&lt;/a&gt;&lt;strong&gt;文件\文件夹操作&lt;/strong&gt;&lt;/h3&gt;&lt;hr&gt;
+&lt;ul&gt;
+&lt;li&gt;创建文件夹: &lt;code&gt;mkdir&lt;/code&gt;&lt;/li&gt;
+&lt;li&gt;创建文件夹(若上级不存在则自动创建): &lt;code&gt;mkdir -p&lt;/code&gt;&lt;/li&gt;
+&lt;li&gt;创建文件: &lt;code&gt;touch&lt;/code&gt;&lt;/li&gt;
+&lt;li&gt;删除空文件夹: &lt;code&gt;rmdir&lt;/code&gt;&lt;/li&gt;
+&lt;li&gt;删除空文件夹(若上级为空文件夹则同时删除): &lt;code&gt;rmdir -p&lt;/code&gt;&lt;/li&gt;
+&lt;li&gt;删除文件夹(递归): &lt;code&gt;rm -r [dir path]&lt;/code&gt;&lt;/li&gt;
+&lt;li&gt;删除文件: &lt;code&gt;rm&lt;/code&gt;&lt;/li&gt;
+&lt;li&gt;删除文件(强制, 不会出现警告): &lt;code&gt;rm -f&lt;/code&gt;&lt;/li&gt;
+&lt;li&gt;复制文件: &lt;code&gt;cp [source] [destination]&lt;/code&gt;&lt;/li&gt;
+&lt;li&gt;复制目录(递归): &lt;code&gt;cp -r&lt;/code&gt;&lt;/li&gt;
+&lt;li&gt;复制文件(目标文件比源文件旧才更新): &lt;code&gt;cp -u&lt;/code&gt;&lt;/li&gt;
+&lt;li&gt;复制为快捷方式: &lt;code&gt;cp -s&lt;/code&gt;&lt;/li&gt;
+&lt;li&gt;移动文件(重命名): &lt;code&gt;mv [source] [destination]&lt;/code&gt;&lt;/li&gt;
+&lt;li&gt;移动文件(强制, 如果目标已经存在则会被覆盖): &lt;code&gt;mv -f&lt;/code&gt;&lt;/li&gt;
+&lt;li&gt;移动文件(目标文件比源文件旧才更新): &lt;code&gt;mv -u&lt;/code&gt;&lt;/li&gt;
+&lt;li&gt;查看文件: &lt;code&gt;cat&lt;/code&gt;&lt;/li&gt;
+&lt;li&gt;查看文件(包含特殊字符): &lt;code&gt;cat -A&lt;/code&gt;&lt;/li&gt;
+&lt;li&gt;查看文件(列出行号): &lt;code&gt;cat -n&lt;/code&gt;&lt;/li&gt;
+&lt;li&gt;打开文件: &lt;code&gt;open&lt;/code&gt;&lt;/li&gt;
+&lt;li&gt;隐藏文件: &lt;code&gt;chflags hidden&lt;/code&gt;&lt;/li&gt;
+&lt;li&gt;显示文件: &lt;code&gt;chflags nohidden&lt;/code&gt;&lt;/li&gt;
+&lt;/ul&gt;
+&lt;h3 id=&quot;功能操作&quot;&gt;&lt;a href=&quot;#功能操作&quot; class=&quot;headerlink&quot; title=&quot;功能操作&quot;&gt;&lt;/a&gt;&lt;strong&gt;功能操作&lt;/strong&gt;&lt;/h3&gt;&lt;hr&gt;
+&lt;ul&gt;
+&lt;li&gt;查看日期: &lt;code&gt;date&lt;/code&gt;&lt;/li&gt;
+&lt;li&gt;查看日历: &lt;code&gt;cal&lt;/code&gt;&lt;/li&gt;
+&lt;/ul&gt;
+&lt;h3 id=&quot;一些好用的命令&quot;&gt;&lt;a href=&quot;#一些好用的命令&quot; class=&quot;headerlink&quot; title=&quot;一些好用的命令&quot;&gt;&lt;/a&gt;&lt;strong&gt;一些好用的命令&lt;/strong&gt;&lt;/h3&gt;&lt;hr&gt;
+&lt;ul&gt;
+&lt;li&gt;显示Mac隐藏文件: &lt;/li&gt;
+&lt;/ul&gt;
+&lt;figure class=&quot;highlight zsh&quot;&gt;&lt;table&gt;&lt;tr&gt;&lt;td class=&quot;code&quot;&gt;&lt;pre&gt;&lt;span class=&quot;line&quot;&gt;$ defaults write com.apple.finder AppleShowAllFiles -bool &lt;span class=&quot;literal&quot;&gt;true&lt;/span&gt;&lt;/span&gt;&lt;br&gt;&lt;span class=&quot;line&quot;&gt;$ killall Finder &lt;span class=&quot;comment&quot;&gt;#生效&lt;/span&gt;&lt;/span&gt;&lt;br&gt;&lt;/pre&gt;&lt;/td&gt;&lt;/tr&gt;&lt;/table&gt;&lt;/figure&gt;
+&lt;ul&gt;
+&lt;li&gt;隐藏Mac隐藏文件: &lt;/li&gt;
+&lt;/ul&gt;
+&lt;figure class=&quot;highlight zsh&quot;&gt;&lt;table&gt;&lt;tr&gt;&lt;td class=&quot;code&quot;&gt;&lt;pre&gt;&lt;span class=&quot;line&quot;&gt;$ defaults write com.apple.finder AppleShowAllFiles -bool &lt;span class=&quot;literal&quot;&gt;false&lt;/span&gt;&lt;/span&gt;&lt;br&gt;&lt;span class=&quot;line&quot;&gt;$ killall Finder &lt;span class=&quot;comment&quot;&gt;#生效&lt;/span&gt;&lt;/span&gt;&lt;br&gt;&lt;/pre&gt;&lt;/td&gt;&lt;/tr&gt;&lt;/table&gt;&lt;/figure&gt;
+&lt;ul&gt;
+&lt;li&gt;使某个应用不出现在Dock上:&lt;/li&gt;
+&lt;/ul&gt;
+&lt;figure class=&quot;highlight zsh&quot;&gt;&lt;table&gt;&lt;tr&gt;&lt;td class=&quot;code&quot;&gt;&lt;pre&gt;&lt;span class=&quot;line&quot;&gt;$ /usr/libexec/PlistBuddy  -c &lt;span class=&quot;string&quot;&gt;&quot;Add :LSUIElement bool true&quot;&lt;/span&gt; /Applications/XXX.app/Contents/Info.plist&lt;/span&gt;&lt;br&gt;&lt;/pre&gt;&lt;/td&gt;&lt;/tr&gt;&lt;/table&gt;&lt;/figure&gt;
+&lt;ul&gt;
+&lt;li&gt;使某个应用重新出现在Dock上:&lt;/li&gt;
+&lt;/ul&gt;
+&lt;figure class=&quot;highlight zsh&quot;&gt;&lt;table&gt;&lt;tr&gt;&lt;td class=&quot;code&quot;&gt;&lt;pre&gt;&lt;span class=&quot;line&quot;&gt;$ /usr/libexec/PlistBuddy  -c &lt;span class=&quot;string&quot;&gt;&quot;Delete :LSUIElement&quot;&lt;/span&gt; /Applications/XXX.app/Contents/Info.plist&lt;/span&gt;&lt;br&gt;&lt;/pre&gt;&lt;/td&gt;&lt;/tr&gt;&lt;/table&gt;&lt;/figure&gt;
+&lt;ul&gt;
+&lt;li&gt;查看某个Objective-C工程有多少行代码:&lt;/li&gt;
+&lt;/ul&gt;
+&lt;figure class=&quot;highlight zsh&quot;&gt;&lt;table&gt;&lt;tr&gt;&lt;td class=&quot;code&quot;&gt;&lt;pre&gt;&lt;span class=&quot;line&quot;&gt;$ &lt;span class=&quot;built_in&quot;&gt;cd&lt;/span&gt; [project path]&lt;/span&gt;&lt;br&gt;&lt;span class=&quot;line&quot;&gt;$ find . -name &lt;span class=&quot;string&quot;&gt;&quot;*.m&quot;&lt;/span&gt; -or -name &lt;span class=&quot;string&quot;&gt;&quot;*.h&quot;&lt;/span&gt; -or -name &lt;span class=&quot;string&quot;&gt;&quot;*.xib&quot;&lt;/span&gt; -or -name &lt;span class=&quot;string&quot;&gt;&quot;*.c&quot;&lt;/span&gt; |xargs grep -v &lt;span class=&quot;string&quot;&gt;&quot;^$&quot;&lt;/span&gt;|wc &lt;span class=&quot;operator&quot;&gt;-l&lt;/span&gt;&lt;/span&gt;&lt;br&gt;&lt;/pre&gt;&lt;/td&gt;&lt;/tr&gt;&lt;/table&gt;&lt;/figure&gt;
+&lt;ul&gt;
+&lt;li&gt;Git超漂亮日志(设置为全局别名, &lt;code&gt;git lg&lt;/code&gt;使用即可): &lt;/li&gt;
+&lt;/ul&gt;
+&lt;figure class=&quot;highlight zsh&quot;&gt;&lt;table&gt;&lt;tr&gt;&lt;td class=&quot;code&quot;&gt;&lt;pre&gt;&lt;span class=&quot;line&quot;&gt;$ git config --global alias.lg &lt;span class=&quot;string&quot;&gt;&quot;log --color --graph --pretty=format:&#39;%Cred%h%Creset -%C(yellow)%d%Creset %s %Cgreen(%cr) %C(bold blue)&amp;lt;%an&amp;gt;%Creset&#39; --abbrev-commit&quot;&lt;/span&gt;&lt;/span&gt;&lt;br&gt;&lt;/pre&gt;&lt;/td&gt;&lt;/tr&gt;&lt;/table&gt;&lt;/figure&gt;
+&lt;h3 id=&quot;参考&quot;&gt;&lt;a href=&quot;#参考&quot; class=&quot;headerlink&quot; title=&quot;参考&quot;&gt;&lt;/a&gt;&lt;strong&gt;参考&lt;/strong&gt;&lt;/h3&gt;&lt;hr&gt;
+&lt;ol&gt;
+&lt;li&gt;&lt;a href=&quot;http://blog.csdn.net/xiaoguaihai/article/details/8705992&quot; target=&quot;_blank&quot; rel=&quot;external&quot;&gt;linux常用基本命令详解&lt;/a&gt;&lt;/li&gt;
+&lt;li&gt;&lt;a href=&quot;http://www.liaoxuefeng.com/wiki/0013739516305929606dd18361248578c67b8067c8c017b000/&quot; target=&quot;_blank&quot; rel=&quot;external&quot;&gt;Git教程-廖雪峰&lt;/a&gt;&lt;/li&gt;
+&lt;/ol&gt;
+</content>
+    
+    <summary type="html">
+    
+      &lt;p&gt;&lt;img src=&quot;/img/terminal-command/header.png&quot; alt=&quot;&quot;&gt;&lt;/p&gt;
+&lt;h3 id=&quot;热键&quot;&gt;&lt;a href=&quot;#热键&quot; class=&quot;headerlink&quot; title=&quot;热键&quot;&gt;&lt;/a&gt;&lt;strong&gt;热键&lt;/strong&gt;&lt;/h3&gt;&lt;hr&gt;
+&lt;ul&gt;
+&lt;li&gt;自动补全: &lt;code&gt;tab&lt;/code&gt;&lt;/li&gt;
+&lt;li&gt;终止命令: &lt;code&gt;ctrl&lt;/code&gt;+&lt;code&gt;c&lt;/code&gt;&lt;/li&gt;
+&lt;li&gt;光标移动至行首: &lt;code&gt;ctrl&lt;/code&gt;+&lt;code&gt;a&lt;/code&gt;&lt;/li&gt;
+&lt;li&gt;光标移动至行尾: &lt;code&gt;ctrl&lt;/code&gt;+&lt;code&gt;e&lt;/code&gt;&lt;/li&gt;
+&lt;/ul&gt;
+    
+    </summary>
+    
+      <category term="iOS Tips" scheme="http://zzyspace.github.io/categories/iOS-Tips/"/>
+    
+    
+      <category term="Linux" scheme="http://zzyspace.github.io/tags/Linux/"/>
+    
+  </entry>
+  
+  <entry>
     <title>【iOS Tip】提高Xcode编译速度</title>
     <link href="http://zzyspace.github.io/2016/03/20/reduce-xcode-build-times/"/>
     <id>http://zzyspace.github.io/2016/03/20/reduce-xcode-build-times/</id>
     <published>2016-03-20T07:46:56.000Z</published>
-    <updated>2016-04-14T11:45:19.000Z</updated>
+    <updated>2016-08-31T08:53:34.000Z</updated>
     
     <content type="html">&lt;p&gt;&lt;img src=&quot;/img/reduce-xcode-build-times/title.png&quot; alt=&quot;&quot;&gt;&lt;br&gt;平常在调试工程的时候, 特别是大工程, 浪费在编译上的时间加起来也是个不小的数目. 我戏成它为&lt;strong&gt;带薪编译&lt;/strong&gt;. 带薪编译一来呢浪费公司资源, 二来使得开发效率大大降低. 所以提高Xcode的编译速度还是非常有必要的. 关于通过更改一些Xcode的配置来提升编译速度&lt;a href=&quot;http://blog.csdn.net/zhaoxy_thu/article/details/30073485?utm_source=tuicool&amp;amp;utm_medium=referral&quot; target=&quot;_blank&quot; rel=&quot;external&quot;&gt;这篇文章&lt;/a&gt;已经列举除了几个不错的方法, 这里就不再多说.&lt;/p&gt;
 &lt;p&gt;这篇文章主要讲的是从&lt;strong&gt;硬件方面&lt;/strong&gt;来提升Xcode的编译速度. 因为对比了现在日常使用的Mac mini和MacBook Pro, 在CPU和内存基本没有差别的情况下, 相比MacBook Pro的SSD, Mac mini的机械硬盘的表现实在是惨不忍睹. 这也是拖慢了编译速度的主要元凶. &lt;del&gt;所以, 去换一个SSD吧.(Excuse me?)&lt;/del&gt;&lt;/p&gt;
@@ -84,7 +247,7 @@
     <link href="http://zzyspace.github.io/2016/03/16/objective-c-runtime/"/>
     <id>http://zzyspace.github.io/2016/03/16/objective-c-runtime/</id>
     <published>2016-03-16T09:16:08.000Z</published>
-    <updated>2016-04-14T11:45:19.000Z</updated>
+    <updated>2016-08-31T08:53:34.000Z</updated>
     
     <content type="html">&lt;h1 id=&quot;一-Runtime&quot;&gt;&lt;a href=&quot;#一-Runtime&quot; class=&quot;headerlink&quot; title=&quot;一. Runtime&quot;&gt;&lt;/a&gt;&lt;strong&gt;一. Runtime&lt;/strong&gt;&lt;/h1&gt;&lt;hr&gt;
 &lt;p&gt;Runtime是一套底层的C语言API. 实际上, 平时我们编写的Objective-C代码, 底层都是基于runtime实现的, 也就是说, 平时我们编写的Objective-C代码, 最终都是转成了底层的runtime代码(C语言代码). Runtime使得Objective-C这门语言的灵活性大大地提升. 有了runtime, 我们可以在应用运行的时候动态操作对象、类、方法, 也因为这个原因, 使得编程有了更多的可能性, 对于开发中遇到的一些比较棘手的问题, 往往用runtime可以优雅地解决, 接下来让我们看看runtime是为何可以如此牛x.&lt;/p&gt;
@@ -167,7 +330,7 @@
     <link href="http://zzyspace.github.io/2016/02/18/apple-pay/"/>
     <id>http://zzyspace.github.io/2016/02/18/apple-pay/</id>
     <published>2016-02-18T13:19:14.000Z</published>
-    <updated>2016-04-14T11:45:19.000Z</updated>
+    <updated>2016-08-31T08:53:34.000Z</updated>
     
     <content type="html">&lt;p&gt;&lt;img src=&quot;/img/ApplePay/header.jpg&quot; alt=&quot;&quot;&gt;&lt;br&gt;Apple Pay在今天终于在中国大陆地区正式开通. Apple Pay不仅仅在线下支付中可以让你通过指纹刷(zhuang)卡(bi), 更可以在线上支付(App中支付)时, 节省掉很多多余的步骤, 让支付宝与微信支付哭晕在厕所… 蛋扯远了, 接下来我们来看看怎么让你的App也支持Apple Pay吧!&lt;/p&gt;
 &lt;a id=&quot;more&quot;&gt;&lt;/a&gt;
@@ -215,7 +378,7 @@
     <link href="http://zzyspace.github.io/2016/01/25/associated-objects/"/>
     <id>http://zzyspace.github.io/2016/01/25/associated-objects/</id>
     <published>2016-01-25T07:06:34.000Z</published>
-    <updated>2016-04-14T12:08:07.000Z</updated>
+    <updated>2016-08-31T08:53:34.000Z</updated>
     
     <content type="html">&lt;p&gt;分类(&lt;code&gt;category&lt;/code&gt;)在iOS开发中的应用非常广泛, 优点譬如给现有的类拓展更多的方法、对一个类的多种功能进行局部化封装等等, 都是非常方便的. 但是也有一个痛点, 就是分类中无法添加属性. 但是&lt;code&gt;Objective-C&lt;/code&gt;的&lt;code&gt;runtime&lt;/code&gt;中有许多黑科技可以帮我们实现很多常规方法下几乎不可能的事情–比如在分类中添加属性.这个黑科技叫做&lt;strong&gt;关联对象&lt;/strong&gt;(&lt;code&gt;Associated Objects&lt;/code&gt;). &lt;/p&gt;
 &lt;h1 id=&quot;Associated-Objects&quot;&gt;&lt;a href=&quot;#Associated-Objects&quot; class=&quot;headerlink&quot; title=&quot;Associated Objects&quot;&gt;&lt;/a&gt;&lt;strong&gt;Associated Objects&lt;/strong&gt;&lt;/h1&gt;&lt;hr&gt;
@@ -302,7 +465,7 @@
     <link href="http://zzyspace.github.io/2015/10/18/crash-with-static-library/"/>
     <id>http://zzyspace.github.io/2015/10/18/crash-with-static-library/</id>
     <published>2015-10-18T12:45:33.000Z</published>
-    <updated>2016-06-08T07:52:21.000Z</updated>
+    <updated>2016-08-31T08:53:34.000Z</updated>
     
     <content type="html">&lt;p&gt;使用其他一些第三方静态库时, 如果没有注意按照文档中的提示进行配置, 很容易在程序运行过程中因 “unrecorgnized selector send to instance xxx” 的异常而崩溃. 而且可以发现, 导致崩溃的方法都是Category中的方法.&lt;br&gt;在&lt;a href=&quot;https://developer.apple.com/library/mac/qa/qa1490/_index.html&quot; target=&quot;_blank&quot; rel=&quot;external&quot;&gt;苹果官方文档&lt;/a&gt;中解释到: &lt;/p&gt;
 &lt;blockquote&gt;
@@ -357,7 +520,7 @@
     <link href="http://zzyspace.github.io/2015/10/12/openssh-debug-executable-file/"/>
     <id>http://zzyspace.github.io/2015/10/12/openssh-debug-executable-file/</id>
     <published>2015-10-11T16:04:56.000Z</published>
-    <updated>2016-04-14T11:45:19.000Z</updated>
+    <updated>2016-08-31T08:53:34.000Z</updated>
     
     <content type="html">&lt;h1 id=&quot;一-连接设备&quot;&gt;&lt;a href=&quot;#一-连接设备&quot; class=&quot;headerlink&quot; title=&quot;一. 连接设备&quot;&gt;&lt;/a&gt;&lt;strong&gt;一. 连接设备&lt;/strong&gt;&lt;/h1&gt;&lt;hr&gt;
 &lt;h3 id=&quot;1-连接&quot;&gt;&lt;a href=&quot;#1-连接&quot; class=&quot;headerlink&quot; title=&quot;1. 连接&quot;&gt;&lt;/a&gt;&lt;strong&gt;1. 连接&lt;/strong&gt;&lt;/h3&gt;&lt;p&gt;通过USB连接:&lt;/p&gt;
@@ -413,7 +576,7 @@
     <link href="http://zzyspace.github.io/2015/05/21/package-bundle/"/>
     <id>http://zzyspace.github.io/2015/05/21/package-bundle/</id>
     <published>2015-05-21T15:55:58.000Z</published>
-    <updated>2016-04-14T11:45:19.000Z</updated>
+    <updated>2016-08-31T08:53:34.000Z</updated>
     
     <content type="html">&lt;p&gt;在编写第三方库时, 如果需要用到一些图片、声音资源, 甚至是nib(xib), 就需要把这些资源打包成一个bundle. 一开始在其他第三方库中看到bundle的时候, 觉得它好像是一个很高级的东西. 但是事实上, bundle就是一个普通得不能再普通的文件夹, 只是加上了&lt;code&gt;.bundle&lt;/code&gt;后缀, 一下子就高大上了起来.&lt;br&gt;加上&lt;code&gt;.bundle&lt;/code&gt;后缀的文件夹, 会被Mac识别为一个包. 将文件夹以包的形式存在, 可以当作一个整体方便地移动, 也可以让别人不至于不小心改动到库所依赖的资源. &lt;/p&gt;
 &lt;h1 id=&quot;步骤&quot;&gt;&lt;a href=&quot;#步骤&quot; class=&quot;headerlink&quot; title=&quot;步骤&quot;&gt;&lt;/a&gt;&lt;strong&gt;步骤&lt;/strong&gt;&lt;/h1&gt;&lt;p&gt;1.将资源放到文件夹中, 重命名文件夹为&lt;code&gt;xxx.bundle&lt;/code&gt;&lt;/p&gt;
@@ -440,7 +603,7 @@
     <link href="http://zzyspace.github.io/2015/03/29/uiimage-rendering-mode/"/>
     <id>http://zzyspace.github.io/2015/03/29/uiimage-rendering-mode/</id>
     <published>2015-03-29T06:32:22.000Z</published>
-    <updated>2016-04-14T11:45:19.000Z</updated>
+    <updated>2016-08-31T08:53:34.000Z</updated>
     
     <content type="html">&lt;p&gt;很多人在第一次使用UITabBar的时候, 都会遇到一个摸不着头脑的问题:&lt;br&gt;明明UI给的图片是这样的 ↓&lt;br&gt;&lt;img src=&quot;/img/UIImageRenderingMode/renderingMode_0.png&quot; alt=&quot;&quot;&gt;&lt;br&gt;可是用到tabBar中却变成了这样 ↓&lt;br&gt;&lt;img src=&quot;/img/UIImageRenderingMode/renderingMode_1.png&quot; alt=&quot;&quot;&gt;&lt;br&gt;&lt;strong&gt;WTF!&lt;/strong&gt; 咋还自己变色了呢? &lt;img src=&quot;/img/UIImageRenderingMode/renderingMode_2.jpg&quot; alt=&quot;&quot;&gt;&lt;br&gt;其实以上的现象都是源于UIImage的一个属性&lt;code&gt;renderingMode&lt;/code&gt;.&lt;/p&gt;
 &lt;h1 id=&quot;UIImageRenderingMode&quot;&gt;&lt;a href=&quot;#UIImageRenderingMode&quot; class=&quot;headerlink&quot; title=&quot;UIImageRenderingMode&quot;&gt;&lt;/a&gt;&lt;strong&gt;UIImageRenderingMode&lt;/strong&gt;&lt;/h1&gt;&lt;hr&gt;
