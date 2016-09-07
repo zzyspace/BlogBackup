@@ -1,4 +1,4 @@
-title: 【iOS Tip】UIImage的renderingMode
+title: 【iOS Tip】UIImage 的 renderingMode
 date: 2015-03-29 14:32:22
 categories: iOS Tips
 tags: [UI]
@@ -11,16 +11,16 @@ tags: [UI]
 **WTF!** 咋还自己变色了呢? ![](/img/UIImageRenderingMode/renderingMode_2.jpg)
 其实以上的现象都是源于UIImage的一个属性`renderingMode `.
 
-# **UIImageRenderingMode**
+<!--more-->
+
+# UIImageRenderingMode
 ---
 
-### **1. 概念**
+### 1. 概念
  
 ```objc
 @property(nonatomic, readonly) UIImageRenderingMode renderingMode NS_AVAILABLE_IOS(7_0);
 ```
-
-<!--more-->
 
 `UIImageRenderingMode`是一个枚举值, 如下:
 ```objc
@@ -36,7 +36,7 @@ typedef NS_ENUM(NSInteger, UIImageRenderingMode) {
 
 > 关于**模板(template)**: 上文中提到的模板, 其实作用就是忽略掉了图片的所有不透明的颜色信息, 取而代之的是它所在的控件的`tintColor`. 
 
-### **2. 应用**
+### 2. 应用
 
 根据上面对**renderingMode**的描述, 我们就可以很容易联想到导致文章开头那个现象的原因:
 - UITabBar会自动将图片当做模板来渲染
@@ -55,7 +55,8 @@ viewController.tabBarItem.selectedImage = originalSelectedImage;
 tabBar.tintColor = kAppMainColor;
 ```
 
-### **3. 其他**
+### 3. 其他
 
 如果总是在代码中设置**renderingMode**也是比较麻烦的, 还有一个更佳便捷的设置方法, 如下图在`Images.xcassets`里面选中相应的图片, 在右侧的工具栏中的`Render As`字段选择相应的**renderingMode**就可以了.
 ![](/img/UIImageRenderingMode/renderingMode_3.png)
+

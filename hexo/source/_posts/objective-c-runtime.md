@@ -4,13 +4,15 @@ categories: iOS开发
 tags: [runtime]
 ---
 
-# **一. Runtime**
+# Runtime
 ---
 Runtime是一套底层的C语言API. 实际上, 平时我们编写的Objective-C代码, 底层都是基于runtime实现的, 也就是说, 平时我们编写的Objective-C代码, 最终都是转成了底层的runtime代码(C语言代码). Runtime使得Objective-C这门语言的灵活性大大地提升. 有了runtime, 我们可以在应用运行的时候动态操作对象、类、方法, 也因为这个原因, 使得编程有了更多的可能性, 对于开发中遇到的一些比较棘手的问题, 往往用runtime可以优雅地解决, 接下来让我们看看runtime是为何可以如此牛x.
 
-# **二. Objective-C中类和对象的本质**
+<!--more-->
+
+# Objective-C中类和对象的本质
 ---
-### **1. 对象(Instance)**
+### 1. 对象(Instance)
 **概念:**
 对象的本质是一个结构体, 在`<objc/objc.h>`中可以找到它的声明:
 ```objc
@@ -20,8 +22,6 @@ struct objc_object {
 ```
 - `isa`: 指针指向对象所属的[类(Class)](#二.2), Class结构体中包含了成员变量、对象方法等等.  
 
-<!--more-->
-
 **补充:**
 平常我们常常使用`id`来作为对象的指针, 原因就是`<objc/objc.h>`中定义`id `类型来代替`struct objc_object *`:
 ```objc
@@ -30,7 +30,7 @@ typedef struct objc_object *id;
 
 <br/>
 
-### <span id="二.2"> **2. 类(Class)** </span>
+### <span id="二.2"> 2. 类(Class) </span>
 **概念:**
 类的本质是一个Class类型的对象. 在`<objc/runtime.h>`中, 对类的声明如下:
 ```objc
@@ -68,7 +68,7 @@ typedef struct objc_class *Class;
 
 <br/>
 
-### <span id="二.3"> **3. 元类(MetaClass)** </span>
+### <span id="二.3"> 3. 元类(MetaClass) </span>
 **概念:**
 元类也是一个类, 每个类都有对应的一个元类. 可以通过类中的isa指针找到其对应的元类. 虽然在runtime相关头文件中没有找到MetaClass的声明, 但是在[这个博客](http://www.sealiesoftware.com/blog/archive/2009/04/14/objc_explain_Classes_and_metaclasses.html)中对元类的与类的关系解释中, 我们可以推测出元类结构体和类是相似的, 包含(但不仅有)如下成员:
 - `isa`: 指针都是指向根元类(NSObject的元类), 即使是根元类本身的isa也是指向自己
@@ -80,7 +80,7 @@ typedef struct objc_class *Class;
 <img src="/img/runtime/runtime_0.pdf"/>
 </div>
 
-# **三. 消息机制**
+# 消息机制
 ---
 我们平常所说的"方法调用", 其实是不准确的, 因为在Objective-C中, 所谓的"方法调用"本质是消息分发. 比如下面这个"方法调用":
 ```objc
@@ -116,3 +116,5 @@ objc_msgSend(receiver, @selector(message))
 4.[(译)Objective-C的动态特性](http://limboy.me/ios/2013/08/03/dynamic-tips-and-tricks-with-objective-c.html) by Limboy’s HQ
 5.[Objective-C 中的消息与消息转发](http://blog.ibireme.com/2013/11/26/objective-c-messaging/) by ibireme
 6.[Objective-C Runtime](http://tech.glowing.com/cn/objective-c-runtime/) by Glow技术团队博客
+
+

@@ -125,7 +125,7 @@ var _hmt = _hmt || [];
 				
 				<section class="switch-part switch-part2">
 					<div class="widget tagcloud" id="js-tagcloud">
-						<a href="/tags/Apple-Pay/" style="font-size: 10px;">Apple Pay</a> <a href="/tags/Linux/" style="font-size: 10px;">Linux</a> <a href="/tags/Other-Linker-Flags/" style="font-size: 10px;">Other Linker Flags</a> <a href="/tags/UI/" style="font-size: 10px;">UI</a> <a href="/tags/Xcode/" style="font-size: 10px;">Xcode</a> <a href="/tags/bundle/" style="font-size: 10px;">bundle</a> <a href="/tags/jailbreak/" style="font-size: 10px;">jailbreak</a> <a href="/tags/localization/" style="font-size: 10px;">localization</a> <a href="/tags/runtime/" style="font-size: 20px;">runtime</a>
+						<a href="/tags/Apple-Pay/" style="font-size: 10px;">Apple Pay</a> <a href="/tags/Linux/" style="font-size: 10px;">Linux</a> <a href="/tags/Other-Linker-Flags/" style="font-size: 10px;">Other Linker Flags</a> <a href="/tags/UI/" style="font-size: 10px;">UI</a> <a href="/tags/Xcode/" style="font-size: 10px;">Xcode</a> <a href="/tags/bundle/" style="font-size: 10px;">bundle</a> <a href="/tags/dns/" style="font-size: 10px;">dns</a> <a href="/tags/jailbreak/" style="font-size: 10px;">jailbreak</a> <a href="/tags/localization/" style="font-size: 10px;">localization</a> <a href="/tags/runtime/" style="font-size: 20px;">runtime</a>
 					</div>
 				</section>
 				
@@ -199,6 +199,71 @@ var _hmt = _hmt || [];
 
       <div class="body-wrap">
   
+    <article id="post-dns-resolving" class="article article-type-post" itemscope itemprop="blogPost">
+  
+    <div class="article-meta">
+      <a href="/2016/09/07/dns-resolving/" class="article-date">
+  	<time datetime="2016-09-07T05:23:03.000Z" itemprop="datePublished">2016-09-07</time>
+</a>
+    </div>
+  
+  <div class="article-inner">
+    
+      <input type="hidden" class="isFancy" />
+    
+    
+      <header class="article-header">
+        
+  
+    <h1 itemprop="name">
+      <a class="article-title" href="/2016/09/07/dns-resolving/">【iOS开发】DNS解析失败的处理 (支持IPv6)</a>
+    </h1>
+  
+
+      </header>
+      
+    
+    <div class="article-entry" itemprop="articleBody">
+      
+        <p><img src="/img/dns/header.png" alt=""></p>
+<p>在之前做的一个项目中, 网络请求常常会出现以下错误:<br><code>Error Domain=NSURLErrorDomain Code=-1003 &quot;A server with the specified hostname could not be found.&quot;</code><br>错误提示也很明显地指出了原因: 指定域名的服务器无法被找到. 其实这个问题跟自己项目的代码无关, 跟服务端也没有关系, 真正的原因是来自于DNS (Domain Name System). </p>
+      
+    </div>
+    
+    <div class="article-info article-info-index">
+      
+      
+	<div class="article-tag tagcloud">
+		<ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/dns/">dns</a></li></ul>
+	</div>
+
+      
+	<div class="article-category tagcloud">
+	<a class="article-category-link" href="/categories/iOS开发/">iOS开发</a>
+	</div>
+
+
+      
+        <p class="article-more-link">
+          <a  href="/2016/09/07/dns-resolving/#more">more >></a>
+        </p>
+      
+      <div class="clearfix"></div>
+    </div>
+    
+  </div>
+  
+</article>
+
+
+
+
+
+
+
+
+
+  
     <article id="post-summary-of-localization" class="article article-type-post" itemscope itemprop="blogPost">
   
     <div class="article-meta">
@@ -225,12 +290,9 @@ var _hmt = _hmt || [];
     
     <div class="article-entry" itemprop="articleBody">
       
-        <h3 id="默认语言"><a href="#默认语言" class="headerlink" title="默认语言"></a><strong>默认语言</strong></h3><hr>
+        <h1 id="默认语言"><a href="#默认语言" class="headerlink" title="默认语言"></a>默认语言</h1><hr>
 <p>如果一台设备的语言为法语, 但是你所做的本地化只有英语\中文\德语, 那么应用安装后会默认显示Info.plist中<code>Localization native development region</code>字段所设置的地区语言(如果没有这个字段就默认英语).</p>
 <p>另一种情况是应用安装后切换语言, 若切换后的语言不存在本地化文件, 则保留前一语言的本地化显示. 比如你所做的本地化只有英语\中文\德语, 设备从英语切换到法语, 那么应用还是显示为英语; 如果再从法语切换到日语, 应用还是现实为英语. 一直到你切换至英语\中文\德语中的某一个语言之后, 应用才会显示响应的语言.</p>
-<p>如果要自己设置默认语言的话, 可以使用以下的宏:</p>
-<figure class="highlight objc"><table><tr><td class="code"><pre><span class="line"><span class="comment">// 判断系统语言是否是中文@"zh-Hans"或者英文@"en", 如果不是中文或者英文其他一概用英文@"en"</span></span><br><span class="line"><span class="preprocessor">#define MYLocalizedString(key, comment) \</span></span><br><span class="line">(([[[<span class="built_in">NSLocale</span> preferredLanguages] objectAtIndex:<span class="number">0</span>] isEqual:<span class="string">@"zh-Hans"</span>] ||</span><br><span class="line">  [[[<span class="built_in">NSLocale</span> preferredLanguages] objectAtIndex:<span class="number">0</span>] isEqual:<span class="string">@"en"</span>]) ?</span><br><span class="line"> ([[<span class="built_in">NSBundle</span> mainBundle] localizedStringForKey:key value:<span class="string">@""</span> table:<span class="literal">nil</span>]) :</span><br><span class="line"> ([[<span class="built_in">NSBundle</span> bundleWithPath:[[<span class="built_in">NSBundle</span> mainBundle] pathForResource:<span class="string">@"en"</span> ofType:<span class="string">@"lproj"</span>]] localizedStringForKey:key value:<span class="string">@""</span> table:<span class="literal">nil</span>]))</span><br></pre></td></tr></table></figure>
-<p>但是由于宏替换的特性, 上面的方法会增加很多的代码量(想象一下你的代码里面有多少本地化字符串, 就会有多少份上面的代码), 作为处女座简直不能忍. 所以想到了hook<code>-localizedStringForKey:value:table:</code>方法来实现自定义的选择加载的语言包:</p>
       
     </div>
     
@@ -250,77 +312,6 @@ var _hmt = _hmt || [];
       
         <p class="article-more-link">
           <a  href="/2016/08/07/summary-of-localization/#more">more >></a>
-        </p>
-      
-      <div class="clearfix"></div>
-    </div>
-    
-  </div>
-  
-</article>
-
-
-
-
-
-
-
-
-
-  
-    <article id="post-frequently-used-terminal-command" class="article article-type-post" itemscope itemprop="blogPost">
-  
-    <div class="article-meta">
-      <a href="/2016/04/08/frequently-used-terminal-command/" class="article-date">
-  	<time datetime="2016-04-08T09:43:23.000Z" itemprop="datePublished">2016-04-08</time>
-</a>
-    </div>
-  
-  <div class="article-inner">
-    
-      <input type="hidden" class="isFancy" />
-    
-    
-      <header class="article-header">
-        
-  
-    <h1 itemprop="name">
-      <a class="article-title" href="/2016/04/08/frequently-used-terminal-command/">【Linux】常用命令行</a>
-    </h1>
-  
-
-      </header>
-      
-    
-    <div class="article-entry" itemprop="articleBody">
-      
-        <p><img src="/img/terminal-command/header.png" alt=""></p>
-<h3 id="热键"><a href="#热键" class="headerlink" title="热键"></a><strong>热键</strong></h3><hr>
-<ul>
-<li>自动补全: <code>tab</code></li>
-<li>终止命令: <code>ctrl</code>+<code>c</code></li>
-<li>光标移动至行首: <code>ctrl</code>+<code>a</code></li>
-<li>光标移动至行尾: <code>ctrl</code>+<code>e</code></li>
-</ul>
-      
-    </div>
-    
-    <div class="article-info article-info-index">
-      
-      
-	<div class="article-tag tagcloud">
-		<ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/Linux/">Linux</a></li></ul>
-	</div>
-
-      
-	<div class="article-category tagcloud">
-	<a class="article-category-link" href="/categories/iOS-Tips/">iOS Tips</a>
-	</div>
-
-
-      
-        <p class="article-more-link">
-          <a  href="/2016/04/08/frequently-used-terminal-command/#more">more >></a>
         </p>
       
       <div class="clearfix"></div>
@@ -368,14 +359,6 @@ var _hmt = _hmt || [];
         <p><img src="/img/reduce-xcode-build-times/title.png" alt=""><br>平常在调试工程的时候, 特别是大工程, 浪费在编译上的时间加起来也是个不小的数目. 我戏成它为<strong>带薪编译</strong>. 带薪编译一来呢浪费公司资源, 二来使得开发效率大大降低. 所以提高Xcode的编译速度还是非常有必要的. 关于通过更改一些Xcode的配置来提升编译速度<a href="http://blog.csdn.net/zhaoxy_thu/article/details/30073485?utm_source=tuicool&amp;utm_medium=referral">这篇文章</a>已经列举除了几个不错的方法, 这里就不再多说.</p>
 <p>这篇文章主要讲的是从<strong>硬件方面</strong>来提升Xcode的编译速度. 因为对比了现在日常使用的Mac mini和MacBook Pro, 在CPU和内存基本没有差别的情况下, 相比MacBook Pro的SSD, Mac mini的机械硬盘的表现实在是惨不忍睹. 这也是拖慢了编译速度的主要元凶. <del>所以, 去换一个SSD吧.(Excuse me?)</del></p>
 <p>本文所讲的方法理论上编译速度是可以超过SSD的. 在说具体方法之前, 先来了解一下拖慢编译速度的元凶Derived Data:</p>
-<h1 id="Derived-Data"><a href="#Derived-Data" class="headerlink" title="Derived Data"></a><strong>Derived Data</strong></h1><hr>
-<p>Derived Data是Xcode自动生成的一些派生数据的文件夹. 里面包含有一些索引文件、Log、<strong>编译时产生的文件</strong>. 编译时候产生的文件包括:</p>
-<ul>
-<li>第三方库的<code>.a</code>文件</li>
-<li>应用程序<code>.app</code>文件</li>
-<li>保存函数地址映射信息的中转文件<code>.dSYM</code>文件</li>
-</ul>
-<p>所以, 写这些数据的时候, 写得越快, 编译的时间也就能越少. 如何让数据写入得更快呢? 可以把Derived Data的路径换到内存中. 换句话说, 将Derived Data的读写从硬盘移动到内存中.</p>
       
     </div>
     
@@ -439,13 +422,8 @@ var _hmt = _hmt || [];
     
     <div class="article-entry" itemprop="articleBody">
       
-        <h1 id="一-Runtime"><a href="#一-Runtime" class="headerlink" title="一. Runtime"></a><strong>一. Runtime</strong></h1><hr>
+        <h1 id="Runtime"><a href="#Runtime" class="headerlink" title="Runtime"></a>Runtime</h1><hr>
 <p>Runtime是一套底层的C语言API. 实际上, 平时我们编写的Objective-C代码, 底层都是基于runtime实现的, 也就是说, 平时我们编写的Objective-C代码, 最终都是转成了底层的runtime代码(C语言代码). Runtime使得Objective-C这门语言的灵活性大大地提升. 有了runtime, 我们可以在应用运行的时候动态操作对象、类、方法, 也因为这个原因, 使得编程有了更多的可能性, 对于开发中遇到的一些比较棘手的问题, 往往用runtime可以优雅地解决, 接下来让我们看看runtime是为何可以如此牛x.</p>
-<h1 id="二-Objective-C中类和对象的本质"><a href="#二-Objective-C中类和对象的本质" class="headerlink" title="二. Objective-C中类和对象的本质"></a><strong>二. Objective-C中类和对象的本质</strong></h1><hr>
-<h3 id="1-对象-Instance"><a href="#1-对象-Instance" class="headerlink" title="1. 对象(Instance)"></a><strong>1. 对象(Instance)</strong></h3><p><strong>概念:</strong><br>对象的本质是一个结构体, 在<code>&lt;objc/objc.h&gt;</code>中可以找到它的声明:<br><figure class="highlight objc"><table><tr><td class="code"><pre><span class="line"><span class="keyword">struct</span> objc_object &#123;</span><br><span class="line">    Class isa  OBJC_ISA_<span class="built_in">AVAILABILITY</span>;</span><br><span class="line">&#125;;</span><br></pre></td></tr></table></figure></p>
-<ul>
-<li><code>isa</code>: 指针指向对象所属的<a href="#二.2">类(Class)</a>, Class结构体中包含了成员变量、对象方法等等.  </li>
-</ul>
       
     </div>
     
@@ -574,13 +552,6 @@ var _hmt = _hmt || [];
     <div class="article-entry" itemprop="articleBody">
       
         <p>分类(<code>category</code>)在iOS开发中的应用非常广泛, 优点譬如给现有的类拓展更多的方法、对一个类的多种功能进行局部化封装等等, 都是非常方便的. 但是也有一个痛点, 就是分类中无法添加属性. 但是<code>Objective-C</code>的<code>runtime</code>中有许多黑科技可以帮我们实现很多常规方法下几乎不可能的事情–比如在分类中添加属性.这个黑科技叫做<strong>关联对象</strong>(<code>Associated Objects</code>). </p>
-<h1 id="Associated-Objects"><a href="#Associated-Objects" class="headerlink" title="Associated Objects"></a><strong>Associated Objects</strong></h1><hr>
-<p>关联对象相关的函数有以下3个:</p>
-<ul>
-<li><code>objc_setAssociatedObject</code> : 设置关联对象</li>
-<li><code>objc_getAssociatedObject</code> : 获取关联对象</li>
-<li><code>objc_removeAssociatedObjects</code> : 移除某个对象的所有关联对象</li>
-</ul>
       
     </div>
     
@@ -644,11 +615,7 @@ var _hmt = _hmt || [];
     
     <div class="article-entry" itemprop="articleBody">
       
-        <p>使用其他一些第三方静态库时, 如果没有注意按照文档中的提示进行配置, 很容易在程序运行过程中因 “unrecorgnized selector send to instance xxx” 的异常而崩溃. 而且可以发现, 导致崩溃的方法都是Category中的方法.<br>在<a href="https://developer.apple.com/library/mac/qa/qa1490/_index.html">苹果官方文档</a>中解释到: </p>
-<blockquote>
-<p>The dynamic nature of Objective-C complicates things slightly. Because the code that implements a method is not determined until the method is actually called, Objective-C does not define linker symbols for methods. Linker symbols are only defined for classes.<br>Since categories are a collection of methods, using a category’s method does not generate an undefined symbol. This means the linker does not know to load an object file defining the category, if the class itself is already defined. This causes the same “selector not recognized” runtime exception you would see for any unimplemented method.</p>
-</blockquote>
-<p>翻译过来, 就是因为Objective-C的动态特性使得方法是在运行时才确定的, 所以链接的时候不会为方法(Method)定义连接符号, 而是为类(Class)定义连接符号. 这样当在一个静态库中使用类别来扩展已有类的时候，链接器不知道如何把类原有的方法和类别中的方法整合起来, 所以就导致运行的时候Category的方法无法被找到抛出异常.</p>
+        <p>使用其他一些第三方静态库时, 如果没有注意按照文档中的提示进行配置, 很容易在程序运行过程中因 “unrecorgnized selector send to instance xxx” 的异常而崩溃. 而且可以发现, 导致崩溃的方法都是Category中的方法. </p>
       
     </div>
     
@@ -686,10 +653,10 @@ var _hmt = _hmt || [];
 
 
   
-    <article id="post-openssh-debug-executable-file" class="article article-type-post" itemscope itemprop="blogPost">
+    <article id="post-frequently-used-terminal-command" class="article article-type-post" itemscope itemprop="blogPost">
   
     <div class="article-meta">
-      <a href="/2015/10/12/openssh-debug-executable-file/" class="article-date">
+      <a href="/2015/10/12/frequently-used-terminal-command/" class="article-date">
   	<time datetime="2015-10-11T16:04:56.000Z" itemprop="datePublished">2015-10-12</time>
 </a>
     </div>
@@ -703,7 +670,7 @@ var _hmt = _hmt || [];
         
   
     <h1 itemprop="name">
-      <a class="article-title" href="/2015/10/12/openssh-debug-executable-file/">【iOS越狱】使用OpenSSH调试可执行文件</a>
+      <a class="article-title" href="/2015/10/12/frequently-used-terminal-command/">【Linux】常用命令行</a>
     </h1>
   
 
@@ -712,14 +679,73 @@ var _hmt = _hmt || [];
     
     <div class="article-entry" itemprop="articleBody">
       
-        <h1 id="一-连接设备"><a href="#一-连接设备" class="headerlink" title="一. 连接设备"></a><strong>一. 连接设备</strong></h1><hr>
-<h3 id="1-连接"><a href="#1-连接" class="headerlink" title="1. 连接"></a><strong>1. 连接</strong></h3><p>通过USB连接:</p>
+        <p><img src="/img/terminal-command/header.png" alt=""></p>
+      
+    </div>
+    
+    <div class="article-info article-info-index">
+      
+      
+	<div class="article-tag tagcloud">
+		<ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/Linux/">Linux</a></li></ul>
+	</div>
+
+      
+	<div class="article-category tagcloud">
+	<a class="article-category-link" href="/categories/iOS-Tips/">iOS Tips</a>
+	</div>
+
+
+      
+        <p class="article-more-link">
+          <a  href="/2015/10/12/frequently-used-terminal-command/#more">more >></a>
+        </p>
+      
+      <div class="clearfix"></div>
+    </div>
+    
+  </div>
+  
+</article>
+
+
+
+
+
+
+
+
+
+  
+    <article id="post-openssh-debug-executable-file" class="article article-type-post" itemscope itemprop="blogPost">
+  
+    <div class="article-meta">
+      <a href="/2015/08/08/openssh-debug-executable-file/" class="article-date">
+  	<time datetime="2015-08-08T09:43:23.000Z" itemprop="datePublished">2015-08-08</time>
+</a>
+    </div>
+  
+  <div class="article-inner">
+    
+      <input type="hidden" class="isFancy" />
+    
+    
+      <header class="article-header">
+        
+  
+    <h1 itemprop="name">
+      <a class="article-title" href="/2015/08/08/openssh-debug-executable-file/">【iOS越狱】使用OpenSSH调试可执行文件</a>
+    </h1>
+  
+
+      </header>
+      
+    
+    <div class="article-entry" itemprop="articleBody">
+      
+        <h1 id="连接设备"><a href="#连接设备" class="headerlink" title="连接设备"></a>连接设备</h1><hr>
+<h3 id="1-连接"><a href="#1-连接" class="headerlink" title="1. 连接"></a>1. 连接</h3><p>通过USB连接:</p>
 <figure class="highlight vim"><table><tr><td class="code"><pre><span class="line">$ ssh -<span class="keyword">p</span> <span class="number">2222</span> root@localhost</span><br></pre></td></tr></table></figure>
-<p>通过局域网连接:</p>
-<figure class="highlight vim"><table><tr><td class="code"><pre><span class="line">$ ssh root@<span class="number">192.168</span>.<span class="number">9.126</span></span><br></pre></td></tr></table></figure>
-<h3 id="2-输入密码"><a href="#2-输入密码" class="headerlink" title="2. 输入密码"></a><strong>2. 输入密码</strong></h3><p>连接后, 终端会提示:</p>
-<figure class="highlight"><table><tr><td class="code"><pre><span class="line">The authenticity of host '192.168.9.126 (192.168.9.126)' can't be established.</span><br><span class="line">RSA key fingerprint is xxxx.</span><br><span class="line">Are you sure you want to continue connecting (yes/no)?</span><br></pre></td></tr></table></figure>
-<p>此时输入yes同意连接, 然后根据提示输入OpenSSH的默认密码:<code>alpine</code>. 到此已经成功连接iOS设备, 并进入了iOS设备的<code>/var/root</code>文件夹下.</p>
       
     </div>
     
@@ -738,7 +764,7 @@ var _hmt = _hmt || [];
 
       
         <p class="article-more-link">
-          <a  href="/2015/10/12/openssh-debug-executable-file/#more">more >></a>
+          <a  href="/2015/08/08/openssh-debug-executable-file/#more">more >></a>
         </p>
       
       <div class="clearfix"></div>
@@ -774,7 +800,7 @@ var _hmt = _hmt || [];
         
   
     <h1 itemprop="name">
-      <a class="article-title" href="/2015/05/21/package-bundle/">【iOS Tip】将图片、声音、nib(xib)等资源打包为Bundle</a>
+      <a class="article-title" href="/2015/05/21/package-bundle/">【iOS Tip】将资源打包为Bundle</a>
     </h1>
   
 
@@ -784,11 +810,6 @@ var _hmt = _hmt || [];
     <div class="article-entry" itemprop="articleBody">
       
         <p>在编写第三方库时, 如果需要用到一些图片、声音资源, 甚至是nib(xib), 就需要把这些资源打包成一个bundle. 一开始在其他第三方库中看到bundle的时候, 觉得它好像是一个很高级的东西. 但是事实上, bundle就是一个普通得不能再普通的文件夹, 只是加上了<code>.bundle</code>后缀, 一下子就高大上了起来.<br>加上<code>.bundle</code>后缀的文件夹, 会被Mac识别为一个包. 将文件夹以包的形式存在, 可以当作一个整体方便地移动, 也可以让别人不至于不小心改动到库所依赖的资源. </p>
-<h1 id="步骤"><a href="#步骤" class="headerlink" title="步骤"></a><strong>步骤</strong></h1><p>1.将资源放到文件夹中, 重命名文件夹为<code>xxx.bundle</code></p>
-<p>2.若bundle中有使用到xib文件, 需要使用命令把xib文件转换为nib文件:<br><figure class="highlight vim"><table><tr><td class="code"><pre><span class="line">$ ibtool --errors --warnings --output-format human-readable-text --compile <span class="keyword">file</span>.nib <span class="keyword">file</span>.xib</span><br></pre></td></tr></table></figure></p>
-<p>*如果不转换, 读取的时候会导致如下错误:<br><figure class="highlight vhdl"><table><tr><td class="code"><pre><span class="line">Terminating app due <span class="keyword">to</span> uncaught exception </span><br><span class="line"><span class="attribute">'NSInternalInconsistencyException</span>', reason: <span class="attribute">'Could</span> <span class="keyword">not</span> load NIB <span class="keyword">in</span> bundle:</span><br><span class="line"> <span class="attribute">'NSBundle</span> &lt;/var/mobile/Applications/C6718DB8-<span class="number">0</span>C0F-<span class="number">4</span>D38-<span class="number">84E6</span>-<span class="number">55</span>C145279957</span><br><span class="line">/Documents/asset-<span class="number">4</span>.bundle&gt; (<span class="keyword">not</span> yet loaded)' <span class="keyword">with</span> name <span class="attribute">'file</span>''</span><br></pre></td></tr></table></figure></p>
-<p>3.把bundle拖进工程, 此时通过以下方法即可取到ZYBannerView.bundle<br><figure class="highlight groovy"><table><tr><td class="code"><pre><span class="line">NSBundle *bundle = [NSBundle <span class="string">bundleWithPath:</span>[[NSBundle mainBundle] <span class="string">pathForResource:</span>@<span class="string">"xxx"</span> <span class="string">ofType:</span>@<span class="string">"bundle"</span>]];</span><br></pre></td></tr></table></figure></p>
-
       
     </div>
     
@@ -806,70 +827,8 @@ var _hmt = _hmt || [];
 
 
       
-      <div class="clearfix"></div>
-    </div>
-    
-  </div>
-  
-</article>
-
-
-
-
-
-
-
-
-
-  
-    <article id="post-uiimage-rendering-mode" class="article article-type-post" itemscope itemprop="blogPost">
-  
-    <div class="article-meta">
-      <a href="/2015/03/29/uiimage-rendering-mode/" class="article-date">
-  	<time datetime="2015-03-29T06:32:22.000Z" itemprop="datePublished">2015-03-29</time>
-</a>
-    </div>
-  
-  <div class="article-inner">
-    
-      <input type="hidden" class="isFancy" />
-    
-    
-      <header class="article-header">
-        
-  
-    <h1 itemprop="name">
-      <a class="article-title" href="/2015/03/29/uiimage-rendering-mode/">【iOS Tip】UIImage的renderingMode</a>
-    </h1>
-  
-
-      </header>
-      
-    
-    <div class="article-entry" itemprop="articleBody">
-      
-        <p>很多人在第一次使用UITabBar的时候, 都会遇到一个摸不着头脑的问题:<br>明明UI给的图片是这样的 ↓<br><img src="/img/UIImageRenderingMode/renderingMode_0.png" alt=""><br>可是用到tabBar中却变成了这样 ↓<br><img src="/img/UIImageRenderingMode/renderingMode_1.png" alt=""><br><strong>WTF!</strong> 咋还自己变色了呢? <img src="/img/UIImageRenderingMode/renderingMode_2.jpg" alt=""><br>其实以上的现象都是源于UIImage的一个属性<code>renderingMode</code>.</p>
-<h1 id="UIImageRenderingMode"><a href="#UIImageRenderingMode" class="headerlink" title="UIImageRenderingMode"></a><strong>UIImageRenderingMode</strong></h1><hr>
-<h3 id="1-概念"><a href="#1-概念" class="headerlink" title="1. 概念"></a><strong>1. 概念</strong></h3><figure class="highlight objc"><table><tr><td class="code"><pre><span class="line"><span class="keyword">@property</span>(<span class="keyword">nonatomic</span>, <span class="keyword">readonly</span>) <span class="built_in">UIImageRenderingMode</span> renderingMode <span class="built_in">NS_AVAILABLE_IOS</span>(<span class="number">7</span>_0);</span><br></pre></td></tr></table></figure>
-      
-    </div>
-    
-    <div class="article-info article-info-index">
-      
-      
-	<div class="article-tag tagcloud">
-		<ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/UI/">UI</a></li></ul>
-	</div>
-
-      
-	<div class="article-category tagcloud">
-	<a class="article-category-link" href="/categories/iOS-Tips/">iOS Tips</a>
-	</div>
-
-
-      
         <p class="article-more-link">
-          <a  href="/2015/03/29/uiimage-rendering-mode/#more">more >></a>
+          <a  href="/2015/05/21/package-bundle/#more">more >></a>
         </p>
       
       <div class="clearfix"></div>
@@ -888,6 +847,10 @@ var _hmt = _hmt || [];
 
 
   
+  
+    <nav id="page-nav">
+      <span class="page-number current">1</span><a class="page-number" href="/page/2/">2</a><a class="extend next" rel="next" href="/page/2/">Next &raquo;</a>
+    </nav>
   
 </div>
       <footer id="footer">

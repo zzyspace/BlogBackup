@@ -5,17 +5,17 @@ tags: [runtime]
 ------
 分类(`category`)在iOS开发中的应用非常广泛, 优点譬如给现有的类拓展更多的方法、对一个类的多种功能进行局部化封装等等, 都是非常方便的. 但是也有一个痛点, 就是分类中无法添加属性. 但是`Objective-C`的`runtime`中有许多黑科技可以帮我们实现很多常规方法下几乎不可能的事情--比如在分类中添加属性.这个黑科技叫做**关联对象**(`Associated Objects`). 
 
-# **Associated Objects**
+<!--more-->
+
+# Associated Objects
 ---
 关联对象相关的函数有以下3个:
 - `objc_setAssociatedObject` : 设置关联对象
 - `objc_getAssociatedObject ` : 获取关联对象
 - `objc_removeAssociatedObjects ` : 移除某个对象的所有关联对象
 
-<!--more-->
-
 从`<objc/runtime.h>`中可以找到它的相关函数定义:
-### **1. 设置关联对象**
+### 1. 设置关联对象
 ```objc
 void objc_setAssociatedObject(id object, const void *key, id value, objc_AssociationPolicy policy)
 ```
@@ -34,14 +34,14 @@ enum {
 };
 ```
 
-### **2. 获取关联对象**
+### 2. 获取关联对象
 ```objc
 id objc_getAssociatedObject(id object, const void *key)
 ```
 - `object` : 获取关联对象的对象, `id`类型
 - `key` : 关联对象的key, `const void *`类型
 
-### **3. 移除某个对象的所有关联对象**
+### 3. 移除某个对象的所有关联对象
 ```objc
 void objc_removeAssociatedObjects(id object)
 ```
@@ -52,7 +52,7 @@ void objc_removeAssociatedObjects(id object)
 
  *意思是如果要移除对象的某个关联对象, 应该使用`objc_setAssociatedObject`对参数`value`置nil.*
 
-### **4. 关于参数-key**
+### 4. 关于参数-key
 这个key一般只要赋值一个`static char`的地址就行, 比如:
 ```objc
 static char kAssociatedObjectKey;
@@ -74,7 +74,7 @@ objc_getAssociatedObject(self, _cmd);
 
   *意思就是`_cmd`在Objective-C的方法中表示当前方法的`selector`, 正如同`self`表示调用当前方法的对象(类)一样.*  
 
-# **Simple Example**
+# Simple Example
 ---
 ```objc
 @interface NSObject (AssociatedObject)
@@ -100,7 +100,7 @@ objc_getAssociatedObject(self, _cmd);
 @end
 ```
 
-# **Tips**
+# Tips
 ---
 最近看到[Sunny大神](http://blog.sunnyxx.com)说的一个关于Associated Object的巧妙运用:
 > 利用 association 防止多次调进一个方法，总觉得为这种事情去加一个成员变量会让一段逻辑的代码过于分散，喜欢能 self-managed 的函数
@@ -127,3 +127,4 @@ objc_getAssociatedObject(self, _cmd);
 ### 参考
 1.[Associated Objects](http://nshipster.com/associated-objects/) by Mattt
 2.[Objective-C Runtime Reference](https://developer.apple.com/library/mac/documentation/Cocoa/Reference/ObjCRuntimeRef/index.html#//apple_ref/c/func/objc_getAssociatedObject) by Apple
+

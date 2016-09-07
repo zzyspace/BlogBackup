@@ -5,7 +5,7 @@
   <link href="/atom.xml" rel="self"/>
   
   <link href="http://zzyspace.github.io/"/>
-  <updated>2016-08-31T10:39:32.000Z</updated>
+  <updated>2016-09-07T07:46:25.000Z</updated>
   <id>http://zzyspace.github.io/</id>
   
   <author>
@@ -16,31 +16,77 @@
   <generator uri="http://hexo.io/">Hexo</generator>
   
   <entry>
+    <title>【iOS开发】DNS解析失败的处理 (支持IPv6)</title>
+    <link href="http://zzyspace.github.io/2016/09/07/dns-resolving/"/>
+    <id>http://zzyspace.github.io/2016/09/07/dns-resolving/</id>
+    <published>2016-09-07T05:23:03.000Z</published>
+    <updated>2016-09-07T07:46:25.000Z</updated>
+    
+    <content type="html">&lt;p&gt;&lt;img src=&quot;/img/dns/header.png&quot; alt=&quot;&quot;&gt;&lt;/p&gt;
+&lt;p&gt;在之前做的一个项目中, 网络请求常常会出现以下错误:&lt;br&gt;&lt;code&gt;Error Domain=NSURLErrorDomain Code=-1003 &amp;quot;A server with the specified hostname could not be found.&amp;quot;&lt;/code&gt;&lt;br&gt;错误提示也很明显地指出了原因: 指定域名的服务器无法被找到. 其实这个问题跟自己项目的代码无关, 跟服务端也没有关系, 真正的原因是来自于DNS (Domain Name System). &lt;/p&gt;
+&lt;a id=&quot;more&quot;&gt;&lt;/a&gt;
+&lt;h1 id=&quot;DNS&quot;&gt;&lt;a href=&quot;#DNS&quot; class=&quot;headerlink&quot; title=&quot;DNS&quot;&gt;&lt;/a&gt;DNS&lt;/h1&gt;&lt;hr&gt;
+&lt;p&gt;我们知道, 网络中都是对应一个IP地址(比如208.80.154.225), 我们唯有知道了IP地址才能进行访问. 因为IP地址不利于记忆, 所以出现了”域名”(比如google.com)这个东西. 我们可以想象要给一个人打电话, 只要在电话本中找到输入相应的名字, 就能拨打出去了. DNS就是起到类似电话本的作用, 可以将你访问的域名解析成IP, 进而进行访问. 而这个解析的过程中, 就有很多坑了:&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;&lt;strong&gt;域名劫持&lt;/strong&gt;: 大部分情况下, 默认的DNS都是运营商提供的. 如果DNS上的某条记录被修改了, 就会导致域名和IP对应不上的问题. (至于为啥会被劫持, 那得问问运营商去了, 利益的诱惑那么多)&lt;/li&gt;
+&lt;/ul&gt;
+&lt;ul&gt;
+&lt;li&gt;&lt;strong&gt;域名污染&lt;/strong&gt;: GFW(Great Fire Wall)就是利用的域名污染的手段, 你如果不科学上网的话, 就访问不了某些网站了.&lt;/li&gt;
+&lt;/ul&gt;
+&lt;p&gt;就是因为这些小动作, 有时候会导致DNS解析的一些问题. 然后我们就会遇到文章开头的问题了.&lt;/p&gt;
+&lt;h1 id=&quot;解决方法&quot;&gt;&lt;a href=&quot;#解决方法&quot; class=&quot;headerlink&quot; title=&quot;解决方法&quot;&gt;&lt;/a&gt;解决方法&lt;/h1&gt;&lt;hr&gt;
+&lt;p&gt;&lt;a href=&quot;http://www.jianshu.com/users/94b6bbf8765a/latest_articles&quot; target=&quot;_blank&quot; rel=&quot;external&quot;&gt;windgo&lt;/a&gt; 的&lt;a href=&quot;http://www.jianshu.com/p/a8a8ff984f2e/comments/4050366#comment-4050366&quot; target=&quot;_blank&quot; rel=&quot;external&quot;&gt;《iOS应用中的DNS解析错误的处理》&lt;/a&gt;中提供了很好的解决方案(因为作者没有更新对IPv6的支持, 所以我贴上了自己更改后的代码, 再次感谢原作者提供的思路):&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;我们可以在应用启动或者网络连通性变化时, 对域名进行解析:&lt;/li&gt;
+&lt;/ul&gt;
+&lt;figure class=&quot;highlight objc&quot;&gt;&lt;table&gt;&lt;tr&gt;&lt;td class=&quot;code&quot;&gt;&lt;pre&gt;&lt;span class=&quot;line&quot;&gt;&lt;span class=&quot;preprocessor&quot;&gt;#import &lt;span class=&quot;title&quot;&gt;&amp;lt;arpa/inet.h&amp;gt;&lt;/span&gt;&lt;/span&gt;&lt;/span&gt;&lt;br&gt;&lt;span class=&quot;line&quot;&gt;&lt;/span&gt;&lt;br&gt;&lt;span class=&quot;line&quot;&gt;- (&lt;span class=&quot;built_in&quot;&gt;BOOL&lt;/span&gt;)resolveHost:(&lt;span class=&quot;built_in&quot;&gt;NSString&lt;/span&gt; *)hostname&lt;/span&gt;&lt;br&gt;&lt;span class=&quot;line&quot;&gt;&amp;#123;&lt;/span&gt;&lt;br&gt;&lt;span class=&quot;line&quot;&gt;    Boolean result;&lt;/span&gt;&lt;br&gt;&lt;span class=&quot;line&quot;&gt;    &lt;span class=&quot;built_in&quot;&gt;CFHostRef&lt;/span&gt; hostRef;&lt;/span&gt;&lt;br&gt;&lt;span class=&quot;line&quot;&gt;    &lt;span class=&quot;built_in&quot;&gt;CFArrayRef&lt;/span&gt; addresses;&lt;/span&gt;&lt;br&gt;&lt;span class=&quot;line&quot;&gt;    &lt;span class=&quot;built_in&quot;&gt;NSString&lt;/span&gt; *ipAddress = &lt;span class=&quot;literal&quot;&gt;nil&lt;/span&gt;;&lt;/span&gt;&lt;br&gt;&lt;span class=&quot;line&quot;&gt;    hostRef = &lt;span class=&quot;built_in&quot;&gt;CFHostCreateWithName&lt;/span&gt;(k&lt;span class=&quot;built_in&quot;&gt;CFAllocatorDefault&lt;/span&gt;, (__bridge &lt;span class=&quot;built_in&quot;&gt;CFStringRef&lt;/span&gt;)hostname);&lt;/span&gt;&lt;br&gt;&lt;span class=&quot;line&quot;&gt;    &lt;span class=&quot;keyword&quot;&gt;if&lt;/span&gt; (hostRef) &amp;#123;&lt;/span&gt;&lt;br&gt;&lt;span class=&quot;line&quot;&gt;        result = &lt;span class=&quot;built_in&quot;&gt;CFHostStartInfoResolution&lt;/span&gt;(hostRef, k&lt;span class=&quot;built_in&quot;&gt;CFHostAddresses&lt;/span&gt;, &lt;span class=&quot;literal&quot;&gt;NULL&lt;/span&gt;); &lt;span class=&quot;comment&quot;&gt;// pass an error instead of NULL here to find out why it failed&lt;/span&gt;&lt;/span&gt;&lt;br&gt;&lt;span class=&quot;line&quot;&gt;        &lt;span class=&quot;keyword&quot;&gt;if&lt;/span&gt; (result) &amp;#123;&lt;/span&gt;&lt;br&gt;&lt;span class=&quot;line&quot;&gt;            addresses = &lt;span class=&quot;built_in&quot;&gt;CFHostGetAddressing&lt;/span&gt;(hostRef, &amp;amp;result);&lt;/span&gt;&lt;br&gt;&lt;span class=&quot;line&quot;&gt;        &amp;#125;&lt;/span&gt;&lt;br&gt;&lt;span class=&quot;line&quot;&gt;    &amp;#125;&lt;/span&gt;&lt;br&gt;&lt;span class=&quot;line&quot;&gt;    &lt;span class=&quot;keyword&quot;&gt;if&lt;/span&gt; (result) &amp;#123;&lt;/span&gt;&lt;br&gt;&lt;span class=&quot;line&quot;&gt;        &lt;span class=&quot;built_in&quot;&gt;CFIndex&lt;/span&gt; index = &lt;span class=&quot;number&quot;&gt;0&lt;/span&gt;;&lt;/span&gt;&lt;br&gt;&lt;span class=&quot;line&quot;&gt;        &lt;span class=&quot;built_in&quot;&gt;CFDataRef&lt;/span&gt; ref = (&lt;span class=&quot;built_in&quot;&gt;CFDataRef&lt;/span&gt;) &lt;span class=&quot;built_in&quot;&gt;CFArrayGetValueAtIndex&lt;/span&gt;(addresses, index);&lt;/span&gt;&lt;br&gt;&lt;span class=&quot;line&quot;&gt;        &lt;/span&gt;&lt;br&gt;&lt;span class=&quot;line&quot;&gt;        &lt;span class=&quot;keyword&quot;&gt;int&lt;/span&gt; port=&lt;span class=&quot;number&quot;&gt;0&lt;/span&gt;;&lt;/span&gt;&lt;br&gt;&lt;span class=&quot;line&quot;&gt;        &lt;span class=&quot;keyword&quot;&gt;struct&lt;/span&gt; sockaddr *addressGeneric;&lt;/span&gt;&lt;br&gt;&lt;span class=&quot;line&quot;&gt;        &lt;/span&gt;&lt;br&gt;&lt;span class=&quot;line&quot;&gt;        &lt;span class=&quot;built_in&quot;&gt;NSData&lt;/span&gt; *myData = (__bridge &lt;span class=&quot;built_in&quot;&gt;NSData&lt;/span&gt; *)ref;&lt;/span&gt;&lt;br&gt;&lt;span class=&quot;line&quot;&gt;        addressGeneric = (&lt;span class=&quot;keyword&quot;&gt;struct&lt;/span&gt; sockaddr *)[myData bytes];&lt;/span&gt;&lt;br&gt;&lt;span class=&quot;line&quot;&gt;        &lt;/span&gt;&lt;br&gt;&lt;span class=&quot;line&quot;&gt;        &lt;span class=&quot;keyword&quot;&gt;switch&lt;/span&gt; (addressGeneric-&amp;gt;sa_family) &amp;#123;&lt;/span&gt;&lt;br&gt;&lt;span class=&quot;line&quot;&gt;            &lt;span class=&quot;keyword&quot;&gt;case&lt;/span&gt; AF_INET: &amp;#123;&lt;/span&gt;&lt;br&gt;&lt;span class=&quot;line&quot;&gt;                &lt;span class=&quot;keyword&quot;&gt;struct&lt;/span&gt; sockaddr_in *ip4;&lt;/span&gt;&lt;br&gt;&lt;span class=&quot;line&quot;&gt;                &lt;span class=&quot;keyword&quot;&gt;char&lt;/span&gt; dest[INET_ADDRSTRLEN];&lt;/span&gt;&lt;br&gt;&lt;span class=&quot;line&quot;&gt;                ip4 = (&lt;span class=&quot;keyword&quot;&gt;struct&lt;/span&gt; sockaddr_in *)[myData bytes];&lt;/span&gt;&lt;br&gt;&lt;span class=&quot;line&quot;&gt;                port = ntohs(ip4-&amp;gt;sin_port);&lt;/span&gt;&lt;br&gt;&lt;span class=&quot;line&quot;&gt;                ipAddress = [&lt;span class=&quot;built_in&quot;&gt;NSString&lt;/span&gt; stringWithFormat:&lt;span class=&quot;string&quot;&gt;@&quot;%s&quot;&lt;/span&gt;, inet_ntop(AF_INET, &amp;amp;ip4-&amp;gt;sin_addr, dest, &lt;span class=&quot;keyword&quot;&gt;sizeof&lt;/span&gt; dest)];&lt;/span&gt;&lt;br&gt;&lt;span class=&quot;line&quot;&gt;            &amp;#125;&lt;/span&gt;&lt;br&gt;&lt;span class=&quot;line&quot;&gt;                &lt;span class=&quot;keyword&quot;&gt;break&lt;/span&gt;;&lt;/span&gt;&lt;br&gt;&lt;span class=&quot;line&quot;&gt;                &lt;/span&gt;&lt;br&gt;&lt;span class=&quot;line&quot;&gt;            &lt;span class=&quot;keyword&quot;&gt;case&lt;/span&gt; AF_INET6: &amp;#123;&lt;/span&gt;&lt;br&gt;&lt;span class=&quot;line&quot;&gt;                &lt;span class=&quot;keyword&quot;&gt;struct&lt;/span&gt; sockaddr_in6 *ip6;&lt;/span&gt;&lt;br&gt;&lt;span class=&quot;line&quot;&gt;                &lt;span class=&quot;keyword&quot;&gt;char&lt;/span&gt; dest[INET6_ADDRSTRLEN];&lt;/span&gt;&lt;br&gt;&lt;span class=&quot;line&quot;&gt;                ip6 = (&lt;span class=&quot;keyword&quot;&gt;struct&lt;/span&gt; sockaddr_in6 *)[myData bytes];&lt;/span&gt;&lt;br&gt;&lt;span class=&quot;line&quot;&gt;                port = ntohs(ip6-&amp;gt;sin6_port);&lt;/span&gt;&lt;br&gt;&lt;span class=&quot;line&quot;&gt;                ipAddress = [&lt;span class=&quot;built_in&quot;&gt;NSString&lt;/span&gt; stringWithFormat:&lt;span class=&quot;string&quot;&gt;@&quot;%s&quot;&lt;/span&gt;, inet_ntop(AF_INET6, &amp;amp;ip6-&amp;gt;sin6_addr, dest, &lt;span class=&quot;keyword&quot;&gt;sizeof&lt;/span&gt; dest)];&lt;/span&gt;&lt;br&gt;&lt;span class=&quot;line&quot;&gt;            &amp;#125;&lt;/span&gt;&lt;br&gt;&lt;span class=&quot;line&quot;&gt;                &lt;span class=&quot;keyword&quot;&gt;break&lt;/span&gt;;&lt;/span&gt;&lt;br&gt;&lt;span class=&quot;line&quot;&gt;            &lt;span class=&quot;keyword&quot;&gt;default&lt;/span&gt;:&lt;/span&gt;&lt;br&gt;&lt;span class=&quot;line&quot;&gt;                ipAddress = &lt;span class=&quot;literal&quot;&gt;nil&lt;/span&gt;;&lt;/span&gt;&lt;br&gt;&lt;span class=&quot;line&quot;&gt;                &lt;span class=&quot;keyword&quot;&gt;break&lt;/span&gt;;&lt;/span&gt;&lt;br&gt;&lt;span class=&quot;line&quot;&gt;        &amp;#125;&lt;/span&gt;&lt;br&gt;&lt;span class=&quot;line&quot;&gt;    &amp;#125;&lt;/span&gt;&lt;br&gt;&lt;span class=&quot;line&quot;&gt;    &lt;/span&gt;&lt;br&gt;&lt;span class=&quot;line&quot;&gt;    &lt;span class=&quot;keyword&quot;&gt;if&lt;/span&gt; (ipAddress) &amp;#123;&lt;/span&gt;&lt;br&gt;&lt;span class=&quot;line&quot;&gt;        &lt;span class=&quot;keyword&quot;&gt;return&lt;/span&gt; &lt;span class=&quot;literal&quot;&gt;YES&lt;/span&gt;;&lt;/span&gt;&lt;br&gt;&lt;span class=&quot;line&quot;&gt;    &amp;#125; &lt;span class=&quot;keyword&quot;&gt;else&lt;/span&gt; &amp;#123;&lt;/span&gt;&lt;br&gt;&lt;span class=&quot;line&quot;&gt;        &lt;span class=&quot;keyword&quot;&gt;return&lt;/span&gt; &lt;span class=&quot;literal&quot;&gt;NO&lt;/span&gt;;&lt;/span&gt;&lt;br&gt;&lt;span class=&quot;line&quot;&gt;    &amp;#125;&lt;/span&gt;&lt;br&gt;&lt;span class=&quot;line&quot;&gt;&amp;#125;&lt;/span&gt;&lt;br&gt;&lt;/pre&gt;&lt;/td&gt;&lt;/tr&gt;&lt;/table&gt;&lt;/figure&gt;
+&lt;ul&gt;
+&lt;li&gt;如果&lt;code&gt;-resolveHost:&lt;/code&gt;的返回值为&lt;code&gt;NO&lt;/code&gt;的话, 说明解析失败了, 需要将项目中的api的域名替换为IP进行访问.&lt;/li&gt;
+&lt;/ul&gt;
+&lt;h1 id=&quot;参考&quot;&gt;&lt;a href=&quot;#参考&quot; class=&quot;headerlink&quot; title=&quot;参考&quot;&gt;&lt;/a&gt;参考&lt;/h1&gt;&lt;hr&gt;
+&lt;p&gt;1.&lt;a href=&quot;http://www.jianshu.com/p/a8a8ff984f2e/comments/4050366#comment-4050366&quot; target=&quot;_blank&quot; rel=&quot;external&quot;&gt;iOS应用中的DNS解析错误的处理&lt;/a&gt;&lt;br&gt;2.&lt;a href=&quot;https://program-think.blogspot.com/2014/01/dns.html&quot; target=&quot;_blank&quot; rel=&quot;external&quot;&gt;扫盲 DNS 原理，兼谈“域名劫持”和“域名欺骗/域名污染”&lt;/a&gt;&lt;/p&gt;
+</content>
+    
+    <summary type="html">
+    
+      &lt;p&gt;&lt;img src=&quot;/img/dns/header.png&quot; alt=&quot;&quot;&gt;&lt;/p&gt;
+&lt;p&gt;在之前做的一个项目中, 网络请求常常会出现以下错误:&lt;br&gt;&lt;code&gt;Error Domain=NSURLErrorDomain Code=-1003 &amp;quot;A server with the specified hostname could not be found.&amp;quot;&lt;/code&gt;&lt;br&gt;错误提示也很明显地指出了原因: 指定域名的服务器无法被找到. 其实这个问题跟自己项目的代码无关, 跟服务端也没有关系, 真正的原因是来自于DNS (Domain Name System). &lt;/p&gt;
+    
+    </summary>
+    
+      <category term="iOS开发" scheme="http://zzyspace.github.io/categories/iOS%E5%BC%80%E5%8F%91/"/>
+    
+    
+      <category term="dns" scheme="http://zzyspace.github.io/tags/dns/"/>
+    
+  </entry>
+  
+  <entry>
     <title>【iOS Tip】总结本地化的一些坑</title>
     <link href="http://zzyspace.github.io/2016/08/07/summary-of-localization/"/>
     <id>http://zzyspace.github.io/2016/08/07/summary-of-localization/</id>
     <published>2016-08-07T10:31:18.000Z</published>
-    <updated>2016-08-31T10:39:32.000Z</updated>
+    <updated>2016-09-07T07:47:41.000Z</updated>
     
-    <content type="html">&lt;h3 id=&quot;默认语言&quot;&gt;&lt;a href=&quot;#默认语言&quot; class=&quot;headerlink&quot; title=&quot;默认语言&quot;&gt;&lt;/a&gt;&lt;strong&gt;默认语言&lt;/strong&gt;&lt;/h3&gt;&lt;hr&gt;
+    <content type="html">&lt;h1 id=&quot;默认语言&quot;&gt;&lt;a href=&quot;#默认语言&quot; class=&quot;headerlink&quot; title=&quot;默认语言&quot;&gt;&lt;/a&gt;默认语言&lt;/h1&gt;&lt;hr&gt;
 &lt;p&gt;如果一台设备的语言为法语, 但是你所做的本地化只有英语\中文\德语, 那么应用安装后会默认显示Info.plist中&lt;code&gt;Localization native development region&lt;/code&gt;字段所设置的地区语言(如果没有这个字段就默认英语).&lt;/p&gt;
 &lt;p&gt;另一种情况是应用安装后切换语言, 若切换后的语言不存在本地化文件, 则保留前一语言的本地化显示. 比如你所做的本地化只有英语\中文\德语, 设备从英语切换到法语, 那么应用还是显示为英语; 如果再从法语切换到日语, 应用还是现实为英语. 一直到你切换至英语\中文\德语中的某一个语言之后, 应用才会显示响应的语言.&lt;/p&gt;
+&lt;a id=&quot;more&quot;&gt;&lt;/a&gt;
 &lt;p&gt;如果要自己设置默认语言的话, 可以使用以下的宏:&lt;/p&gt;
 &lt;figure class=&quot;highlight objc&quot;&gt;&lt;table&gt;&lt;tr&gt;&lt;td class=&quot;code&quot;&gt;&lt;pre&gt;&lt;span class=&quot;line&quot;&gt;&lt;span class=&quot;comment&quot;&gt;// 判断系统语言是否是中文@&quot;zh-Hans&quot;或者英文@&quot;en&quot;, 如果不是中文或者英文其他一概用英文@&quot;en&quot;&lt;/span&gt;&lt;/span&gt;&lt;br&gt;&lt;span class=&quot;line&quot;&gt;&lt;span class=&quot;preprocessor&quot;&gt;#define MYLocalizedString(key, comment) \&lt;/span&gt;&lt;/span&gt;&lt;br&gt;&lt;span class=&quot;line&quot;&gt;(([[[&lt;span class=&quot;built_in&quot;&gt;NSLocale&lt;/span&gt; preferredLanguages] objectAtIndex:&lt;span class=&quot;number&quot;&gt;0&lt;/span&gt;] isEqual:&lt;span class=&quot;string&quot;&gt;@&quot;zh-Hans&quot;&lt;/span&gt;] ||&lt;/span&gt;&lt;br&gt;&lt;span class=&quot;line&quot;&gt;  [[[&lt;span class=&quot;built_in&quot;&gt;NSLocale&lt;/span&gt; preferredLanguages] objectAtIndex:&lt;span class=&quot;number&quot;&gt;0&lt;/span&gt;] isEqual:&lt;span class=&quot;string&quot;&gt;@&quot;en&quot;&lt;/span&gt;]) ?&lt;/span&gt;&lt;br&gt;&lt;span class=&quot;line&quot;&gt; ([[&lt;span class=&quot;built_in&quot;&gt;NSBundle&lt;/span&gt; mainBundle] localizedStringForKey:key value:&lt;span class=&quot;string&quot;&gt;@&quot;&quot;&lt;/span&gt; table:&lt;span class=&quot;literal&quot;&gt;nil&lt;/span&gt;]) :&lt;/span&gt;&lt;br&gt;&lt;span class=&quot;line&quot;&gt; ([[&lt;span class=&quot;built_in&quot;&gt;NSBundle&lt;/span&gt; bundleWithPath:[[&lt;span class=&quot;built_in&quot;&gt;NSBundle&lt;/span&gt; mainBundle] pathForResource:&lt;span class=&quot;string&quot;&gt;@&quot;en&quot;&lt;/span&gt; ofType:&lt;span class=&quot;string&quot;&gt;@&quot;lproj&quot;&lt;/span&gt;]] localizedStringForKey:key value:&lt;span class=&quot;string&quot;&gt;@&quot;&quot;&lt;/span&gt; table:&lt;span class=&quot;literal&quot;&gt;nil&lt;/span&gt;]))&lt;/span&gt;&lt;br&gt;&lt;/pre&gt;&lt;/td&gt;&lt;/tr&gt;&lt;/table&gt;&lt;/figure&gt;
 &lt;p&gt;但是由于宏替换的特性, 上面的方法会增加很多的代码量(想象一下你的代码里面有多少本地化字符串, 就会有多少份上面的代码), 作为处女座简直不能忍. 所以想到了hook&lt;code&gt;-localizedStringForKey:value:table:&lt;/code&gt;方法来实现自定义的选择加载的语言包:&lt;/p&gt;
-&lt;a id=&quot;more&quot;&gt;&lt;/a&gt;
 &lt;figure class=&quot;highlight objc&quot;&gt;&lt;table&gt;&lt;tr&gt;&lt;td class=&quot;code&quot;&gt;&lt;pre&gt;&lt;span class=&quot;line&quot;&gt;&lt;span class=&quot;class&quot;&gt;&lt;span class=&quot;keyword&quot;&gt;@implementation&lt;/span&gt; &lt;span class=&quot;title&quot;&gt;NSBundle&lt;/span&gt; (&lt;span class=&quot;title&quot;&gt;DBSwizzle&lt;/span&gt;)&lt;/span&gt;&lt;/span&gt;&lt;br&gt;&lt;span class=&quot;line&quot;&gt;&lt;/span&gt;&lt;br&gt;&lt;span class=&quot;line&quot;&gt;+ (&lt;span class=&quot;keyword&quot;&gt;void&lt;/span&gt;)load&lt;/span&gt;&lt;br&gt;&lt;span class=&quot;line&quot;&gt;&amp;#123;&lt;/span&gt;&lt;br&gt;&lt;span class=&quot;line&quot;&gt;    &lt;span class=&quot;keyword&quot;&gt;static&lt;/span&gt; &lt;span class=&quot;built_in&quot;&gt;dispatch_once_t&lt;/span&gt; &lt;span class=&quot;built_in&quot;&gt;NSBundleOnceToken&lt;/span&gt;;&lt;/span&gt;&lt;br&gt;&lt;span class=&quot;line&quot;&gt;    &lt;span class=&quot;built_in&quot;&gt;dispatch_once&lt;/span&gt;(&amp;amp;&lt;span class=&quot;built_in&quot;&gt;NSBundleOnceToken&lt;/span&gt;, ^&amp;#123;&lt;/span&gt;&lt;br&gt;&lt;span class=&quot;line&quot;&gt;        ZY_SwizzlesMethod([&lt;span class=&quot;keyword&quot;&gt;self&lt;/span&gt; class], &lt;span class=&quot;keyword&quot;&gt;@selector&lt;/span&gt;(localizedStringForKey:value:table:), &lt;span class=&quot;keyword&quot;&gt;@selector&lt;/span&gt;(zy_localizedStringForKey:value:table:));&lt;/span&gt;&lt;br&gt;&lt;span class=&quot;line&quot;&gt;    &amp;#125;);&lt;/span&gt;&lt;br&gt;&lt;span class=&quot;line&quot;&gt;&amp;#125;&lt;/span&gt;&lt;br&gt;&lt;span class=&quot;line&quot;&gt;&lt;/span&gt;&lt;br&gt;&lt;span class=&quot;line&quot;&gt;- (&lt;span class=&quot;built_in&quot;&gt;NSString&lt;/span&gt; *)zy_localizedStringForKey:(&lt;span class=&quot;built_in&quot;&gt;NSString&lt;/span&gt; *)key&lt;/span&gt;&lt;br&gt;&lt;span class=&quot;line&quot;&gt;                                 value:(nullable &lt;span class=&quot;built_in&quot;&gt;NSString&lt;/span&gt; *)value&lt;/span&gt;&lt;br&gt;&lt;span class=&quot;line&quot;&gt;                                 table:(nullable &lt;span class=&quot;built_in&quot;&gt;NSString&lt;/span&gt; *)tableName&lt;/span&gt;&lt;br&gt;&lt;span class=&quot;line&quot;&gt;&amp;#123;&lt;/span&gt;&lt;br&gt;&lt;span class=&quot;line&quot;&gt;    &lt;span class=&quot;comment&quot;&gt;// 判断系统语言是否是中文@&quot;zh-Hans&quot;或者英文@&quot;en&quot;, 如果不是中文或者英文其他一概用英文@&quot;en&quot;&lt;/span&gt;&lt;/span&gt;&lt;br&gt;&lt;span class=&quot;line&quot;&gt;    &lt;span class=&quot;keyword&quot;&gt;if&lt;/span&gt; ([[[&lt;span class=&quot;built_in&quot;&gt;NSLocale&lt;/span&gt; preferredLanguages] objectAtIndex:&lt;span class=&quot;number&quot;&gt;0&lt;/span&gt;] isEqual:&lt;span class=&quot;string&quot;&gt;@&quot;zh-Hans&quot;&lt;/span&gt;] ||&lt;/span&gt;&lt;br&gt;&lt;span class=&quot;line&quot;&gt;        [[[&lt;span class=&quot;built_in&quot;&gt;NSLocale&lt;/span&gt; preferredLanguages] objectAtIndex:&lt;span class=&quot;number&quot;&gt;0&lt;/span&gt;] isEqual:&lt;span class=&quot;string&quot;&gt;@&quot;en&quot;&lt;/span&gt;])    &lt;/span&gt;&lt;br&gt;&lt;span class=&quot;line&quot;&gt;    &amp;#123; &lt;/span&gt;&lt;br&gt;&lt;span class=&quot;line&quot;&gt;        &lt;span class=&quot;keyword&quot;&gt;return&lt;/span&gt; [&lt;span class=&quot;keyword&quot;&gt;self&lt;/span&gt; DB_localizedStringForKey:key value:value table:tableName];&lt;/span&gt;&lt;br&gt;&lt;span class=&quot;line&quot;&gt;    &amp;#125; &lt;span class=&quot;keyword&quot;&gt;else&lt;/span&gt; &amp;#123;&lt;/span&gt;&lt;br&gt;&lt;span class=&quot;line&quot;&gt;        &lt;span class=&quot;built_in&quot;&gt;NSString&lt;/span&gt; *bundlePath = [[&lt;span class=&quot;built_in&quot;&gt;NSBundle&lt;/span&gt; mainBundle] pathForResource:&lt;span class=&quot;string&quot;&gt;@&quot;en&quot;&lt;/span&gt; ofType:&lt;span class=&quot;string&quot;&gt;@&quot;lproj&quot;&lt;/span&gt;];&lt;/span&gt;&lt;br&gt;&lt;span class=&quot;line&quot;&gt;        &lt;span class=&quot;keyword&quot;&gt;return&lt;/span&gt; [[&lt;span class=&quot;built_in&quot;&gt;NSBundle&lt;/span&gt; bundleWithPath:bundlePath] DB_localizedStringForKey:key value:value table:tableName];&lt;/span&gt;&lt;br&gt;&lt;span class=&quot;line&quot;&gt;    &amp;#125;&lt;/span&gt;&lt;br&gt;&lt;span class=&quot;line&quot;&gt;&amp;#125;&lt;/span&gt;&lt;br&gt;&lt;span class=&quot;line&quot;&gt;&lt;/span&gt;&lt;br&gt;&lt;span class=&quot;line&quot;&gt;&lt;span class=&quot;keyword&quot;&gt;@end&lt;/span&gt;&lt;/span&gt;&lt;br&gt;&lt;/pre&gt;&lt;/td&gt;&lt;/tr&gt;&lt;/table&gt;&lt;/figure&gt;
-&lt;h3 id=&quot;CFBundleDisplayName&quot;&gt;&lt;a href=&quot;#CFBundleDisplayName&quot; class=&quot;headerlink&quot; title=&quot;CFBundleDisplayName&quot;&gt;&lt;/a&gt;&lt;strong&gt;CFBundleDisplayName&lt;/strong&gt;&lt;/h3&gt;&lt;hr&gt;
+&lt;h1 id=&quot;CFBundleDisplayName&quot;&gt;&lt;a href=&quot;#CFBundleDisplayName&quot; class=&quot;headerlink&quot; title=&quot;CFBundleDisplayName&quot;&gt;&lt;/a&gt;CFBundleDisplayName&lt;/h1&gt;&lt;hr&gt;
 &lt;p&gt;如果使用以下方法来获取应用名称的话, 是获取不到&lt;code&gt;InfoPlist.strings&lt;/code&gt;中的本地化应用名称的.&lt;/p&gt;
 &lt;figure class=&quot;highlight objc&quot;&gt;&lt;table&gt;&lt;tr&gt;&lt;td class=&quot;code&quot;&gt;&lt;pre&gt;&lt;span class=&quot;line&quot;&gt;[[[&lt;span class=&quot;built_in&quot;&gt;NSBundle&lt;/span&gt; mainBundle] infoDictionary] objectForKey:&lt;span class=&quot;string&quot;&gt;@&quot;CFBundleDisplayName&quot;&lt;/span&gt;];&lt;/span&gt;&lt;br&gt;&lt;/pre&gt;&lt;/td&gt;&lt;/tr&gt;&lt;/table&gt;&lt;/figure&gt;
 &lt;p&gt;可以使用以下方法来获取&lt;/p&gt;
 &lt;figure class=&quot;highlight objc&quot;&gt;&lt;table&gt;&lt;tr&gt;&lt;td class=&quot;code&quot;&gt;&lt;pre&gt;&lt;span class=&quot;line&quot;&gt;[[[&lt;span class=&quot;built_in&quot;&gt;NSBundle&lt;/span&gt; mainBundle] localizedInfoDictionary] objectForKey:&lt;span class=&quot;string&quot;&gt;@&quot;CFBundleDisplayName&quot;&lt;/span&gt;];&lt;/span&gt;&lt;br&gt;&lt;/pre&gt;&lt;/td&gt;&lt;/tr&gt;&lt;/table&gt;&lt;/figure&gt;
 &lt;p&gt;或者更加直接的使用以下方法(此方法会优先取本地化的值, 若没有本地化的值, 则取原值) &lt;code&gt;推荐&lt;/code&gt;&lt;/p&gt;
 &lt;figure class=&quot;highlight objc&quot;&gt;&lt;table&gt;&lt;tr&gt;&lt;td class=&quot;code&quot;&gt;&lt;pre&gt;&lt;span class=&quot;line&quot;&gt;[[&lt;span class=&quot;built_in&quot;&gt;NSBundle&lt;/span&gt; mainBundle] objectForInfoDictionaryKey:&lt;span class=&quot;string&quot;&gt;@&quot;CFBundleDisplayName&quot;&lt;/span&gt;];&lt;/span&gt;&lt;br&gt;&lt;/pre&gt;&lt;/td&gt;&lt;/tr&gt;&lt;/table&gt;&lt;/figure&gt;
-&lt;h3 id=&quot;UILabel调整字体适应Label宽度&quot;&gt;&lt;a href=&quot;#UILabel调整字体适应Label宽度&quot; class=&quot;headerlink&quot; title=&quot;UILabel调整字体适应Label宽度&quot;&gt;&lt;/a&gt;&lt;strong&gt;UILabel调整字体适应Label宽度&lt;/strong&gt;&lt;/h3&gt;&lt;hr&gt;
+&lt;h1 id=&quot;UILabel调整字体适应Label宽度&quot;&gt;&lt;a href=&quot;#UILabel调整字体适应Label宽度&quot; class=&quot;headerlink&quot; title=&quot;UILabel调整字体适应Label宽度&quot;&gt;&lt;/a&gt;UILabel调整字体适应Label宽度&lt;/h1&gt;&lt;hr&gt;
 &lt;p&gt;通过以下两个属性即可让字体根据UILabel的长度自适应大小&lt;/p&gt;
 &lt;figure class=&quot;highlight objc&quot;&gt;&lt;table&gt;&lt;tr&gt;&lt;td class=&quot;code&quot;&gt;&lt;pre&gt;&lt;span class=&quot;line&quot;&gt;&lt;span class=&quot;keyword&quot;&gt;@property&lt;/span&gt;(&lt;span class=&quot;keyword&quot;&gt;nonatomic&lt;/span&gt;) &lt;span class=&quot;built_in&quot;&gt;BOOL&lt;/span&gt; adjustsFontSizeToFitWidth;&lt;/span&gt;&lt;br&gt;&lt;span class=&quot;line&quot;&gt;&lt;span class=&quot;keyword&quot;&gt;@property&lt;/span&gt;(&lt;span class=&quot;keyword&quot;&gt;nonatomic&lt;/span&gt;) &lt;span class=&quot;built_in&quot;&gt;CGFloat&lt;/span&gt; minimumScaleFactor;&lt;/span&gt;&lt;br&gt;&lt;/pre&gt;&lt;/td&gt;&lt;/tr&gt;&lt;/table&gt;&lt;/figure&gt;
-&lt;h3 id=&quot;格式化字符串的坑&quot;&gt;&lt;a href=&quot;#格式化字符串的坑&quot; class=&quot;headerlink&quot; title=&quot;格式化字符串的坑&quot;&gt;&lt;/a&gt;&lt;strong&gt;格式化字符串的坑&lt;/strong&gt;&lt;/h3&gt;&lt;hr&gt;
+&lt;h1 id=&quot;格式化字符串的坑&quot;&gt;&lt;a href=&quot;#格式化字符串的坑&quot; class=&quot;headerlink&quot; title=&quot;格式化字符串的坑&quot;&gt;&lt;/a&gt;格式化字符串的坑&lt;/h1&gt;&lt;hr&gt;
 &lt;p&gt;很多情况下, 如果一个需要本地化的字符串中有多个格式化占位符的话, 因为各个语言的语法不同, 会有占位符顺序需要调整的问题. 比如以下栗子:&lt;/p&gt;
 &lt;figure class=&quot;highlight objc&quot;&gt;&lt;table&gt;&lt;tr&gt;&lt;td class=&quot;code&quot;&gt;&lt;pre&gt;&lt;span class=&quot;line&quot;&gt;[&lt;span class=&quot;built_in&quot;&gt;NSString&lt;/span&gt; stringWithFormat:&lt;span class=&quot;string&quot;&gt;@&quot;您的账号%@中仍有%@美元未使用&quot;&lt;/span&gt;, account, balance];&lt;/span&gt;&lt;br&gt;&lt;/pre&gt;&lt;/td&gt;&lt;/tr&gt;&lt;/table&gt;&lt;/figure&gt;
 &lt;p&gt;英文本地化字符串替换进去之后变成了&lt;/p&gt;
@@ -51,12 +97,9 @@
     
     <summary type="html">
     
-      &lt;h3 id=&quot;默认语言&quot;&gt;&lt;a href=&quot;#默认语言&quot; class=&quot;headerlink&quot; title=&quot;默认语言&quot;&gt;&lt;/a&gt;&lt;strong&gt;默认语言&lt;/strong&gt;&lt;/h3&gt;&lt;hr&gt;
+      &lt;h1 id=&quot;默认语言&quot;&gt;&lt;a href=&quot;#默认语言&quot; class=&quot;headerlink&quot; title=&quot;默认语言&quot;&gt;&lt;/a&gt;默认语言&lt;/h1&gt;&lt;hr&gt;
 &lt;p&gt;如果一台设备的语言为法语, 但是你所做的本地化只有英语\中文\德语, 那么应用安装后会默认显示Info.plist中&lt;code&gt;Localization native development region&lt;/code&gt;字段所设置的地区语言(如果没有这个字段就默认英语).&lt;/p&gt;
 &lt;p&gt;另一种情况是应用安装后切换语言, 若切换后的语言不存在本地化文件, 则保留前一语言的本地化显示. 比如你所做的本地化只有英语\中文\德语, 设备从英语切换到法语, 那么应用还是显示为英语; 如果再从法语切换到日语, 应用还是现实为英语. 一直到你切换至英语\中文\德语中的某一个语言之后, 应用才会显示响应的语言.&lt;/p&gt;
-&lt;p&gt;如果要自己设置默认语言的话, 可以使用以下的宏:&lt;/p&gt;
-&lt;figure class=&quot;highlight objc&quot;&gt;&lt;table&gt;&lt;tr&gt;&lt;td class=&quot;code&quot;&gt;&lt;pre&gt;&lt;span class=&quot;line&quot;&gt;&lt;span class=&quot;comment&quot;&gt;// 判断系统语言是否是中文@&quot;zh-Hans&quot;或者英文@&quot;en&quot;, 如果不是中文或者英文其他一概用英文@&quot;en&quot;&lt;/span&gt;&lt;/span&gt;&lt;br&gt;&lt;span class=&quot;line&quot;&gt;&lt;span class=&quot;preprocessor&quot;&gt;#define MYLocalizedString(key, comment) \&lt;/span&gt;&lt;/span&gt;&lt;br&gt;&lt;span class=&quot;line&quot;&gt;(([[[&lt;span class=&quot;built_in&quot;&gt;NSLocale&lt;/span&gt; preferredLanguages] objectAtIndex:&lt;span class=&quot;number&quot;&gt;0&lt;/span&gt;] isEqual:&lt;span class=&quot;string&quot;&gt;@&quot;zh-Hans&quot;&lt;/span&gt;] ||&lt;/span&gt;&lt;br&gt;&lt;span class=&quot;line&quot;&gt;  [[[&lt;span class=&quot;built_in&quot;&gt;NSLocale&lt;/span&gt; preferredLanguages] objectAtIndex:&lt;span class=&quot;number&quot;&gt;0&lt;/span&gt;] isEqual:&lt;span class=&quot;string&quot;&gt;@&quot;en&quot;&lt;/span&gt;]) ?&lt;/span&gt;&lt;br&gt;&lt;span class=&quot;line&quot;&gt; ([[&lt;span class=&quot;built_in&quot;&gt;NSBundle&lt;/span&gt; mainBundle] localizedStringForKey:key value:&lt;span class=&quot;string&quot;&gt;@&quot;&quot;&lt;/span&gt; table:&lt;span class=&quot;literal&quot;&gt;nil&lt;/span&gt;]) :&lt;/span&gt;&lt;br&gt;&lt;span class=&quot;line&quot;&gt; ([[&lt;span class=&quot;built_in&quot;&gt;NSBundle&lt;/span&gt; bundleWithPath:[[&lt;span class=&quot;built_in&quot;&gt;NSBundle&lt;/span&gt; mainBundle] pathForResource:&lt;span class=&quot;string&quot;&gt;@&quot;en&quot;&lt;/span&gt; ofType:&lt;span class=&quot;string&quot;&gt;@&quot;lproj&quot;&lt;/span&gt;]] localizedStringForKey:key value:&lt;span class=&quot;string&quot;&gt;@&quot;&quot;&lt;/span&gt; table:&lt;span class=&quot;literal&quot;&gt;nil&lt;/span&gt;]))&lt;/span&gt;&lt;br&gt;&lt;/pre&gt;&lt;/td&gt;&lt;/tr&gt;&lt;/table&gt;&lt;/figure&gt;
-&lt;p&gt;但是由于宏替换的特性, 上面的方法会增加很多的代码量(想象一下你的代码里面有多少本地化字符串, 就会有多少份上面的代码), 作为处女座简直不能忍. 所以想到了hook&lt;code&gt;-localizedStringForKey:value:table:&lt;/code&gt;方法来实现自定义的选择加载的语言包:&lt;/p&gt;
     
     </summary>
     
@@ -68,13 +111,334 @@
   </entry>
   
   <entry>
+    <title>【iOS Tip】提高Xcode编译速度</title>
+    <link href="http://zzyspace.github.io/2016/03/20/reduce-xcode-build-times/"/>
+    <id>http://zzyspace.github.io/2016/03/20/reduce-xcode-build-times/</id>
+    <published>2016-03-20T07:46:56.000Z</published>
+    <updated>2016-09-07T07:44:43.000Z</updated>
+    
+    <content type="html">&lt;p&gt;&lt;img src=&quot;/img/reduce-xcode-build-times/title.png&quot; alt=&quot;&quot;&gt;&lt;br&gt;平常在调试工程的时候, 特别是大工程, 浪费在编译上的时间加起来也是个不小的数目. 我戏成它为&lt;strong&gt;带薪编译&lt;/strong&gt;. 带薪编译一来呢浪费公司资源, 二来使得开发效率大大降低. 所以提高Xcode的编译速度还是非常有必要的. 关于通过更改一些Xcode的配置来提升编译速度&lt;a href=&quot;http://blog.csdn.net/zhaoxy_thu/article/details/30073485?utm_source=tuicool&amp;amp;utm_medium=referral&quot; target=&quot;_blank&quot; rel=&quot;external&quot;&gt;这篇文章&lt;/a&gt;已经列举除了几个不错的方法, 这里就不再多说.&lt;/p&gt;
+&lt;p&gt;这篇文章主要讲的是从&lt;strong&gt;硬件方面&lt;/strong&gt;来提升Xcode的编译速度. 因为对比了现在日常使用的Mac mini和MacBook Pro, 在CPU和内存基本没有差别的情况下, 相比MacBook Pro的SSD, Mac mini的机械硬盘的表现实在是惨不忍睹. 这也是拖慢了编译速度的主要元凶. &lt;del&gt;所以, 去换一个SSD吧.(Excuse me?)&lt;/del&gt;&lt;/p&gt;
+&lt;p&gt;本文所讲的方法理论上编译速度是可以超过SSD的. 在说具体方法之前, 先来了解一下拖慢编译速度的元凶Derived Data:&lt;/p&gt;
+&lt;a id=&quot;more&quot;&gt;&lt;/a&gt;
+&lt;h1 id=&quot;Derived-Data&quot;&gt;&lt;a href=&quot;#Derived-Data&quot; class=&quot;headerlink&quot; title=&quot;Derived Data&quot;&gt;&lt;/a&gt;Derived Data&lt;/h1&gt;&lt;hr&gt;
+&lt;p&gt;Derived Data是Xcode自动生成的一些派生数据的文件夹. 里面包含有一些索引文件、Log、&lt;strong&gt;编译时产生的文件&lt;/strong&gt;. 编译时候产生的文件包括:&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;第三方库的&lt;code&gt;.a&lt;/code&gt;文件&lt;/li&gt;
+&lt;li&gt;应用程序&lt;code&gt;.app&lt;/code&gt;文件&lt;/li&gt;
+&lt;li&gt;保存函数地址映射信息的中转文件&lt;code&gt;.dSYM&lt;/code&gt;文件&lt;/li&gt;
+&lt;/ul&gt;
+&lt;p&gt;所以, 写这些数据的时候, 写得越快, 编译的时间也就能越少. 如何让数据写入得更快呢? 可以把Derived Data的路径换到内存中. 换句话说, 将Derived Data的读写从硬盘移动到内存中.&lt;/p&gt;
+&lt;h1 id=&quot;在内存中创建虚拟磁盘&quot;&gt;&lt;a href=&quot;#在内存中创建虚拟磁盘&quot; class=&quot;headerlink&quot; title=&quot;在内存中创建虚拟磁盘&quot;&gt;&lt;/a&gt;在内存中创建虚拟磁盘&lt;/h1&gt;&lt;hr&gt;
+&lt;p&gt;What? 内存当硬盘用? 是的你没听错, 其实OS X系统是允许在内存中创建一个可以高速存取的虚拟磁盘的. 通过以下两种方法可以实现在内存中创建虚拟磁盘:&lt;/p&gt;
+&lt;h3 id=&quot;1-iRamDisk&quot;&gt;&lt;a href=&quot;#1-iRamDisk&quot; class=&quot;headerlink&quot; title=&quot;1. iRamDisk&quot;&gt;&lt;/a&gt;1. iRamDisk&lt;/h3&gt;&lt;p&gt;在AppStore上找到了这么一个神器, 叫&lt;a href=&quot;https://itunes.apple.com/us/app/iramdisk/id492615400?mt=12&quot; target=&quot;_blank&quot; rel=&quot;external&quot;&gt;iRamDisk&lt;/a&gt;, 14.99刀. 使用它可以非常简单地创建一个Xcode的DerivedData的虚拟磁盘, 如下. 都是图形化界面, 很好操作, 就不多赘述了.&lt;br&gt;&lt;img src=&quot;/img/reduce-xcode-build-times/iramdisk.png&quot; alt=&quot;&quot;&gt;&lt;br&gt;这里分享一个&lt;a href=&quot;http://pan.baidu.com/s/1hqLLc3a&quot; target=&quot;_blank&quot; rel=&quot;external&quot;&gt;破解版&lt;/a&gt;(提取码&lt;code&gt;9u38&lt;/code&gt;)仅供学习交流使用, 建议购买正版支持开发者.&lt;/p&gt;
+&lt;h3 id=&quot;2-命令行创建&quot;&gt;&lt;a href=&quot;#2-命令行创建&quot; class=&quot;headerlink&quot; title=&quot;2. 命令行创建&quot;&gt;&lt;/a&gt;2. 命令行创建&lt;/h3&gt;&lt;p&gt;&lt;strong&gt;① 创建RAM disk并分配空间&lt;/strong&gt;&lt;br&gt;size的计算公式 &lt;code&gt;size = 需要分配的空间(M) * 1024 * 1024 / 512&lt;/code&gt;. 例如下面分配的空间为2GB: &lt;code&gt;2048 * 1024 * 1024 / 512 = 4194304&lt;/code&gt;.&lt;br&gt;&lt;figure class=&quot;highlight&quot;&gt;&lt;table&gt;&lt;tr&gt;&lt;td class=&quot;code&quot;&gt;&lt;pre&gt;&lt;span class=&quot;line&quot;&gt;$ hdid -nomount ram://4194304&lt;/span&gt;&lt;br&gt;&lt;/pre&gt;&lt;/td&gt;&lt;/tr&gt;&lt;/table&gt;&lt;/figure&gt;&lt;/p&gt;
+&lt;p&gt;执行完这个命令之后, 终端会输出&lt;code&gt;/dev/diskN&lt;/code&gt;, &lt;code&gt;N&lt;/code&gt;是一个数字, 记下它, 后面两步有用.&lt;/p&gt;
+&lt;p&gt;&lt;strong&gt;② 在RAM disk上创建HFS&lt;/strong&gt;&lt;br&gt;给虚拟磁盘创建名字, 如下为&lt;code&gt;DerivedData&lt;/code&gt;, 并将&lt;code&gt;rdiskN&lt;/code&gt;的&lt;code&gt;N&lt;/code&gt;改为第一步中的&lt;code&gt;N&lt;/code&gt;的数字. (&lt;em&gt;注意: &lt;code&gt;rdiskN&lt;/code&gt;不要错写成&lt;code&gt;diskN&lt;/code&gt;&lt;/em&gt;)&lt;br&gt;&lt;figure class=&quot;highlight vim&quot;&gt;&lt;table&gt;&lt;tr&gt;&lt;td class=&quot;code&quot;&gt;&lt;pre&gt;&lt;span class=&quot;line&quot;&gt;$ newfs_hfs -&lt;span class=&quot;keyword&quot;&gt;v&lt;/span&gt; DerivedData /dev/rdiskN&lt;/span&gt;&lt;br&gt;&lt;/pre&gt;&lt;/td&gt;&lt;/tr&gt;&lt;/table&gt;&lt;/figure&gt;&lt;/p&gt;
+&lt;p&gt;&lt;strong&gt;③ 把虚拟磁盘安装到Xcode的DerivedData目录下&lt;/strong&gt;&lt;br&gt;如下命令, 同样把&lt;code&gt;diskN&lt;/code&gt;中的&lt;code&gt;N&lt;/code&gt;替换成第一步中&lt;code&gt;N&lt;/code&gt;的数字. (&lt;em&gt;注意: 此时是&lt;code&gt;diskN&lt;/code&gt;&lt;/em&gt;)&lt;br&gt;&lt;figure class=&quot;highlight vim&quot;&gt;&lt;table&gt;&lt;tr&gt;&lt;td class=&quot;code&quot;&gt;&lt;pre&gt;&lt;span class=&quot;line&quot;&gt;$ diskutil mount -mountPoint ~/Library/Developer/Xcode/DerivedData /dev/diskN&lt;/span&gt;&lt;br&gt;&lt;/pre&gt;&lt;/td&gt;&lt;/tr&gt;&lt;/table&gt;&lt;/figure&gt;&lt;/p&gt;
+&lt;p&gt;这样就大功告成了! 不出意外就可以在桌面(或者Finder)上看到&lt;code&gt;DerivedData&lt;/code&gt;这个盘. 如果不要虚拟磁盘了, 可以在Finder中推出这个磁盘, 或者执行以下命令&lt;strong&gt;卸载&lt;/strong&gt;这个磁盘:&lt;br&gt;&lt;figure class=&quot;highlight vim&quot;&gt;&lt;table&gt;&lt;tr&gt;&lt;td class=&quot;code&quot;&gt;&lt;pre&gt;&lt;span class=&quot;line&quot;&gt;$ diskutil umount /dev/diskN&lt;/span&gt;&lt;br&gt;&lt;/pre&gt;&lt;/td&gt;&lt;/tr&gt;&lt;/table&gt;&lt;/figure&gt;&lt;/p&gt;
+&lt;h1 id=&quot;总结&quot;&gt;&lt;a href=&quot;#总结&quot; class=&quot;headerlink&quot; title=&quot;总结&quot;&gt;&lt;/a&gt;总结&lt;/h1&gt;&lt;hr&gt;
+&lt;h3 id=&quot;1-优点&quot;&gt;&lt;a href=&quot;#1-优点&quot; class=&quot;headerlink&quot; title=&quot;1. 优点:&quot;&gt;&lt;/a&gt;1. 优点:&lt;/h3&gt;&lt;ul&gt;
+&lt;li&gt;编译速度加快.&lt;/li&gt;
+&lt;li&gt;创建虚拟磁盘后, 并不是直接占用掉所有分配的空间, 而是根据虚拟磁盘中的文件总大小来逐渐占用内存.&lt;/li&gt;
+&lt;/ul&gt;
+&lt;h3 id=&quot;2-缺点&quot;&gt;&lt;a href=&quot;#2-缺点&quot; class=&quot;headerlink&quot; title=&quot;2. 缺点:&quot;&gt;&lt;/a&gt;2. 缺点:&lt;/h3&gt;&lt;ul&gt;
+&lt;li&gt;每次关闭系统之后, 虚拟磁盘将会被卸载, 下次开机后需要重新创建虚拟磁盘. 同时因为Derived Data已经被删除.&lt;/li&gt;
+&lt;li&gt;内存有限, 不宜创建太大的虚拟磁盘, 需要在系统性能和需要的虚拟磁盘空间中找一个平衡点.&lt;/li&gt;
+&lt;/ul&gt;
+&lt;h3 id=&quot;3-可能遇到的坑&quot;&gt;&lt;a href=&quot;#3-可能遇到的坑&quot; class=&quot;headerlink&quot; title=&quot;3. 可能遇到的坑&quot;&gt;&lt;/a&gt;3. 可能遇到的坑&lt;/h3&gt;&lt;ul&gt;
+&lt;li&gt;如果创建的虚拟磁盘已满, 会导致编译的失败. 此时清除掉Derived Data后重新编译, 就算有足够的空间也还是有可能会导致编译失败. 重启Xcode可以解决此问题.&lt;/li&gt;
+&lt;/ul&gt;
+</content>
+    
+    <summary type="html">
+    
+      &lt;p&gt;&lt;img src=&quot;/img/reduce-xcode-build-times/title.png&quot; alt=&quot;&quot;&gt;&lt;br&gt;平常在调试工程的时候, 特别是大工程, 浪费在编译上的时间加起来也是个不小的数目. 我戏成它为&lt;strong&gt;带薪编译&lt;/strong&gt;. 带薪编译一来呢浪费公司资源, 二来使得开发效率大大降低. 所以提高Xcode的编译速度还是非常有必要的. 关于通过更改一些Xcode的配置来提升编译速度&lt;a href=&quot;http://blog.csdn.net/zhaoxy_thu/article/details/30073485?utm_source=tuicool&amp;amp;utm_medium=referral&quot;&gt;这篇文章&lt;/a&gt;已经列举除了几个不错的方法, 这里就不再多说.&lt;/p&gt;
+&lt;p&gt;这篇文章主要讲的是从&lt;strong&gt;硬件方面&lt;/strong&gt;来提升Xcode的编译速度. 因为对比了现在日常使用的Mac mini和MacBook Pro, 在CPU和内存基本没有差别的情况下, 相比MacBook Pro的SSD, Mac mini的机械硬盘的表现实在是惨不忍睹. 这也是拖慢了编译速度的主要元凶. &lt;del&gt;所以, 去换一个SSD吧.(Excuse me?)&lt;/del&gt;&lt;/p&gt;
+&lt;p&gt;本文所讲的方法理论上编译速度是可以超过SSD的. 在说具体方法之前, 先来了解一下拖慢编译速度的元凶Derived Data:&lt;/p&gt;
+    
+    </summary>
+    
+      <category term="iOS Tips" scheme="http://zzyspace.github.io/categories/iOS-Tips/"/>
+    
+    
+      <category term="Xcode" scheme="http://zzyspace.github.io/tags/Xcode/"/>
+    
+  </entry>
+  
+  <entry>
+    <title>【iOS开发】Objective-c Runtime小记</title>
+    <link href="http://zzyspace.github.io/2016/03/16/objective-c-runtime/"/>
+    <id>http://zzyspace.github.io/2016/03/16/objective-c-runtime/</id>
+    <published>2016-03-16T09:16:08.000Z</published>
+    <updated>2016-09-07T07:48:50.000Z</updated>
+    
+    <content type="html">&lt;h1 id=&quot;Runtime&quot;&gt;&lt;a href=&quot;#Runtime&quot; class=&quot;headerlink&quot; title=&quot;Runtime&quot;&gt;&lt;/a&gt;Runtime&lt;/h1&gt;&lt;hr&gt;
+&lt;p&gt;Runtime是一套底层的C语言API. 实际上, 平时我们编写的Objective-C代码, 底层都是基于runtime实现的, 也就是说, 平时我们编写的Objective-C代码, 最终都是转成了底层的runtime代码(C语言代码). Runtime使得Objective-C这门语言的灵活性大大地提升. 有了runtime, 我们可以在应用运行的时候动态操作对象、类、方法, 也因为这个原因, 使得编程有了更多的可能性, 对于开发中遇到的一些比较棘手的问题, 往往用runtime可以优雅地解决, 接下来让我们看看runtime是为何可以如此牛x.&lt;/p&gt;
+&lt;a id=&quot;more&quot;&gt;&lt;/a&gt;
+&lt;h1 id=&quot;Objective-C中类和对象的本质&quot;&gt;&lt;a href=&quot;#Objective-C中类和对象的本质&quot; class=&quot;headerlink&quot; title=&quot;Objective-C中类和对象的本质&quot;&gt;&lt;/a&gt;Objective-C中类和对象的本质&lt;/h1&gt;&lt;hr&gt;
+&lt;h3 id=&quot;1-对象-Instance&quot;&gt;&lt;a href=&quot;#1-对象-Instance&quot; class=&quot;headerlink&quot; title=&quot;1. 对象(Instance)&quot;&gt;&lt;/a&gt;1. 对象(Instance)&lt;/h3&gt;&lt;p&gt;&lt;strong&gt;概念:&lt;/strong&gt;&lt;br&gt;对象的本质是一个结构体, 在&lt;code&gt;&amp;lt;objc/objc.h&amp;gt;&lt;/code&gt;中可以找到它的声明:&lt;br&gt;&lt;figure class=&quot;highlight objc&quot;&gt;&lt;table&gt;&lt;tr&gt;&lt;td class=&quot;code&quot;&gt;&lt;pre&gt;&lt;span class=&quot;line&quot;&gt;&lt;span class=&quot;keyword&quot;&gt;struct&lt;/span&gt; objc_object &amp;#123;&lt;/span&gt;&lt;br&gt;&lt;span class=&quot;line&quot;&gt;    Class isa  OBJC_ISA_&lt;span class=&quot;built_in&quot;&gt;AVAILABILITY&lt;/span&gt;;&lt;/span&gt;&lt;br&gt;&lt;span class=&quot;line&quot;&gt;&amp;#125;;&lt;/span&gt;&lt;br&gt;&lt;/pre&gt;&lt;/td&gt;&lt;/tr&gt;&lt;/table&gt;&lt;/figure&gt;&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;&lt;code&gt;isa&lt;/code&gt;: 指针指向对象所属的&lt;a href=&quot;#二.2&quot;&gt;类(Class)&lt;/a&gt;, Class结构体中包含了成员变量、对象方法等等.  &lt;/li&gt;
+&lt;/ul&gt;
+&lt;p&gt;&lt;strong&gt;补充:&lt;/strong&gt;&lt;br&gt;平常我们常常使用&lt;code&gt;id&lt;/code&gt;来作为对象的指针, 原因就是&lt;code&gt;&amp;lt;objc/objc.h&amp;gt;&lt;/code&gt;中定义&lt;code&gt;id&lt;/code&gt;类型来代替&lt;code&gt;struct objc_object *&lt;/code&gt;:&lt;br&gt;&lt;figure class=&quot;highlight objc&quot;&gt;&lt;table&gt;&lt;tr&gt;&lt;td class=&quot;code&quot;&gt;&lt;pre&gt;&lt;span class=&quot;line&quot;&gt;&lt;span class=&quot;keyword&quot;&gt;typedef&lt;/span&gt; &lt;span class=&quot;keyword&quot;&gt;struct&lt;/span&gt; objc_object *&lt;span class=&quot;keyword&quot;&gt;id&lt;/span&gt;;&lt;/span&gt;&lt;br&gt;&lt;/pre&gt;&lt;/td&gt;&lt;/tr&gt;&lt;/table&gt;&lt;/figure&gt;&lt;/p&gt;
+&lt;p&gt;&lt;br&gt;&lt;/p&gt;
+&lt;h3 id=&quot;2-类-Class&quot;&gt;&lt;a href=&quot;#2-类-Class&quot; class=&quot;headerlink&quot; title=&quot; 2. 类(Class) &quot;&gt;&lt;/a&gt;&lt;span id=&quot;二.2&quot;&gt; 2. 类(Class) &lt;/span&gt;&lt;/h3&gt;&lt;p&gt;&lt;strong&gt;概念:&lt;/strong&gt;&lt;br&gt;类的本质是一个Class类型的对象. 在&lt;code&gt;&amp;lt;objc/runtime.h&amp;gt;&lt;/code&gt;中, 对类的声明如下:&lt;br&gt;&lt;figure class=&quot;highlight objc&quot;&gt;&lt;table&gt;&lt;tr&gt;&lt;td class=&quot;code&quot;&gt;&lt;pre&gt;&lt;span class=&quot;line&quot;&gt;&lt;span class=&quot;keyword&quot;&gt;struct&lt;/span&gt; objc_class &amp;#123;&lt;/span&gt;&lt;br&gt;&lt;span class=&quot;line&quot;&gt;    Class isa  OBJC_ISA_&lt;span class=&quot;built_in&quot;&gt;AVAILABILITY&lt;/span&gt;;&lt;/span&gt;&lt;br&gt;&lt;span class=&quot;line&quot;&gt;&lt;span class=&quot;preprocessor&quot;&gt;#if !__OBJC2__&lt;/span&gt;&lt;/span&gt;&lt;br&gt;&lt;span class=&quot;line&quot;&gt;    Class super_class                                        OBJC2_UN&lt;span class=&quot;built_in&quot;&gt;AVAILABLE&lt;/span&gt;;&lt;/span&gt;&lt;br&gt;&lt;span class=&quot;line&quot;&gt;    &lt;span class=&quot;keyword&quot;&gt;const&lt;/span&gt; &lt;span class=&quot;keyword&quot;&gt;char&lt;/span&gt; *name                                         OBJC2_UN&lt;span class=&quot;built_in&quot;&gt;AVAILABLE&lt;/span&gt;;&lt;/span&gt;&lt;br&gt;&lt;span class=&quot;line&quot;&gt;    &lt;span class=&quot;keyword&quot;&gt;long&lt;/span&gt; version                                             OBJC2_UN&lt;span class=&quot;built_in&quot;&gt;AVAILABLE&lt;/span&gt;;&lt;/span&gt;&lt;br&gt;&lt;span class=&quot;line&quot;&gt;    &lt;span class=&quot;keyword&quot;&gt;long&lt;/span&gt; info                                                OBJC2_UN&lt;span class=&quot;built_in&quot;&gt;AVAILABLE&lt;/span&gt;;&lt;/span&gt;&lt;br&gt;&lt;span class=&quot;line&quot;&gt;    &lt;span class=&quot;keyword&quot;&gt;long&lt;/span&gt; instance_size                                       OBJC2_UN&lt;span class=&quot;built_in&quot;&gt;AVAILABLE&lt;/span&gt;;&lt;/span&gt;&lt;br&gt;&lt;span class=&quot;line&quot;&gt;    &lt;span class=&quot;keyword&quot;&gt;struct&lt;/span&gt; objc_ivar_list *ivars                             OBJC2_UN&lt;span class=&quot;built_in&quot;&gt;AVAILABLE&lt;/span&gt;;&lt;/span&gt;&lt;br&gt;&lt;span class=&quot;line&quot;&gt;    &lt;span class=&quot;keyword&quot;&gt;struct&lt;/span&gt; objc_method_list **methodLists                    OBJC2_UN&lt;span class=&quot;built_in&quot;&gt;AVAILABLE&lt;/span&gt;;&lt;/span&gt;&lt;br&gt;&lt;span class=&quot;line&quot;&gt;    &lt;span class=&quot;keyword&quot;&gt;struct&lt;/span&gt; objc_cache *cache                                 OBJC2_UN&lt;span class=&quot;built_in&quot;&gt;AVAILABLE&lt;/span&gt;;&lt;/span&gt;&lt;br&gt;&lt;span class=&quot;line&quot;&gt;    &lt;span class=&quot;keyword&quot;&gt;struct&lt;/span&gt; objc_protocol_list *protocols                     OBJC2_UN&lt;span class=&quot;built_in&quot;&gt;AVAILABLE&lt;/span&gt;;&lt;/span&gt;&lt;br&gt;&lt;span class=&quot;line&quot;&gt;&lt;span class=&quot;preprocessor&quot;&gt;#endif&lt;/span&gt;&lt;/span&gt;&lt;br&gt;&lt;span class=&quot;line&quot;&gt;&amp;#125; OBJC2_UN&lt;span class=&quot;built_in&quot;&gt;AVAILABLE&lt;/span&gt;;&lt;/span&gt;&lt;br&gt;&lt;/pre&gt;&lt;/td&gt;&lt;/tr&gt;&lt;/table&gt;&lt;/figure&gt;&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;&lt;code&gt;isa&lt;/code&gt;: 指针指向Class对象的&lt;a href=&quot;#二.3&quot;&gt;元类(MetaClass)&lt;/a&gt;, 元类中记录了类方法列表.&lt;/li&gt;
+&lt;li&gt;&lt;code&gt;super_class&lt;/code&gt;: 指针指向父类. 根类(NSObject)中的super_class指针为空.&lt;/li&gt;
+&lt;li&gt;&lt;code&gt;name&lt;/code&gt;: 类名&lt;/li&gt;
+&lt;li&gt;&lt;code&gt;version&lt;/code&gt;: 类的版本, 默认为0&lt;/li&gt;
+&lt;li&gt;&lt;code&gt;info&lt;/code&gt;: 类的信息, 因为是long型的, 推测是作为标识使用&lt;/li&gt;
+&lt;li&gt;&lt;code&gt;instance_size&lt;/code&gt;: 类的对象的大小&lt;/li&gt;
+&lt;li&gt;&lt;code&gt;ivars&lt;/code&gt;: 存放该类所有成员变量的链表&lt;/li&gt;
+&lt;li&gt;&lt;code&gt;methodLists&lt;/code&gt;: 存放该类所有对象方法的链表&lt;/li&gt;
+&lt;li&gt;&lt;code&gt;cache&lt;/code&gt;: 缓存常用的对象方法, 提高消息分发的效率&lt;/li&gt;
+&lt;li&gt;&lt;code&gt;protocols&lt;/code&gt;: 存放该类的协议的链表&lt;/li&gt;
+&lt;/ul&gt;
+&lt;p&gt;&lt;strong&gt;补充:&lt;/strong&gt;&lt;br&gt;就像&lt;code&gt;id&lt;/code&gt;类型代表对象指针一样, &lt;code&gt;&amp;lt;objc/objc.h&amp;gt;&lt;/code&gt;中定义&lt;code&gt;Class&lt;/code&gt;类型来代替&lt;code&gt;struct objc_class *&lt;/code&gt;:&lt;br&gt;&lt;figure class=&quot;highlight objc&quot;&gt;&lt;table&gt;&lt;tr&gt;&lt;td class=&quot;code&quot;&gt;&lt;pre&gt;&lt;span class=&quot;line&quot;&gt;&lt;span class=&quot;keyword&quot;&gt;typedef&lt;/span&gt; &lt;span class=&quot;keyword&quot;&gt;struct&lt;/span&gt; objc_class *Class;&lt;/span&gt;&lt;br&gt;&lt;/pre&gt;&lt;/td&gt;&lt;/tr&gt;&lt;/table&gt;&lt;/figure&gt;&lt;/p&gt;
+&lt;p&gt;&lt;br&gt;&lt;/p&gt;
+&lt;h3 id=&quot;3-元类-MetaClass&quot;&gt;&lt;a href=&quot;#3-元类-MetaClass&quot; class=&quot;headerlink&quot; title=&quot; 3. 元类(MetaClass) &quot;&gt;&lt;/a&gt;&lt;span id=&quot;二.3&quot;&gt; 3. 元类(MetaClass) &lt;/span&gt;&lt;/h3&gt;&lt;p&gt;&lt;strong&gt;概念:&lt;/strong&gt;&lt;br&gt;元类也是一个类, 每个类都有对应的一个元类. 可以通过类中的isa指针找到其对应的元类. 虽然在runtime相关头文件中没有找到MetaClass的声明, 但是在&lt;a href=&quot;http://www.sealiesoftware.com/blog/archive/2009/04/14/objc_explain_Classes_and_metaclasses.html&quot; target=&quot;_blank&quot; rel=&quot;external&quot;&gt;这个博客&lt;/a&gt;中对元类的与类的关系解释中, 我们可以推测出元类结构体和类是相似的, 包含(但不仅有)如下成员:&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;&lt;code&gt;isa&lt;/code&gt;: 指针都是指向根元类(NSObject的元类), 即使是根元类本身的isa也是指向自己&lt;/li&gt;
+&lt;li&gt;&lt;code&gt;super_class&lt;/code&gt;: 指针指向父元类, 根元类指向根类(NSObject)&lt;/li&gt;
+&lt;li&gt;&lt;code&gt;methodLists&lt;/code&gt;: 存放该类的所有类方法的链表&lt;/li&gt;
+&lt;/ul&gt;
+&lt;p&gt;&lt;strong&gt;对象、类、元类的关系图：&lt;/strong&gt;&lt;/p&gt;
+&lt;div style=&quot;text-align: center&quot;&gt;&lt;br&gt;&lt;img src=&quot;/img/runtime/runtime_0.pdf&quot;&gt;&lt;br&gt;&lt;/div&gt;
+
+&lt;h1 id=&quot;消息机制&quot;&gt;&lt;a href=&quot;#消息机制&quot; class=&quot;headerlink&quot; title=&quot;消息机制&quot;&gt;&lt;/a&gt;消息机制&lt;/h1&gt;&lt;hr&gt;
+&lt;p&gt;我们平常所说的”方法调用”, 其实是不准确的, 因为在Objective-C中, 所谓的”方法调用”本质是消息分发. 比如下面这个”方法调用”:&lt;br&gt;&lt;figure class=&quot;highlight objc&quot;&gt;&lt;table&gt;&lt;tr&gt;&lt;td class=&quot;code&quot;&gt;&lt;pre&gt;&lt;span class=&quot;line&quot;&gt;[receiver message]&lt;/span&gt;&lt;br&gt;&lt;/pre&gt;&lt;/td&gt;&lt;/tr&gt;&lt;/table&gt;&lt;/figure&gt;&lt;/p&gt;
+&lt;p&gt;最终会被编译器转化为:&lt;br&gt;&lt;figure class=&quot;highlight objc&quot;&gt;&lt;table&gt;&lt;tr&gt;&lt;td class=&quot;code&quot;&gt;&lt;pre&gt;&lt;span class=&quot;line&quot;&gt;objc_msgSend(receiver, &lt;span class=&quot;keyword&quot;&gt;@selector&lt;/span&gt;(message))&lt;/span&gt;&lt;br&gt;&lt;/pre&gt;&lt;/td&gt;&lt;/tr&gt;&lt;/table&gt;&lt;/figure&gt;&lt;/p&gt;
+&lt;p&gt;所以说, 消息分发是通过定义在&lt;code&gt;&amp;lt;objc/message.h&amp;gt;&lt;/code&gt;中的&lt;code&gt;objc_msgSend()&lt;/code&gt;方法以及相关的方法来实现的. &lt;/p&gt;
+&lt;p&gt;需要注意的是消息分发是运行时特性, 说白了就是运行的时候, 一条消息才会知道它所对应的方法的实现是什么. 所以运行的时候, 一条消息的传递过程是这样的:&lt;/p&gt;
+&lt;blockquote&gt;
+&lt;ol&gt;
+&lt;li&gt;向对象&lt;code&gt;receiver&lt;/code&gt;对象发送&lt;code&gt;message&lt;/code&gt;消息.&lt;/li&gt;
+&lt;li&gt;通过&lt;code&gt;receiver&lt;/code&gt;对象的&lt;code&gt;isa&lt;/code&gt;指针找到它的Class.&lt;/li&gt;
+&lt;li&gt;在Class结构体中的&lt;code&gt;cache&lt;/code&gt;中查找是否有的&lt;code&gt;message&lt;/code&gt;的selector, 没有的话到&lt;code&gt;methodLists&lt;/code&gt;里面查找. 若有找到&lt;code&gt;message&lt;/code&gt;的selector, 则跳转至对应的方法实现完成此次消息分发.&lt;/li&gt;
+&lt;li&gt;如果没有找到&lt;code&gt;message&lt;/code&gt;的实现, &lt;code&gt;objc_msgSend&lt;/code&gt;会通过当前的Class结构体中的&lt;code&gt;super_class&lt;/code&gt;指针找到它的父Class, 并重复第3点的动作. &lt;/li&gt;
+&lt;li&gt;如果一直没有找到&lt;code&gt;message&lt;/code&gt;的实现, 第3点与第4点会一直重复直到根类(NSObject).&lt;/li&gt;
+&lt;li&gt;如果在根类中依然没有找到&lt;code&gt;message&lt;/code&gt;的实现, 默认(未实现&lt;a href=&quot;https://developer.apple.com/library/ios/documentation/Cocoa/Conceptual/ObjCRuntimeGuide/Articles/ocrtForwarding.html#//apple_ref/doc/uid/TP40008048-CH105-SW1&quot; target=&quot;_blank&quot; rel=&quot;external&quot;&gt;消息转发&lt;/a&gt;方法的情况下)就会抛出&lt;code&gt;unrecognized selector send to instance xxxx&lt;/code&gt;的异常.&lt;/li&gt;
+&lt;/ol&gt;
+&lt;/blockquote&gt;
+&lt;p&gt;这里引用&lt;a href=&quot;https://developer.apple.com/library/ios/documentation/Cocoa/Conceptual/ObjCRuntimeGuide/Articles/ocrtHowMessagingWorks.html#//apple_ref/doc/uid/TP40008048-CH104-SW1&quot; target=&quot;_blank&quot; rel=&quot;external&quot;&gt;Apple官方文档&lt;/a&gt;的消息分发原理插图便于理解:&lt;/p&gt;
+&lt;div style=&quot;text-align: center&quot;&gt;&lt;br&gt;&lt;img src=&quot;/img/runtime/runtime_1.gif&quot;&gt;&lt;br&gt;&lt;/div&gt;
+
+&lt;p&gt;看到这里或许会担心消息分发的过程太过于繁琐, 以至于影响性能? 其实不会的, 一个类中常用的方法会缓存在&lt;code&gt;cache&lt;/code&gt;中, 如上面消息分发流程的第2点所说, 一个对象接收到一条消息之后, 并不是直接去&lt;code&gt;methodLists&lt;/code&gt;查找, 而是先在&lt;code&gt;cache&lt;/code&gt;中查找, 查找不到了再到&lt;code&gt;methodLists&lt;/code&gt;中查找. 这样就能使得消息转发的效率得到保障.&lt;/p&gt;
+&lt;h1 id=&quot;扩展阅读&quot;&gt;&lt;a href=&quot;#扩展阅读&quot; class=&quot;headerlink&quot; title=&quot;扩展阅读&quot;&gt;&lt;/a&gt;扩展阅读&lt;/h1&gt;&lt;hr&gt;
+&lt;p&gt;1.&lt;a href=&quot;https://developer.apple.com/library/mac/documentation/Cocoa/Conceptual/ObjCRuntimeGuide/Introduction/Introduction.html&quot; target=&quot;_blank&quot; rel=&quot;external&quot;&gt;Objective-C Runtime Programming Guide&lt;/a&gt; by Apple&lt;br&gt;2.&lt;a href=&quot;http://southpeak.github.io/blog/2014/10/25/objective-c-runtime-yun-xing-shi-zhi-lei-yu-dui-xiang/&quot; target=&quot;_blank&quot; rel=&quot;external&quot;&gt;Objective-C Runtime 运行时系列文章&lt;/a&gt; by 南峰子&lt;br&gt;3.&lt;a href=&quot;http://yulingtianxia.com/blog/2014/11/05/objective-c-runtime/&quot; target=&quot;_blank&quot; rel=&quot;external&quot;&gt;Objective-C Runtime&lt;/a&gt; by 玉令天下&lt;br&gt;4.&lt;a href=&quot;http://limboy.me/ios/2013/08/03/dynamic-tips-and-tricks-with-objective-c.html&quot; target=&quot;_blank&quot; rel=&quot;external&quot;&gt;(译)Objective-C的动态特性&lt;/a&gt; by Limboy’s HQ&lt;br&gt;5.&lt;a href=&quot;http://blog.ibireme.com/2013/11/26/objective-c-messaging/&quot; target=&quot;_blank&quot; rel=&quot;external&quot;&gt;Objective-C 中的消息与消息转发&lt;/a&gt; by ibireme&lt;br&gt;6.&lt;a href=&quot;http://tech.glowing.com/cn/objective-c-runtime/&quot; target=&quot;_blank&quot; rel=&quot;external&quot;&gt;Objective-C Runtime&lt;/a&gt; by Glow技术团队博客&lt;/p&gt;
+</content>
+    
+    <summary type="html">
+    
+      &lt;h1 id=&quot;Runtime&quot;&gt;&lt;a href=&quot;#Runtime&quot; class=&quot;headerlink&quot; title=&quot;Runtime&quot;&gt;&lt;/a&gt;Runtime&lt;/h1&gt;&lt;hr&gt;
+&lt;p&gt;Runtime是一套底层的C语言API. 实际上, 平时我们编写的Objective-C代码, 底层都是基于runtime实现的, 也就是说, 平时我们编写的Objective-C代码, 最终都是转成了底层的runtime代码(C语言代码). Runtime使得Objective-C这门语言的灵活性大大地提升. 有了runtime, 我们可以在应用运行的时候动态操作对象、类、方法, 也因为这个原因, 使得编程有了更多的可能性, 对于开发中遇到的一些比较棘手的问题, 往往用runtime可以优雅地解决, 接下来让我们看看runtime是为何可以如此牛x.&lt;/p&gt;
+    
+    </summary>
+    
+      <category term="iOS开发" scheme="http://zzyspace.github.io/categories/iOS%E5%BC%80%E5%8F%91/"/>
+    
+    
+      <category term="runtime" scheme="http://zzyspace.github.io/tags/runtime/"/>
+    
+  </entry>
+  
+  <entry>
+    <title>【iOS开发】Apple Pay 的集成</title>
+    <link href="http://zzyspace.github.io/2016/02/18/apple-pay/"/>
+    <id>http://zzyspace.github.io/2016/02/18/apple-pay/</id>
+    <published>2016-02-18T13:19:14.000Z</published>
+    <updated>2016-09-07T07:49:51.000Z</updated>
+    
+    <content type="html">&lt;p&gt;&lt;img src=&quot;/img/ApplePay/header.jpg&quot; alt=&quot;&quot;&gt;&lt;br&gt;Apple Pay在今天终于在中国大陆地区正式开通. Apple Pay不仅仅在线下支付中可以让你通过指纹刷(zhuang)卡(bi), 更可以在线上支付(App中支付)时, 节省掉很多多余的步骤, 让支付宝与微信支付哭晕在厕所… 蛋扯远了, 接下来我们来看看怎么让你的App也支持Apple Pay吧!&lt;/p&gt;
+&lt;a id=&quot;more&quot;&gt;&lt;/a&gt;
+&lt;h1 id=&quot;App集成Apple-Pay&quot;&gt;&lt;a href=&quot;#App集成Apple-Pay&quot; class=&quot;headerlink&quot; title=&quot;App集成Apple Pay&quot;&gt;&lt;/a&gt;App集成Apple Pay&lt;/h1&gt;&lt;hr&gt;
+&lt;h3 id=&quot;1-创建Merchant-ID&quot;&gt;&lt;a href=&quot;#1-创建Merchant-ID&quot; class=&quot;headerlink&quot; title=&quot;1. 创建Merchant ID&quot;&gt;&lt;/a&gt;1. 创建Merchant ID&lt;/h3&gt;&lt;p&gt;在iOS开发者中心的&lt;a href=&quot;https://developer.apple.com/account/ios/identifiers/merchant/merchantCreate.action&quot; target=&quot;_blank&quot; rel=&quot;external&quot;&gt;Certificates, Identifiers &amp;amp; Profiles页面&lt;/a&gt;中创建一个Merchant ID. (PS:前提是你得有开发者帐号= =)&lt;br&gt;&lt;code&gt;Description&lt;/code&gt;: 这个ID的描述, 建议填写App名称.&lt;br&gt;&lt;code&gt;ID&lt;/code&gt;: Merchent ID的标识符, 一般填写”merchant.&lt;code&gt;BundleID&lt;/code&gt;“, 比如&lt;code&gt;merchant.com.apple.passbook&lt;/code&gt;.&lt;/p&gt;
+&lt;h3 id=&quot;2-工程中配置Apple-Pay&quot;&gt;&lt;a href=&quot;#2-工程中配置Apple-Pay&quot; class=&quot;headerlink&quot; title=&quot;2. 工程中配置Apple Pay&quot;&gt;&lt;/a&gt;2. 工程中配置Apple Pay&lt;/h3&gt;&lt;p&gt;你的开发者帐号拥有Merchant ID之后, 就需要在工程中配置你刚刚创建的Merchant ID.&lt;br&gt;&lt;img src=&quot;/img/ApplePay/image_1.png&quot; alt=&quot;&quot;&gt;&lt;br&gt;按照如图顺序即可在你的工程中激活你的Merchant ID.&lt;/p&gt;
+&lt;hr&gt;
+&lt;h2 id=&quot;未完待续…&quot;&gt;&lt;a href=&quot;#未完待续…&quot; class=&quot;headerlink&quot; title=&quot;(未完待续…)&quot;&gt;&lt;/a&gt;(未完待续…)&lt;/h2&gt;&lt;p&gt;Apple Pay需要在支付提供商上面注册商户. 目前Apple Pay支持的提供商有&lt;/p&gt;
+&lt;ol&gt;
+&lt;li&gt;&lt;a href=&quot;https://open.unionpay.com/ajweb/product/detail?id=80&quot; target=&quot;_blank&quot; rel=&quot;external&quot;&gt;CUP&lt;/a&gt; (中国银联) &lt;/li&gt;
+&lt;li&gt;&lt;a href=&quot;https://apple.lianlianpay.com/OpenPlatform/&quot; target=&quot;_blank&quot; rel=&quot;external&quot;&gt;Lianlian Pay&lt;/a&gt; (连连支付) &lt;/li&gt;
+&lt;li&gt;&lt;a href=&quot;https://www.beijing.com.cn/product/ApplePay_ch.jsp&quot; target=&quot;_blank&quot; rel=&quot;external&quot;&gt;PayEase&lt;/a&gt; (首信易支付) &lt;/li&gt;
+&lt;li&gt;&lt;a href=&quot;https://www.yeepay.com/article/specialActivities/queryArticle/56c676b814a6d961550c90eb&quot; target=&quot;_blank&quot; rel=&quot;external&quot;&gt;YeePay&lt;/a&gt; (易宝支付) &lt;/li&gt;
+&lt;/ol&gt;
+&lt;p&gt;如果你的App要上架App Store的话, 在苹果官方&lt;a href=&quot;https://developer.apple.com/app-store/review/guidelines/#apple-pay&quot; target=&quot;_blank&quot; rel=&quot;external&quot;&gt;App Store Review Guidelines&lt;/a&gt;中关于Apple Pay的条款需要特别注意:&lt;/p&gt;
+&lt;blockquote&gt;
+&lt;p&gt;29.1 使用Apple Pay的应用程序必须在出售任何商品或者服务之前为用户提供所有材料的购买信息，否则将会被拒绝。使用Apple Pay的应用程序提供多次付款的，至少要公开再次支付的时间长度，和这种状态将持续到取消为止的每一个时期需要用户提供什么，和将产生的费用，以及如何取消。&lt;/p&gt;
+&lt;p&gt;29.2 使用Apple Pay的应用程序必须正确使用 Apple Pay Human Interface Guidelines 中的Apple Pay标识和用户界面元素，否则将会被拒绝。&lt;/p&gt;
+&lt;p&gt;29.3 使用Apple Pay的应用程序不能提供触犯任何领域范围法律的用于交付的商品或者服务，也不能用作任何非法目的。&lt;/p&gt;
+&lt;p&gt;29.4 使用Apple Pay的应用程序必须提供隐私政策，否则将会被拒绝。 &lt;/p&gt;
+&lt;p&gt;29.5 只有为了促进或提高商品和服务的交付，或者依照法律要求，使用Apple Pay的应用程序才能与第三方分享通过Apple Pay获得的数据&lt;/p&gt;
+&lt;/blockquote&gt;
+&lt;h1 id=&quot;设计规范&quot;&gt;&lt;a href=&quot;#设计规范&quot; class=&quot;headerlink&quot; title=&quot;设计规范&quot;&gt;&lt;/a&gt;设计规范&lt;/h1&gt;&lt;hr&gt;
+&lt;ol&gt;
+&lt;li&gt;&lt;a href=&quot;https://developer.apple.com/apple-pay/Apple-Pay-Identity-Guidelines.pdf&quot; target=&quot;_blank&quot; rel=&quot;external&quot;&gt;Apple Pay 标识指南&lt;/a&gt;&lt;/li&gt;
+&lt;li&gt;&lt;a href=&quot;https://developer.apple.com/services-account/download?path=/ios/apple_pay_resources/Apple_Pay_Resources.zip&quot; target=&quot;_blank&quot; rel=&quot;external&quot;&gt;Apple Pay 图标资源包&lt;/a&gt;&lt;/li&gt;
+&lt;/ol&gt;
+</content>
+    
+    <summary type="html">
+    
+      &lt;p&gt;&lt;img src=&quot;/img/ApplePay/header.jpg&quot; alt=&quot;&quot;&gt;&lt;br&gt;Apple Pay在今天终于在中国大陆地区正式开通. Apple Pay不仅仅在线下支付中可以让你通过指纹刷(zhuang)卡(bi), 更可以在线上支付(App中支付)时, 节省掉很多多余的步骤, 让支付宝与微信支付哭晕在厕所… 蛋扯远了, 接下来我们来看看怎么让你的App也支持Apple Pay吧!&lt;/p&gt;
+    
+    </summary>
+    
+      <category term="iOS开发" scheme="http://zzyspace.github.io/categories/iOS%E5%BC%80%E5%8F%91/"/>
+    
+    
+      <category term="Apple Pay" scheme="http://zzyspace.github.io/tags/Apple-Pay/"/>
+    
+  </entry>
+  
+  <entry>
+    <title>【iOS开发】Associated Objects-为分类添加属性</title>
+    <link href="http://zzyspace.github.io/2016/01/25/associated-objects/"/>
+    <id>http://zzyspace.github.io/2016/01/25/associated-objects/</id>
+    <published>2016-01-25T07:06:34.000Z</published>
+    <updated>2016-09-07T07:50:43.000Z</updated>
+    
+    <content type="html">&lt;p&gt;分类(&lt;code&gt;category&lt;/code&gt;)在iOS开发中的应用非常广泛, 优点譬如给现有的类拓展更多的方法、对一个类的多种功能进行局部化封装等等, 都是非常方便的. 但是也有一个痛点, 就是分类中无法添加属性. 但是&lt;code&gt;Objective-C&lt;/code&gt;的&lt;code&gt;runtime&lt;/code&gt;中有许多黑科技可以帮我们实现很多常规方法下几乎不可能的事情–比如在分类中添加属性.这个黑科技叫做&lt;strong&gt;关联对象&lt;/strong&gt;(&lt;code&gt;Associated Objects&lt;/code&gt;). &lt;/p&gt;
+&lt;a id=&quot;more&quot;&gt;&lt;/a&gt;
+&lt;h1 id=&quot;Associated-Objects&quot;&gt;&lt;a href=&quot;#Associated-Objects&quot; class=&quot;headerlink&quot; title=&quot;Associated Objects&quot;&gt;&lt;/a&gt;Associated Objects&lt;/h1&gt;&lt;hr&gt;
+&lt;p&gt;关联对象相关的函数有以下3个:&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;&lt;code&gt;objc_setAssociatedObject&lt;/code&gt; : 设置关联对象&lt;/li&gt;
+&lt;li&gt;&lt;code&gt;objc_getAssociatedObject&lt;/code&gt; : 获取关联对象&lt;/li&gt;
+&lt;li&gt;&lt;code&gt;objc_removeAssociatedObjects&lt;/code&gt; : 移除某个对象的所有关联对象&lt;/li&gt;
+&lt;/ul&gt;
+&lt;p&gt;从&lt;code&gt;&amp;lt;objc/runtime.h&amp;gt;&lt;/code&gt;中可以找到它的相关函数定义:&lt;/p&gt;
+&lt;h3 id=&quot;1-设置关联对象&quot;&gt;&lt;a href=&quot;#1-设置关联对象&quot; class=&quot;headerlink&quot; title=&quot;1. 设置关联对象&quot;&gt;&lt;/a&gt;1. 设置关联对象&lt;/h3&gt;&lt;figure class=&quot;highlight objc&quot;&gt;&lt;table&gt;&lt;tr&gt;&lt;td class=&quot;code&quot;&gt;&lt;pre&gt;&lt;span class=&quot;line&quot;&gt;&lt;span class=&quot;keyword&quot;&gt;void&lt;/span&gt; objc_setAssociatedObject(&lt;span class=&quot;keyword&quot;&gt;id&lt;/span&gt; object, &lt;span class=&quot;keyword&quot;&gt;const&lt;/span&gt; &lt;span class=&quot;keyword&quot;&gt;void&lt;/span&gt; *key, &lt;span class=&quot;keyword&quot;&gt;id&lt;/span&gt; value, objc_AssociationPolicy policy)&lt;/span&gt;&lt;br&gt;&lt;/pre&gt;&lt;/td&gt;&lt;/tr&gt;&lt;/table&gt;&lt;/figure&gt;
+&lt;ul&gt;
+&lt;li&gt;&lt;code&gt;object&lt;/code&gt; : 需要设置关联对象的对象, &lt;code&gt;id&lt;/code&gt;类型&lt;/li&gt;
+&lt;li&gt;&lt;code&gt;key&lt;/code&gt; : 关联对象的key, &lt;code&gt;const void *&lt;/code&gt;类型 (&lt;em&gt;详细请看下文第4点&lt;/em&gt;)&lt;/li&gt;
+&lt;li&gt;&lt;code&gt;value&lt;/code&gt; : 关联对象的值, &lt;code&gt;id&lt;/code&gt;类型&lt;/li&gt;
+&lt;li&gt;&lt;code&gt;policy&lt;/code&gt; : 关联对象的策略, &lt;code&gt;objc_AssociationPolicy&lt;/code&gt;类型&lt;ul&gt;
+&lt;li&gt;&lt;code&gt;policy&lt;/code&gt;是一个枚举类型, 用于修饰关联对象:&lt;figure class=&quot;highlight objc&quot;&gt;&lt;table&gt;&lt;tr&gt;&lt;td class=&quot;code&quot;&gt;&lt;pre&gt;&lt;span class=&quot;line&quot;&gt;&lt;span class=&quot;keyword&quot;&gt;enum&lt;/span&gt; &amp;#123;&lt;/span&gt;&lt;br&gt;&lt;span class=&quot;line&quot;&gt;        OBJC_ASSO&lt;span class=&quot;built_in&quot;&gt;CIATION_ASSIGN&lt;/span&gt; = &lt;span class=&quot;number&quot;&gt;0&lt;/span&gt;,          &lt;span class=&quot;comment&quot;&gt;// 等价于 @property (assign) 或 @property (unsafe_unretained)&lt;/span&gt;&lt;/span&gt;&lt;br&gt;&lt;span class=&quot;line&quot;&gt;        OBJC_ASSO&lt;span class=&quot;built_in&quot;&gt;CIATION_RETAIN_NONATOMIC&lt;/span&gt; = &lt;span class=&quot;number&quot;&gt;1&lt;/span&gt;,&lt;span class=&quot;comment&quot;&gt;// 等价于 @property (nonatomic, strong)&lt;/span&gt;&lt;/span&gt;&lt;br&gt;&lt;span class=&quot;line&quot;&gt;        OBJC_ASSO&lt;span class=&quot;built_in&quot;&gt;CIATION_COPY_NONATOMIC&lt;/span&gt; = &lt;span class=&quot;number&quot;&gt;3&lt;/span&gt;,  &lt;span class=&quot;comment&quot;&gt;// 等价于 @property (nonatomic, copy)&lt;/span&gt;&lt;/span&gt;&lt;br&gt;&lt;span class=&quot;line&quot;&gt;        OBJC_ASSO&lt;span class=&quot;built_in&quot;&gt;CIATION_RETAIN&lt;/span&gt; = &lt;span class=&quot;number&quot;&gt;01401&lt;/span&gt;,      &lt;span class=&quot;comment&quot;&gt;// 等价于 @property (atomic, strong)&lt;/span&gt;&lt;/span&gt;&lt;br&gt;&lt;span class=&quot;line&quot;&gt;        OBJC_ASSO&lt;span class=&quot;built_in&quot;&gt;CIATION_COPY&lt;/span&gt; = &lt;span class=&quot;number&quot;&gt;01403&lt;/span&gt;         &lt;span class=&quot;comment&quot;&gt;// 等价于 @property (atomic, copy)&lt;/span&gt;&lt;/span&gt;&lt;br&gt;&lt;span class=&quot;line&quot;&gt;&amp;#125;;&lt;/span&gt;&lt;br&gt;&lt;/pre&gt;&lt;/td&gt;&lt;/tr&gt;&lt;/table&gt;&lt;/figure&gt;
+&lt;/li&gt;
+&lt;/ul&gt;
+&lt;/li&gt;
+&lt;/ul&gt;
+&lt;h3 id=&quot;2-获取关联对象&quot;&gt;&lt;a href=&quot;#2-获取关联对象&quot; class=&quot;headerlink&quot; title=&quot;2. 获取关联对象&quot;&gt;&lt;/a&gt;2. 获取关联对象&lt;/h3&gt;&lt;figure class=&quot;highlight objc&quot;&gt;&lt;table&gt;&lt;tr&gt;&lt;td class=&quot;code&quot;&gt;&lt;pre&gt;&lt;span class=&quot;line&quot;&gt;&lt;span class=&quot;keyword&quot;&gt;id&lt;/span&gt; objc_getAssociatedObject(&lt;span class=&quot;keyword&quot;&gt;id&lt;/span&gt; object, &lt;span class=&quot;keyword&quot;&gt;const&lt;/span&gt; &lt;span class=&quot;keyword&quot;&gt;void&lt;/span&gt; *key)&lt;/span&gt;&lt;br&gt;&lt;/pre&gt;&lt;/td&gt;&lt;/tr&gt;&lt;/table&gt;&lt;/figure&gt;
+&lt;ul&gt;
+&lt;li&gt;&lt;code&gt;object&lt;/code&gt; : 获取关联对象的对象, &lt;code&gt;id&lt;/code&gt;类型&lt;/li&gt;
+&lt;li&gt;&lt;code&gt;key&lt;/code&gt; : 关联对象的key, &lt;code&gt;const void *&lt;/code&gt;类型&lt;/li&gt;
+&lt;/ul&gt;
+&lt;h3 id=&quot;3-移除某个对象的所有关联对象&quot;&gt;&lt;a href=&quot;#3-移除某个对象的所有关联对象&quot; class=&quot;headerlink&quot; title=&quot;3. 移除某个对象的所有关联对象&quot;&gt;&lt;/a&gt;3. 移除某个对象的所有关联对象&lt;/h3&gt;&lt;figure class=&quot;highlight objc&quot;&gt;&lt;table&gt;&lt;tr&gt;&lt;td class=&quot;code&quot;&gt;&lt;pre&gt;&lt;span class=&quot;line&quot;&gt;&lt;span class=&quot;keyword&quot;&gt;void&lt;/span&gt; objc_removeAssociatedObjects(&lt;span class=&quot;keyword&quot;&gt;id&lt;/span&gt; object)&lt;/span&gt;&lt;br&gt;&lt;/pre&gt;&lt;/td&gt;&lt;/tr&gt;&lt;/table&gt;&lt;/figure&gt;
+&lt;ul&gt;
+&lt;li&gt;&lt;p&gt;&lt;code&gt;object&lt;/code&gt; : 需要移除所有关联对象的对象, &lt;code&gt;id&lt;/code&gt;类型&lt;/p&gt;
+&lt;p&gt;&lt;em&gt;注: 这个函数是用来移除对象的&lt;strong&gt;所有&lt;/strong&gt;关联对象, 而非移除对象的某个关联对象. 这个函数Apple官方文档是这么说的&lt;/em&gt; :&lt;/p&gt;
+&lt;blockquote&gt;
+&lt;p&gt;You should not use this function for general removal of associations from objects, since it also removes associations that other clients may have added to the object. Typically you should use objc_setAssociatedObject with a nil value to clear an association.&lt;/p&gt;
+&lt;/blockquote&gt;
+&lt;p&gt;&lt;em&gt;意思是如果要移除对象的某个关联对象, 应该使用&lt;code&gt;objc_setAssociatedObject&lt;/code&gt;对参数&lt;code&gt;value&lt;/code&gt;置nil.&lt;/em&gt;&lt;/p&gt;
+&lt;/li&gt;
+&lt;/ul&gt;
+&lt;h3 id=&quot;4-关于参数-key&quot;&gt;&lt;a href=&quot;#4-关于参数-key&quot; class=&quot;headerlink&quot; title=&quot;4. 关于参数-key&quot;&gt;&lt;/a&gt;4. 关于参数-key&lt;/h3&gt;&lt;p&gt;这个key一般只要赋值一个&lt;code&gt;static char&lt;/code&gt;的地址就行, 比如:&lt;br&gt;&lt;figure class=&quot;highlight objc&quot;&gt;&lt;table&gt;&lt;tr&gt;&lt;td class=&quot;code&quot;&gt;&lt;pre&gt;&lt;span class=&quot;line&quot;&gt;&lt;span class=&quot;keyword&quot;&gt;static&lt;/span&gt; &lt;span class=&quot;keyword&quot;&gt;char&lt;/span&gt; kAssociatedObjectKey;&lt;/span&gt;&lt;br&gt;&lt;span class=&quot;line&quot;&gt;&lt;/span&gt;&lt;br&gt;&lt;span class=&quot;line&quot;&gt;objc_getAssociatedObject(&lt;span class=&quot;keyword&quot;&gt;self&lt;/span&gt;, &amp;amp;kAssociatedObjectKey);&lt;/span&gt;&lt;br&gt;&lt;/pre&gt;&lt;/td&gt;&lt;/tr&gt;&lt;/table&gt;&lt;/figure&gt;&lt;/p&gt;
+&lt;p&gt;但是还有更简单的方法, 可以使用&lt;code&gt;selector&lt;/code&gt;:&lt;br&gt;&lt;figure class=&quot;highlight objc&quot;&gt;&lt;table&gt;&lt;tr&gt;&lt;td class=&quot;code&quot;&gt;&lt;pre&gt;&lt;span class=&quot;line&quot;&gt;objc_getAssociatedObject(&lt;span class=&quot;keyword&quot;&gt;self&lt;/span&gt;, &lt;span class=&quot;keyword&quot;&gt;@selector&lt;/span&gt;(associatedObject));&lt;/span&gt;&lt;br&gt;&lt;/pre&gt;&lt;/td&gt;&lt;/tr&gt;&lt;/table&gt;&lt;/figure&gt;&lt;/p&gt;
+&lt;p&gt;或者直接使用&lt;code&gt;_cmd&lt;/code&gt;:&lt;br&gt;&lt;figure class=&quot;highlight objc&quot;&gt;&lt;table&gt;&lt;tr&gt;&lt;td class=&quot;code&quot;&gt;&lt;pre&gt;&lt;span class=&quot;line&quot;&gt;objc_getAssociatedObject(&lt;span class=&quot;keyword&quot;&gt;self&lt;/span&gt;, _cmd);&lt;/span&gt;&lt;br&gt;&lt;/pre&gt;&lt;/td&gt;&lt;/tr&gt;&lt;/table&gt;&lt;/figure&gt;&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;&lt;p&gt;&lt;em&gt;关于&lt;code&gt;_cmd&lt;/code&gt;&lt;/em&gt; :&lt;/p&gt;
+&lt;p&gt;&lt;em&gt;Apple的文档是是这么解释的: &lt;/em&gt;&lt;/p&gt;
+&lt;blockquote&gt;
+&lt;p&gt;The _cmd variable is a hidden argument passed to every method that is the current selector&lt;/p&gt;
+&lt;/blockquote&gt;
+&lt;p&gt;&lt;em&gt;意思就是&lt;code&gt;_cmd&lt;/code&gt;在Objective-C的方法中表示当前方法的&lt;code&gt;selector&lt;/code&gt;, 正如同&lt;code&gt;self&lt;/code&gt;表示调用当前方法的对象(类)一样.&lt;/em&gt;  &lt;/p&gt;
+&lt;/li&gt;
+&lt;/ul&gt;
+&lt;h1 id=&quot;Simple-Example&quot;&gt;&lt;a href=&quot;#Simple-Example&quot; class=&quot;headerlink&quot; title=&quot;Simple Example&quot;&gt;&lt;/a&gt;Simple Example&lt;/h1&gt;&lt;hr&gt;
+&lt;figure class=&quot;highlight objc&quot;&gt;&lt;table&gt;&lt;tr&gt;&lt;td class=&quot;code&quot;&gt;&lt;pre&gt;&lt;span class=&quot;line&quot;&gt;&lt;span class=&quot;class&quot;&gt;&lt;span class=&quot;keyword&quot;&gt;@interface&lt;/span&gt; &lt;span class=&quot;title&quot;&gt;NSObject&lt;/span&gt; (&lt;span class=&quot;title&quot;&gt;AssociatedObject&lt;/span&gt;)&lt;/span&gt;&lt;/span&gt;&lt;br&gt;&lt;span class=&quot;line&quot;&gt;&lt;span class=&quot;keyword&quot;&gt;@property&lt;/span&gt; (&lt;span class=&quot;keyword&quot;&gt;nonatomic&lt;/span&gt;, &lt;span class=&quot;keyword&quot;&gt;strong&lt;/span&gt;) &lt;span class=&quot;keyword&quot;&gt;id&lt;/span&gt; associatedObject;&lt;/span&gt;&lt;br&gt;&lt;span class=&quot;line&quot;&gt;&lt;span class=&quot;keyword&quot;&gt;@end&lt;/span&gt;&lt;/span&gt;&lt;br&gt;&lt;span class=&quot;line&quot;&gt;&lt;/span&gt;&lt;br&gt;&lt;span class=&quot;line&quot;&gt;&lt;span class=&quot;class&quot;&gt;&lt;span class=&quot;keyword&quot;&gt;@implementation&lt;/span&gt; &lt;span class=&quot;title&quot;&gt;NSObject&lt;/span&gt; (&lt;span class=&quot;title&quot;&gt;AssociatedObject&lt;/span&gt;)&lt;/span&gt;&lt;/span&gt;&lt;br&gt;&lt;span class=&quot;line&quot;&gt;&lt;/span&gt;&lt;br&gt;&lt;span class=&quot;line&quot;&gt;&lt;span class=&quot;comment&quot;&gt;/**&lt;/span&gt;&lt;br&gt;&lt;span class=&quot;line&quot;&gt; *  对象的setter&lt;/span&gt;&lt;br&gt;&lt;span class=&quot;line&quot;&gt; */&lt;/span&gt;&lt;/span&gt;&lt;br&gt;&lt;span class=&quot;line&quot;&gt;- (&lt;span class=&quot;keyword&quot;&gt;void&lt;/span&gt;)setAssociatedObject:(&lt;span class=&quot;keyword&quot;&gt;id&lt;/span&gt;)object &amp;#123;&lt;/span&gt;&lt;br&gt;&lt;span class=&quot;line&quot;&gt;     objc_setAssociatedObject(&lt;span class=&quot;keyword&quot;&gt;self&lt;/span&gt;, &lt;span class=&quot;keyword&quot;&gt;@selector&lt;/span&gt;(associatedObject), object, OBJC_ASSO&lt;span class=&quot;built_in&quot;&gt;CIATION_RETAIN_NONATOMIC&lt;/span&gt;);&lt;/span&gt;&lt;br&gt;&lt;span class=&quot;line&quot;&gt;&amp;#125;&lt;/span&gt;&lt;br&gt;&lt;span class=&quot;line&quot;&gt;&lt;/span&gt;&lt;br&gt;&lt;span class=&quot;line&quot;&gt;&lt;span class=&quot;comment&quot;&gt;/**&lt;/span&gt;&lt;br&gt;&lt;span class=&quot;line&quot;&gt; *  对象的getter&lt;/span&gt;&lt;br&gt;&lt;span class=&quot;line&quot;&gt; */&lt;/span&gt;&lt;/span&gt;&lt;br&gt;&lt;span class=&quot;line&quot;&gt;- (&lt;span class=&quot;keyword&quot;&gt;id&lt;/span&gt;)associatedObject &amp;#123;&lt;/span&gt;&lt;br&gt;&lt;span class=&quot;line&quot;&gt;    &lt;span class=&quot;keyword&quot;&gt;return&lt;/span&gt; objc_getAssociatedObject(&lt;span class=&quot;keyword&quot;&gt;self&lt;/span&gt;, &lt;span class=&quot;keyword&quot;&gt;@selector&lt;/span&gt;(associatedObject));&lt;/span&gt;&lt;br&gt;&lt;span class=&quot;line&quot;&gt;&amp;#125;&lt;/span&gt;&lt;br&gt;&lt;span class=&quot;line&quot;&gt;&lt;/span&gt;&lt;br&gt;&lt;span class=&quot;line&quot;&gt;&lt;span class=&quot;keyword&quot;&gt;@end&lt;/span&gt;&lt;/span&gt;&lt;br&gt;&lt;/pre&gt;&lt;/td&gt;&lt;/tr&gt;&lt;/table&gt;&lt;/figure&gt;
+&lt;h1 id=&quot;Tips&quot;&gt;&lt;a href=&quot;#Tips&quot; class=&quot;headerlink&quot; title=&quot;Tips&quot;&gt;&lt;/a&gt;Tips&lt;/h1&gt;&lt;hr&gt;
+&lt;p&gt;最近看到&lt;a href=&quot;http://blog.sunnyxx.com&quot; target=&quot;_blank&quot; rel=&quot;external&quot;&gt;Sunny大神&lt;/a&gt;说的一个关于Associated Object的巧妙运用:&lt;/p&gt;
+&lt;blockquote&gt;
+&lt;p&gt;利用 association 防止多次调进一个方法，总觉得为这种事情去加一个成员变量会让一段逻辑的代码过于分散，喜欢能 self-managed 的函数&lt;/p&gt;
+&lt;/blockquote&gt;
+&lt;figure class=&quot;highlight objc&quot;&gt;&lt;table&gt;&lt;tr&gt;&lt;td class=&quot;code&quot;&gt;&lt;pre&gt;&lt;span class=&quot;line&quot;&gt;&lt;span class=&quot;class&quot;&gt;&lt;span class=&quot;keyword&quot;&gt;@interface&lt;/span&gt; &lt;span class=&quot;title&quot;&gt;Engine&lt;/span&gt; : &lt;span class=&quot;title&quot;&gt;NSObject&lt;/span&gt;&lt;/span&gt;&lt;/span&gt;&lt;br&gt;&lt;span class=&quot;line&quot;&gt;&lt;span class=&quot;keyword&quot;&gt;@end&lt;/span&gt;&lt;/span&gt;&lt;br&gt;&lt;span class=&quot;line&quot;&gt;&lt;/span&gt;&lt;br&gt;&lt;span class=&quot;line&quot;&gt;&lt;span class=&quot;class&quot;&gt;&lt;span class=&quot;keyword&quot;&gt;@implementation&lt;/span&gt; &lt;span class=&quot;title&quot;&gt;Engine&lt;/span&gt;&lt;/span&gt;&lt;/span&gt;&lt;br&gt;&lt;span class=&quot;line&quot;&gt;&lt;/span&gt;&lt;br&gt;&lt;span class=&quot;line&quot;&gt;- (&lt;span class=&quot;keyword&quot;&gt;void&lt;/span&gt;)launch &amp;#123;&lt;/span&gt;&lt;br&gt;&lt;span class=&quot;line&quot;&gt;     &lt;span class=&quot;comment&quot;&gt;// 在对象生命周期内, 不增加 flag 属性的情况下, 放置多次调进这个方法&lt;/span&gt;&lt;/span&gt;&lt;br&gt;&lt;span class=&quot;line&quot;&gt;     &lt;span class=&quot;keyword&quot;&gt;if&lt;/span&gt; (objc_getAssociatedObject(&lt;span class=&quot;keyword&quot;&gt;self&lt;/span&gt;, _cmd)) &lt;span class=&quot;keyword&quot;&gt;return&lt;/span&gt;;&lt;/span&gt;&lt;br&gt;&lt;span class=&quot;line&quot;&gt;     &lt;span class=&quot;keyword&quot;&gt;else&lt;/span&gt; objc_setAssociatedObject(&lt;span class=&quot;keyword&quot;&gt;self&lt;/span&gt;, _cmd, &lt;span class=&quot;string&quot;&gt;@&quot;Launched&quot;&lt;/span&gt;, OBJC_ASSO&lt;span class=&quot;built_in&quot;&gt;CIATION_RETAIN&lt;/span&gt;);&lt;/span&gt;&lt;br&gt;&lt;span class=&quot;line&quot;&gt;&lt;/span&gt;&lt;br&gt;&lt;span class=&quot;line&quot;&gt;     &lt;span class=&quot;built_in&quot;&gt;NSLog&lt;/span&gt;(&lt;span class=&quot;string&quot;&gt;@&quot;launch only once&quot;&lt;/span&gt;);&lt;/span&gt;&lt;br&gt;&lt;span class=&quot;line&quot;&gt;&amp;#125;&lt;/span&gt;&lt;br&gt;&lt;span class=&quot;line&quot;&gt;&lt;/span&gt;&lt;br&gt;&lt;span class=&quot;line&quot;&gt;&lt;span class=&quot;keyword&quot;&gt;@end&lt;/span&gt;&lt;/span&gt;&lt;br&gt;&lt;/pre&gt;&lt;/td&gt;&lt;/tr&gt;&lt;/table&gt;&lt;/figure&gt;
+&lt;p&gt;这个做法相当于是动态的添加了flag属性, 相对与直接使用flag属性来说简直是优雅多了. 我们甚至可以把这两行代码写作一个宏, 更方便于每次的使用.&lt;/p&gt;
+&lt;h3 id=&quot;参考&quot;&gt;&lt;a href=&quot;#参考&quot; class=&quot;headerlink&quot; title=&quot;参考&quot;&gt;&lt;/a&gt;参考&lt;/h3&gt;&lt;p&gt;1.&lt;a href=&quot;http://nshipster.com/associated-objects/&quot; target=&quot;_blank&quot; rel=&quot;external&quot;&gt;Associated Objects&lt;/a&gt; by Mattt&lt;br&gt;2.&lt;a href=&quot;https://developer.apple.com/library/mac/documentation/Cocoa/Reference/ObjCRuntimeRef/index.html#//apple_ref/c/func/objc_getAssociatedObject&quot; target=&quot;_blank&quot; rel=&quot;external&quot;&gt;Objective-C Runtime Reference&lt;/a&gt; by Apple&lt;/p&gt;
+</content>
+    
+    <summary type="html">
+    
+      &lt;p&gt;分类(&lt;code&gt;category&lt;/code&gt;)在iOS开发中的应用非常广泛, 优点譬如给现有的类拓展更多的方法、对一个类的多种功能进行局部化封装等等, 都是非常方便的. 但是也有一个痛点, 就是分类中无法添加属性. 但是&lt;code&gt;Objective-C&lt;/code&gt;的&lt;code&gt;runtime&lt;/code&gt;中有许多黑科技可以帮我们实现很多常规方法下几乎不可能的事情–比如在分类中添加属性.这个黑科技叫做&lt;strong&gt;关联对象&lt;/strong&gt;(&lt;code&gt;Associated Objects&lt;/code&gt;). &lt;/p&gt;
+    
+    </summary>
+    
+      <category term="iOS开发" scheme="http://zzyspace.github.io/categories/iOS%E5%BC%80%E5%8F%91/"/>
+    
+    
+      <category term="runtime" scheme="http://zzyspace.github.io/tags/runtime/"/>
+    
+  </entry>
+  
+  <entry>
+    <title>【iOS开发】静态库导致的运行时崩溃问题</title>
+    <link href="http://zzyspace.github.io/2015/10/18/crash-with-static-library/"/>
+    <id>http://zzyspace.github.io/2015/10/18/crash-with-static-library/</id>
+    <published>2015-10-18T12:45:33.000Z</published>
+    <updated>2016-09-07T07:59:42.000Z</updated>
+    
+    <content type="html">&lt;p&gt;使用其他一些第三方静态库时, 如果没有注意按照文档中的提示进行配置, 很容易在程序运行过程中因 “unrecorgnized selector send to instance xxx” 的异常而崩溃. 而且可以发现, 导致崩溃的方法都是Category中的方法. &lt;/p&gt;
+&lt;a id=&quot;more&quot;&gt;&lt;/a&gt;
+&lt;p&gt;在&lt;a href=&quot;https://developer.apple.com/library/mac/qa/qa1490/_index.html&quot; target=&quot;_blank&quot; rel=&quot;external&quot;&gt;苹果官方文档&lt;/a&gt;中解释到: &lt;/p&gt;
+&lt;blockquote&gt;
+&lt;p&gt;The dynamic nature of Objective-C complicates things slightly. Because the code that implements a method is not determined until the method is actually called, Objective-C does not define linker symbols for methods. Linker symbols are only defined for classes.&lt;br&gt;Since categories are a collection of methods, using a category’s method does not generate an undefined symbol. This means the linker does not know to load an object file defining the category, if the class itself is already defined. This causes the same “selector not recognized” runtime exception you would see for any unimplemented method.&lt;/p&gt;
+&lt;/blockquote&gt;
+&lt;p&gt;翻译过来, 就是因为Objective-C的动态特性使得方法是在运行时才确定的, 所以链接的时候不会为方法(Method)定义连接符号, 而是为类(Class)定义连接符号. 这样当在一个静态库中使用类别来扩展已有类的时候，链接器不知道如何把类原有的方法和类别中的方法整合起来, 所以就导致运行的时候Category的方法无法被找到抛出异常.&lt;/p&gt;
+&lt;h1 id=&quot;解决方法-Other-Linker-Flags&quot;&gt;&lt;a href=&quot;#解决方法-Other-Linker-Flags&quot; class=&quot;headerlink&quot; title=&quot;解决方法: Other Linker Flags&quot;&gt;&lt;/a&gt;解决方法: Other Linker Flags&lt;/h1&gt;&lt;hr&gt;
+&lt;ul&gt;
+&lt;li&gt;&lt;h3 id=&quot;ObjC&quot;&gt;&lt;a href=&quot;#ObjC&quot; class=&quot;headerlink&quot; title=&quot;-ObjC&quot;&gt;&lt;/a&gt;-ObjC&lt;/h3&gt;&lt;/li&gt;
+&lt;/ul&gt;
+&lt;p&gt;&lt;a href=&quot;https://developer.apple.com/library/mac/qa/qa1490/_index.html&quot; target=&quot;_blank&quot; rel=&quot;external&quot;&gt;苹果官方文档&lt;/a&gt;对这个flag的解释是这样的:&lt;/p&gt;
+&lt;blockquote&gt;
+&lt;p&gt;Passing the -ObjC option to the linker causes it to load all members of static libraries that implement any Objective-C class or category. This will pickup any category method implementations. But it can make the resulting executable larger, and may pickup unnecessary objects. For this reason it is not on by default.&lt;/p&gt;
+&lt;/blockquote&gt;
+&lt;p&gt;  &lt;code&gt;-ObjC&lt;/code&gt;这个标志选项会让链接器加载静态库所有的Objective-C的类和Category, 这样就能把Category中实现的方法整合起来. 但是由于这样做会使可执行文件变大, 也会整合一些用不到的对象, 所以才没有默认使用-ObjC标志, 而是需要我们手动添加.&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;&lt;h3 id=&quot;all-load&quot;&gt;&lt;a href=&quot;#all-load&quot; class=&quot;headerlink&quot; title=&quot;-all_load&quot;&gt;&lt;/a&gt;-all_load&lt;/h3&gt;&lt;/li&gt;
+&lt;/ul&gt;
+&lt;p&gt;加载所有静态库中的文件. 相比&lt;code&gt;-ObjC&lt;/code&gt;, 不同点就是&lt;code&gt;-all_load&lt;/code&gt;会将所有的(包括非Objective-C)文件都整合到静态库中.&lt;br&gt;&lt;em&gt;&lt;strong&gt;*注意&lt;/strong&gt; : 假如你使用了不止一个静态库，然后又使用了这个参数，那么你很有可能会遇到&lt;code&gt;duplicate symbol&lt;/code&gt;错误，因为不同的库文件里面可能会有相同的目标文件.&lt;/em&gt;&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;&lt;h3 id=&quot;force-load-path-to-archive&quot;&gt;&lt;a href=&quot;#force-load-path-to-archive&quot; class=&quot;headerlink&quot; title=&quot;-force_load (path_to_archive)&quot;&gt;&lt;/a&gt;-force_load (path_to_archive)&lt;/h3&gt;&lt;/li&gt;
+&lt;/ul&gt;
+&lt;p&gt;加载指定路径的静态库. 相比&lt;code&gt;-all_load&lt;/code&gt;, 不同点就是&lt;code&gt;-force_load&lt;/code&gt;只是完全加载了一个库文件，不影响其余库文件的按需加载.&lt;/p&gt;
+&lt;h1 id=&quot;补充&quot;&gt;&lt;a href=&quot;#补充&quot; class=&quot;headerlink&quot; title=&quot;补充:&quot;&gt;&lt;/a&gt;补充:&lt;/h1&gt;&lt;hr&gt;
+&lt;p&gt;使用&lt;code&gt;-all_load&lt;/code&gt;或者&lt;code&gt;-force_load&lt;/code&gt;大部分原因是因为&lt;strong&gt;Xcode4.2之前&lt;/strong&gt;的版本的链接器的bug, 在64位iOS应用环境下当静态库中只有分类而没有类的时候, &lt;code&gt;-ObjC&lt;/code&gt;参数就会失效了. 所以为了兼容&lt;strong&gt;Xcode4.2之前&lt;/strong&gt;的版本, 有两种解决方法:&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;&lt;h3 id=&quot;静态库使用者&quot;&gt;&lt;a href=&quot;#静态库使用者&quot; class=&quot;headerlink&quot; title=&quot;静态库使用者:&quot;&gt;&lt;/a&gt;静态库使用者:&lt;/h3&gt;&lt;/li&gt;
+&lt;/ul&gt;
+&lt;p&gt;使用&lt;code&gt;-all_load&lt;/code&gt;或者&lt;code&gt;-force_load&lt;/code&gt;代替&lt;code&gt;-ObjC&lt;/code&gt;.&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;&lt;h3 id=&quot;静态库开发者&quot;&gt;&lt;a href=&quot;#静态库开发者&quot; class=&quot;headerlink&quot; title=&quot;静态库开发者:&quot;&gt;&lt;/a&gt;静态库开发者:&lt;/h3&gt;&lt;/li&gt;
+&lt;/ul&gt;
+&lt;p&gt;可以通过在分类中添加一个类的声明和实现, 使得Category源文件中不仅仅只有分类, 同时还有类存在来避免链接器的bug, 从而避免了&lt;code&gt;-ObjC&lt;/code&gt;标志失效的麻烦:&lt;/p&gt;
+&lt;figure class=&quot;highlight objc&quot;&gt;&lt;table&gt;&lt;tr&gt;&lt;td class=&quot;code&quot;&gt;&lt;pre&gt;&lt;span class=&quot;line&quot;&gt;&lt;span class=&quot;comment&quot;&gt;/**&lt;/span&gt;&lt;br&gt;&lt;span class=&quot;line&quot;&gt; *   NSObject+Addition.m&lt;/span&gt;&lt;br&gt;&lt;span class=&quot;line&quot;&gt; */&lt;/span&gt;&lt;/span&gt;&lt;br&gt;&lt;span class=&quot;line&quot;&gt;&lt;/span&gt;&lt;br&gt;&lt;span class=&quot;line&quot;&gt;&lt;span class=&quot;comment&quot;&gt;// add a dummy class&lt;/span&gt;&lt;/span&gt;&lt;br&gt;&lt;span class=&quot;line&quot;&gt;&lt;span class=&quot;class&quot;&gt;&lt;span class=&quot;keyword&quot;&gt;@interface&lt;/span&gt; &lt;span class=&quot;title&quot;&gt;DUMMY_CLASS_NSObject_Addition&lt;/span&gt; : &lt;span class=&quot;title&quot;&gt;NSObject&lt;/span&gt;&lt;/span&gt;&lt;/span&gt;&lt;br&gt;&lt;span class=&quot;line&quot;&gt;&lt;span class=&quot;keyword&quot;&gt;@end&lt;/span&gt;&lt;/span&gt;&lt;br&gt;&lt;span class=&quot;line&quot;&gt;&lt;span class=&quot;class&quot;&gt;&lt;span class=&quot;keyword&quot;&gt;@implementation&lt;/span&gt; &lt;span class=&quot;title&quot;&gt;DUMMY_CLASS_NSObject_Addition&lt;/span&gt;&lt;/span&gt;&lt;/span&gt;&lt;br&gt;&lt;span class=&quot;line&quot;&gt;&lt;span class=&quot;keyword&quot;&gt;@end&lt;/span&gt;&lt;/span&gt;&lt;br&gt;&lt;span class=&quot;line&quot;&gt;&lt;/span&gt;&lt;br&gt;&lt;span class=&quot;line&quot;&gt;&lt;span class=&quot;class&quot;&gt;&lt;span class=&quot;keyword&quot;&gt;@implementation&lt;/span&gt; &lt;span class=&quot;title&quot;&gt;NSObject&lt;/span&gt; (&lt;span class=&quot;title&quot;&gt;Addition&lt;/span&gt;)&lt;/span&gt;&lt;/span&gt;&lt;br&gt;&lt;span class=&quot;line&quot;&gt;&lt;span class=&quot;comment&quot;&gt;// some category methods...&lt;/span&gt;&lt;/span&gt;&lt;br&gt;&lt;span class=&quot;line&quot;&gt;&lt;span class=&quot;keyword&quot;&gt;@end&lt;/span&gt;&lt;/span&gt;&lt;br&gt;&lt;/pre&gt;&lt;/td&gt;&lt;/tr&gt;&lt;/table&gt;&lt;/figure&gt;
+&lt;p&gt;但是&lt;strong&gt;Xcode4.2之后&lt;/strong&gt;, 只要使用&lt;code&gt;-ObjC&lt;/code&gt;即可. 具体可以参看stackoverflow的&lt;a href=&quot;http://stackoverflow.com/questions/2567498/objective-c-categories-in-static-library/2615407#2615407&quot; target=&quot;_blank&quot; rel=&quot;external&quot;&gt;这个回答&lt;/a&gt;.&lt;/p&gt;
+</content>
+    
+    <summary type="html">
+    
+      &lt;p&gt;使用其他一些第三方静态库时, 如果没有注意按照文档中的提示进行配置, 很容易在程序运行过程中因 “unrecorgnized selector send to instance xxx” 的异常而崩溃. 而且可以发现, 导致崩溃的方法都是Category中的方法. &lt;/p&gt;
+    
+    </summary>
+    
+      <category term="iOS开发" scheme="http://zzyspace.github.io/categories/iOS%E5%BC%80%E5%8F%91/"/>
+    
+    
+      <category term="Other Linker Flags" scheme="http://zzyspace.github.io/tags/Other-Linker-Flags/"/>
+    
+  </entry>
+  
+  <entry>
     <title>【Linux】常用命令行</title>
-    <link href="http://zzyspace.github.io/2016/04/08/frequently-used-terminal-command/"/>
-    <id>http://zzyspace.github.io/2016/04/08/frequently-used-terminal-command/</id>
-    <published>2016-04-08T09:43:23.000Z</published>
-    <updated>2016-08-31T10:19:39.000Z</updated>
+    <link href="http://zzyspace.github.io/2015/10/12/frequently-used-terminal-command/"/>
+    <id>http://zzyspace.github.io/2015/10/12/frequently-used-terminal-command/</id>
+    <published>2015-10-11T16:04:56.000Z</published>
+    <updated>2016-09-07T08:05:23.000Z</updated>
     
     <content type="html">&lt;p&gt;&lt;img src=&quot;/img/terminal-command/header.png&quot; alt=&quot;&quot;&gt;&lt;/p&gt;
+&lt;a id=&quot;more&quot;&gt;&lt;/a&gt;
 &lt;h3 id=&quot;热键&quot;&gt;&lt;a href=&quot;#热键&quot; class=&quot;headerlink&quot; title=&quot;热键&quot;&gt;&lt;/a&gt;&lt;strong&gt;热键&lt;/strong&gt;&lt;/h3&gt;&lt;hr&gt;
 &lt;ul&gt;
 &lt;li&gt;自动补全: &lt;code&gt;tab&lt;/code&gt;&lt;/li&gt;
@@ -82,7 +446,6 @@
 &lt;li&gt;光标移动至行首: &lt;code&gt;ctrl&lt;/code&gt;+&lt;code&gt;a&lt;/code&gt;&lt;/li&gt;
 &lt;li&gt;光标移动至行尾: &lt;code&gt;ctrl&lt;/code&gt;+&lt;code&gt;e&lt;/code&gt;&lt;/li&gt;
 &lt;/ul&gt;
-&lt;a id=&quot;more&quot;&gt;&lt;/a&gt;
 &lt;h3 id=&quot;路径操作&quot;&gt;&lt;a href=&quot;#路径操作&quot; class=&quot;headerlink&quot; title=&quot;路径操作&quot;&gt;&lt;/a&gt;&lt;strong&gt;路径操作&lt;/strong&gt;&lt;/h3&gt;&lt;hr&gt;
 &lt;ul&gt;
 &lt;li&gt;当前文件夹的内容: &lt;code&gt;ls&lt;/code&gt;&lt;/li&gt;
@@ -151,7 +514,7 @@
 &lt;li&gt;Git超漂亮日志(设置为全局别名, &lt;code&gt;git lg&lt;/code&gt;使用即可): &lt;/li&gt;
 &lt;/ul&gt;
 &lt;figure class=&quot;highlight zsh&quot;&gt;&lt;table&gt;&lt;tr&gt;&lt;td class=&quot;code&quot;&gt;&lt;pre&gt;&lt;span class=&quot;line&quot;&gt;$ git config --global alias.lg &lt;span class=&quot;string&quot;&gt;&quot;log --color --graph --pretty=format:&#39;%Cred%h%Creset -%C(yellow)%d%Creset %s %Cgreen(%cr) %C(bold blue)&amp;lt;%an&amp;gt;%Creset&#39; --abbrev-commit&quot;&lt;/span&gt;&lt;/span&gt;&lt;br&gt;&lt;/pre&gt;&lt;/td&gt;&lt;/tr&gt;&lt;/table&gt;&lt;/figure&gt;
-&lt;h3 id=&quot;参考&quot;&gt;&lt;a href=&quot;#参考&quot; class=&quot;headerlink&quot; title=&quot;参考&quot;&gt;&lt;/a&gt;&lt;strong&gt;参考&lt;/strong&gt;&lt;/h3&gt;&lt;hr&gt;
+&lt;h3 id=&quot;参考&quot;&gt;&lt;a href=&quot;#参考&quot; class=&quot;headerlink&quot; title=&quot;参考&quot;&gt;&lt;/a&gt;参考&lt;/h3&gt;&lt;hr&gt;
 &lt;ol&gt;
 &lt;li&gt;&lt;a href=&quot;http://blog.csdn.net/xiaoguaihai/article/details/8705992&quot; target=&quot;_blank&quot; rel=&quot;external&quot;&gt;linux常用基本命令详解&lt;/a&gt;&lt;/li&gt;
 &lt;li&gt;&lt;a href=&quot;http://www.liaoxuefeng.com/wiki/0013739516305929606dd18361248578c67b8067c8c017b000/&quot; target=&quot;_blank&quot; rel=&quot;external&quot;&gt;Git教程-廖雪峰&lt;/a&gt;&lt;/li&gt;
@@ -161,13 +524,6 @@
     <summary type="html">
     
       &lt;p&gt;&lt;img src=&quot;/img/terminal-command/header.png&quot; alt=&quot;&quot;&gt;&lt;/p&gt;
-&lt;h3 id=&quot;热键&quot;&gt;&lt;a href=&quot;#热键&quot; class=&quot;headerlink&quot; title=&quot;热键&quot;&gt;&lt;/a&gt;&lt;strong&gt;热键&lt;/strong&gt;&lt;/h3&gt;&lt;hr&gt;
-&lt;ul&gt;
-&lt;li&gt;自动补全: &lt;code&gt;tab&lt;/code&gt;&lt;/li&gt;
-&lt;li&gt;终止命令: &lt;code&gt;ctrl&lt;/code&gt;+&lt;code&gt;c&lt;/code&gt;&lt;/li&gt;
-&lt;li&gt;光标移动至行首: &lt;code&gt;ctrl&lt;/code&gt;+&lt;code&gt;a&lt;/code&gt;&lt;/li&gt;
-&lt;li&gt;光标移动至行尾: &lt;code&gt;ctrl&lt;/code&gt;+&lt;code&gt;e&lt;/code&gt;&lt;/li&gt;
-&lt;/ul&gt;
     
     </summary>
     
@@ -179,388 +535,44 @@
   </entry>
   
   <entry>
-    <title>【iOS Tip】提高Xcode编译速度</title>
-    <link href="http://zzyspace.github.io/2016/03/20/reduce-xcode-build-times/"/>
-    <id>http://zzyspace.github.io/2016/03/20/reduce-xcode-build-times/</id>
-    <published>2016-03-20T07:46:56.000Z</published>
-    <updated>2016-08-31T08:53:34.000Z</updated>
-    
-    <content type="html">&lt;p&gt;&lt;img src=&quot;/img/reduce-xcode-build-times/title.png&quot; alt=&quot;&quot;&gt;&lt;br&gt;平常在调试工程的时候, 特别是大工程, 浪费在编译上的时间加起来也是个不小的数目. 我戏成它为&lt;strong&gt;带薪编译&lt;/strong&gt;. 带薪编译一来呢浪费公司资源, 二来使得开发效率大大降低. 所以提高Xcode的编译速度还是非常有必要的. 关于通过更改一些Xcode的配置来提升编译速度&lt;a href=&quot;http://blog.csdn.net/zhaoxy_thu/article/details/30073485?utm_source=tuicool&amp;amp;utm_medium=referral&quot; target=&quot;_blank&quot; rel=&quot;external&quot;&gt;这篇文章&lt;/a&gt;已经列举除了几个不错的方法, 这里就不再多说.&lt;/p&gt;
-&lt;p&gt;这篇文章主要讲的是从&lt;strong&gt;硬件方面&lt;/strong&gt;来提升Xcode的编译速度. 因为对比了现在日常使用的Mac mini和MacBook Pro, 在CPU和内存基本没有差别的情况下, 相比MacBook Pro的SSD, Mac mini的机械硬盘的表现实在是惨不忍睹. 这也是拖慢了编译速度的主要元凶. &lt;del&gt;所以, 去换一个SSD吧.(Excuse me?)&lt;/del&gt;&lt;/p&gt;
-&lt;p&gt;本文所讲的方法理论上编译速度是可以超过SSD的. 在说具体方法之前, 先来了解一下拖慢编译速度的元凶Derived Data:&lt;/p&gt;
-&lt;h1 id=&quot;Derived-Data&quot;&gt;&lt;a href=&quot;#Derived-Data&quot; class=&quot;headerlink&quot; title=&quot;Derived Data&quot;&gt;&lt;/a&gt;&lt;strong&gt;Derived Data&lt;/strong&gt;&lt;/h1&gt;&lt;hr&gt;
-&lt;p&gt;Derived Data是Xcode自动生成的一些派生数据的文件夹. 里面包含有一些索引文件、Log、&lt;strong&gt;编译时产生的文件&lt;/strong&gt;. 编译时候产生的文件包括:&lt;/p&gt;
-&lt;ul&gt;
-&lt;li&gt;第三方库的&lt;code&gt;.a&lt;/code&gt;文件&lt;/li&gt;
-&lt;li&gt;应用程序&lt;code&gt;.app&lt;/code&gt;文件&lt;/li&gt;
-&lt;li&gt;保存函数地址映射信息的中转文件&lt;code&gt;.dSYM&lt;/code&gt;文件&lt;/li&gt;
-&lt;/ul&gt;
-&lt;p&gt;所以, 写这些数据的时候, 写得越快, 编译的时间也就能越少. 如何让数据写入得更快呢? 可以把Derived Data的路径换到内存中. 换句话说, 将Derived Data的读写从硬盘移动到内存中.&lt;/p&gt;
-&lt;a id=&quot;more&quot;&gt;&lt;/a&gt;
-&lt;h1 id=&quot;在内存中创建虚拟磁盘&quot;&gt;&lt;a href=&quot;#在内存中创建虚拟磁盘&quot; class=&quot;headerlink&quot; title=&quot;在内存中创建虚拟磁盘&quot;&gt;&lt;/a&gt;&lt;strong&gt;在内存中创建虚拟磁盘&lt;/strong&gt;&lt;/h1&gt;&lt;hr&gt;
-&lt;p&gt;What? 内存当硬盘用? 是的你没听错, 其实OS X系统是允许在内存中创建一个可以高速存取的虚拟磁盘的. 通过以下两种方法可以实现在内存中创建虚拟磁盘:&lt;/p&gt;
-&lt;h3 id=&quot;1-iRamDisk&quot;&gt;&lt;a href=&quot;#1-iRamDisk&quot; class=&quot;headerlink&quot; title=&quot;1. iRamDisk&quot;&gt;&lt;/a&gt;&lt;strong&gt;1. iRamDisk&lt;/strong&gt;&lt;/h3&gt;&lt;p&gt;在AppStore上找到了这么一个神器, 叫&lt;a href=&quot;https://itunes.apple.com/us/app/iramdisk/id492615400?mt=12&quot; target=&quot;_blank&quot; rel=&quot;external&quot;&gt;iRamDisk&lt;/a&gt;, 14.99刀. 使用它可以非常简单地创建一个Xcode的DerivedData的虚拟磁盘, 如下. 都是图形化界面, 很好操作, 就不多赘述了.&lt;br&gt;&lt;img src=&quot;/img/reduce-xcode-build-times/iramdisk.png&quot; alt=&quot;&quot;&gt;&lt;br&gt;这里分享一个&lt;a href=&quot;http://pan.baidu.com/s/1hqLLc3a&quot; target=&quot;_blank&quot; rel=&quot;external&quot;&gt;破解版&lt;/a&gt;(提取码&lt;code&gt;9u38&lt;/code&gt;)仅供学习交流使用, 建议购买正版支持开发者.&lt;/p&gt;
-&lt;h3 id=&quot;2-命令行创建&quot;&gt;&lt;a href=&quot;#2-命令行创建&quot; class=&quot;headerlink&quot; title=&quot;2. 命令行创建&quot;&gt;&lt;/a&gt;&lt;strong&gt;2. 命令行创建&lt;/strong&gt;&lt;/h3&gt;&lt;p&gt;&lt;strong&gt;① 创建RAM disk并分配空间&lt;/strong&gt;&lt;br&gt;size的计算公式 &lt;code&gt;size = 需要分配的空间(M) * 1024 * 1024 / 512&lt;/code&gt;. 例如下面分配的空间为2GB: &lt;code&gt;2048 * 1024 * 1024 / 512 = 4194304&lt;/code&gt;.&lt;br&gt;&lt;figure class=&quot;highlight&quot;&gt;&lt;table&gt;&lt;tr&gt;&lt;td class=&quot;code&quot;&gt;&lt;pre&gt;&lt;span class=&quot;line&quot;&gt;$ hdid -nomount ram://4194304&lt;/span&gt;&lt;br&gt;&lt;/pre&gt;&lt;/td&gt;&lt;/tr&gt;&lt;/table&gt;&lt;/figure&gt;&lt;/p&gt;
-&lt;p&gt;执行完这个命令之后, 终端会输出&lt;code&gt;/dev/diskN&lt;/code&gt;, &lt;code&gt;N&lt;/code&gt;是一个数字, 记下它, 后面两步有用.&lt;/p&gt;
-&lt;p&gt;&lt;strong&gt;② 在RAM disk上创建HFS&lt;/strong&gt;&lt;br&gt;给虚拟磁盘创建名字, 如下为&lt;code&gt;DerivedData&lt;/code&gt;, 并将&lt;code&gt;rdiskN&lt;/code&gt;的&lt;code&gt;N&lt;/code&gt;改为第一步中的&lt;code&gt;N&lt;/code&gt;的数字. (&lt;em&gt;注意: &lt;code&gt;rdiskN&lt;/code&gt;不要错写成&lt;code&gt;diskN&lt;/code&gt;&lt;/em&gt;)&lt;br&gt;&lt;figure class=&quot;highlight vim&quot;&gt;&lt;table&gt;&lt;tr&gt;&lt;td class=&quot;code&quot;&gt;&lt;pre&gt;&lt;span class=&quot;line&quot;&gt;$ newfs_hfs -&lt;span class=&quot;keyword&quot;&gt;v&lt;/span&gt; DerivedData /dev/rdiskN&lt;/span&gt;&lt;br&gt;&lt;/pre&gt;&lt;/td&gt;&lt;/tr&gt;&lt;/table&gt;&lt;/figure&gt;&lt;/p&gt;
-&lt;p&gt;&lt;strong&gt;③ 把虚拟磁盘安装到Xcode的DerivedData目录下&lt;/strong&gt;&lt;br&gt;如下命令, 同样把&lt;code&gt;diskN&lt;/code&gt;中的&lt;code&gt;N&lt;/code&gt;替换成第一步中&lt;code&gt;N&lt;/code&gt;的数字. (&lt;em&gt;注意: 此时是&lt;code&gt;diskN&lt;/code&gt;&lt;/em&gt;)&lt;br&gt;&lt;figure class=&quot;highlight vim&quot;&gt;&lt;table&gt;&lt;tr&gt;&lt;td class=&quot;code&quot;&gt;&lt;pre&gt;&lt;span class=&quot;line&quot;&gt;$ diskutil mount -mountPoint ~/Library/Developer/Xcode/DerivedData /dev/diskN&lt;/span&gt;&lt;br&gt;&lt;/pre&gt;&lt;/td&gt;&lt;/tr&gt;&lt;/table&gt;&lt;/figure&gt;&lt;/p&gt;
-&lt;p&gt;这样就大功告成了! 不出意外就可以在桌面(或者Finder)上看到&lt;code&gt;DerivedData&lt;/code&gt;这个盘. 如果不要虚拟磁盘了, 可以在Finder中推出这个磁盘, 或者执行以下命令&lt;strong&gt;卸载&lt;/strong&gt;这个磁盘:&lt;br&gt;&lt;figure class=&quot;highlight vim&quot;&gt;&lt;table&gt;&lt;tr&gt;&lt;td class=&quot;code&quot;&gt;&lt;pre&gt;&lt;span class=&quot;line&quot;&gt;$ diskutil umount /dev/diskN&lt;/span&gt;&lt;br&gt;&lt;/pre&gt;&lt;/td&gt;&lt;/tr&gt;&lt;/table&gt;&lt;/figure&gt;&lt;/p&gt;
-&lt;h1 id=&quot;总结&quot;&gt;&lt;a href=&quot;#总结&quot; class=&quot;headerlink&quot; title=&quot;总结&quot;&gt;&lt;/a&gt;&lt;strong&gt;总结&lt;/strong&gt;&lt;/h1&gt;&lt;hr&gt;
-&lt;h3 id=&quot;1-优点&quot;&gt;&lt;a href=&quot;#1-优点&quot; class=&quot;headerlink&quot; title=&quot;1. 优点:&quot;&gt;&lt;/a&gt;&lt;strong&gt;1. 优点&lt;/strong&gt;:&lt;/h3&gt;&lt;ul&gt;
-&lt;li&gt;编译速度加快.&lt;/li&gt;
-&lt;li&gt;创建虚拟磁盘后, 并不是直接占用掉所有分配的空间, 而是根据虚拟磁盘中的文件总大小来逐渐占用内存.&lt;/li&gt;
-&lt;/ul&gt;
-&lt;h3 id=&quot;2-缺点&quot;&gt;&lt;a href=&quot;#2-缺点&quot; class=&quot;headerlink&quot; title=&quot;2. 缺点:&quot;&gt;&lt;/a&gt;&lt;strong&gt;2. 缺点&lt;/strong&gt;:&lt;/h3&gt;&lt;ul&gt;
-&lt;li&gt;每次关闭系统之后, 虚拟磁盘将会被卸载, 下次开机后需要重新创建虚拟磁盘. 同时因为Derived Data已经被删除.&lt;/li&gt;
-&lt;li&gt;内存有限, 不宜创建太大的虚拟磁盘, 需要在系统性能和需要的虚拟磁盘空间中找一个平衡点.&lt;/li&gt;
-&lt;/ul&gt;
-&lt;h3 id=&quot;3-可能遇到的坑&quot;&gt;&lt;a href=&quot;#3-可能遇到的坑&quot; class=&quot;headerlink&quot; title=&quot;3. 可能遇到的坑&quot;&gt;&lt;/a&gt;&lt;strong&gt;3. 可能遇到的坑&lt;/strong&gt;&lt;/h3&gt;&lt;ul&gt;
-&lt;li&gt;如果创建的虚拟磁盘已满, 会导致编译的失败. 此时清除掉Derived Data后重新编译, 就算有足够的空间也还是有可能会导致编译失败. 重启Xcode可以解决此问题.&lt;/li&gt;
-&lt;/ul&gt;
-</content>
-    
-    <summary type="html">
-    
-      &lt;p&gt;&lt;img src=&quot;/img/reduce-xcode-build-times/title.png&quot; alt=&quot;&quot;&gt;&lt;br&gt;平常在调试工程的时候, 特别是大工程, 浪费在编译上的时间加起来也是个不小的数目. 我戏成它为&lt;strong&gt;带薪编译&lt;/strong&gt;. 带薪编译一来呢浪费公司资源, 二来使得开发效率大大降低. 所以提高Xcode的编译速度还是非常有必要的. 关于通过更改一些Xcode的配置来提升编译速度&lt;a href=&quot;http://blog.csdn.net/zhaoxy_thu/article/details/30073485?utm_source=tuicool&amp;amp;utm_medium=referral&quot;&gt;这篇文章&lt;/a&gt;已经列举除了几个不错的方法, 这里就不再多说.&lt;/p&gt;
-&lt;p&gt;这篇文章主要讲的是从&lt;strong&gt;硬件方面&lt;/strong&gt;来提升Xcode的编译速度. 因为对比了现在日常使用的Mac mini和MacBook Pro, 在CPU和内存基本没有差别的情况下, 相比MacBook Pro的SSD, Mac mini的机械硬盘的表现实在是惨不忍睹. 这也是拖慢了编译速度的主要元凶. &lt;del&gt;所以, 去换一个SSD吧.(Excuse me?)&lt;/del&gt;&lt;/p&gt;
-&lt;p&gt;本文所讲的方法理论上编译速度是可以超过SSD的. 在说具体方法之前, 先来了解一下拖慢编译速度的元凶Derived Data:&lt;/p&gt;
-&lt;h1 id=&quot;Derived-Data&quot;&gt;&lt;a href=&quot;#Derived-Data&quot; class=&quot;headerlink&quot; title=&quot;Derived Data&quot;&gt;&lt;/a&gt;&lt;strong&gt;Derived Data&lt;/strong&gt;&lt;/h1&gt;&lt;hr&gt;
-&lt;p&gt;Derived Data是Xcode自动生成的一些派生数据的文件夹. 里面包含有一些索引文件、Log、&lt;strong&gt;编译时产生的文件&lt;/strong&gt;. 编译时候产生的文件包括:&lt;/p&gt;
-&lt;ul&gt;
-&lt;li&gt;第三方库的&lt;code&gt;.a&lt;/code&gt;文件&lt;/li&gt;
-&lt;li&gt;应用程序&lt;code&gt;.app&lt;/code&gt;文件&lt;/li&gt;
-&lt;li&gt;保存函数地址映射信息的中转文件&lt;code&gt;.dSYM&lt;/code&gt;文件&lt;/li&gt;
-&lt;/ul&gt;
-&lt;p&gt;所以, 写这些数据的时候, 写得越快, 编译的时间也就能越少. 如何让数据写入得更快呢? 可以把Derived Data的路径换到内存中. 换句话说, 将Derived Data的读写从硬盘移动到内存中.&lt;/p&gt;
-    
-    </summary>
-    
-      <category term="iOS Tips" scheme="http://zzyspace.github.io/categories/iOS-Tips/"/>
-    
-    
-      <category term="Xcode" scheme="http://zzyspace.github.io/tags/Xcode/"/>
-    
-  </entry>
-  
-  <entry>
-    <title>【iOS开发】Objective-c Runtime小记</title>
-    <link href="http://zzyspace.github.io/2016/03/16/objective-c-runtime/"/>
-    <id>http://zzyspace.github.io/2016/03/16/objective-c-runtime/</id>
-    <published>2016-03-16T09:16:08.000Z</published>
-    <updated>2016-08-31T08:53:34.000Z</updated>
-    
-    <content type="html">&lt;h1 id=&quot;一-Runtime&quot;&gt;&lt;a href=&quot;#一-Runtime&quot; class=&quot;headerlink&quot; title=&quot;一. Runtime&quot;&gt;&lt;/a&gt;&lt;strong&gt;一. Runtime&lt;/strong&gt;&lt;/h1&gt;&lt;hr&gt;
-&lt;p&gt;Runtime是一套底层的C语言API. 实际上, 平时我们编写的Objective-C代码, 底层都是基于runtime实现的, 也就是说, 平时我们编写的Objective-C代码, 最终都是转成了底层的runtime代码(C语言代码). Runtime使得Objective-C这门语言的灵活性大大地提升. 有了runtime, 我们可以在应用运行的时候动态操作对象、类、方法, 也因为这个原因, 使得编程有了更多的可能性, 对于开发中遇到的一些比较棘手的问题, 往往用runtime可以优雅地解决, 接下来让我们看看runtime是为何可以如此牛x.&lt;/p&gt;
-&lt;h1 id=&quot;二-Objective-C中类和对象的本质&quot;&gt;&lt;a href=&quot;#二-Objective-C中类和对象的本质&quot; class=&quot;headerlink&quot; title=&quot;二. Objective-C中类和对象的本质&quot;&gt;&lt;/a&gt;&lt;strong&gt;二. Objective-C中类和对象的本质&lt;/strong&gt;&lt;/h1&gt;&lt;hr&gt;
-&lt;h3 id=&quot;1-对象-Instance&quot;&gt;&lt;a href=&quot;#1-对象-Instance&quot; class=&quot;headerlink&quot; title=&quot;1. 对象(Instance)&quot;&gt;&lt;/a&gt;&lt;strong&gt;1. 对象(Instance)&lt;/strong&gt;&lt;/h3&gt;&lt;p&gt;&lt;strong&gt;概念:&lt;/strong&gt;&lt;br&gt;对象的本质是一个结构体, 在&lt;code&gt;&amp;lt;objc/objc.h&amp;gt;&lt;/code&gt;中可以找到它的声明:&lt;br&gt;&lt;figure class=&quot;highlight objc&quot;&gt;&lt;table&gt;&lt;tr&gt;&lt;td class=&quot;code&quot;&gt;&lt;pre&gt;&lt;span class=&quot;line&quot;&gt;&lt;span class=&quot;keyword&quot;&gt;struct&lt;/span&gt; objc_object &amp;#123;&lt;/span&gt;&lt;br&gt;&lt;span class=&quot;line&quot;&gt;    Class isa  OBJC_ISA_&lt;span class=&quot;built_in&quot;&gt;AVAILABILITY&lt;/span&gt;;&lt;/span&gt;&lt;br&gt;&lt;span class=&quot;line&quot;&gt;&amp;#125;;&lt;/span&gt;&lt;br&gt;&lt;/pre&gt;&lt;/td&gt;&lt;/tr&gt;&lt;/table&gt;&lt;/figure&gt;&lt;/p&gt;
-&lt;ul&gt;
-&lt;li&gt;&lt;code&gt;isa&lt;/code&gt;: 指针指向对象所属的&lt;a href=&quot;#二.2&quot;&gt;类(Class)&lt;/a&gt;, Class结构体中包含了成员变量、对象方法等等.  &lt;/li&gt;
-&lt;/ul&gt;
-&lt;a id=&quot;more&quot;&gt;&lt;/a&gt;
-&lt;p&gt;&lt;strong&gt;补充:&lt;/strong&gt;&lt;br&gt;平常我们常常使用&lt;code&gt;id&lt;/code&gt;来作为对象的指针, 原因就是&lt;code&gt;&amp;lt;objc/objc.h&amp;gt;&lt;/code&gt;中定义&lt;code&gt;id&lt;/code&gt;类型来代替&lt;code&gt;struct objc_object *&lt;/code&gt;:&lt;br&gt;&lt;figure class=&quot;highlight objc&quot;&gt;&lt;table&gt;&lt;tr&gt;&lt;td class=&quot;code&quot;&gt;&lt;pre&gt;&lt;span class=&quot;line&quot;&gt;&lt;span class=&quot;keyword&quot;&gt;typedef&lt;/span&gt; &lt;span class=&quot;keyword&quot;&gt;struct&lt;/span&gt; objc_object *&lt;span class=&quot;keyword&quot;&gt;id&lt;/span&gt;;&lt;/span&gt;&lt;br&gt;&lt;/pre&gt;&lt;/td&gt;&lt;/tr&gt;&lt;/table&gt;&lt;/figure&gt;&lt;/p&gt;
-&lt;p&gt;&lt;br&gt;&lt;/p&gt;
-&lt;h3 id=&quot;2-类-Class&quot;&gt;&lt;a href=&quot;#2-类-Class&quot; class=&quot;headerlink&quot; title=&quot; 2. 类(Class) &quot;&gt;&lt;/a&gt;&lt;span id=&quot;二.2&quot;&gt; &lt;strong&gt;2. 类(Class)&lt;/strong&gt; &lt;/span&gt;&lt;/h3&gt;&lt;p&gt;&lt;strong&gt;概念:&lt;/strong&gt;&lt;br&gt;类的本质是一个Class类型的对象. 在&lt;code&gt;&amp;lt;objc/runtime.h&amp;gt;&lt;/code&gt;中, 对类的声明如下:&lt;br&gt;&lt;figure class=&quot;highlight objc&quot;&gt;&lt;table&gt;&lt;tr&gt;&lt;td class=&quot;code&quot;&gt;&lt;pre&gt;&lt;span class=&quot;line&quot;&gt;&lt;span class=&quot;keyword&quot;&gt;struct&lt;/span&gt; objc_class &amp;#123;&lt;/span&gt;&lt;br&gt;&lt;span class=&quot;line&quot;&gt;    Class isa  OBJC_ISA_&lt;span class=&quot;built_in&quot;&gt;AVAILABILITY&lt;/span&gt;;&lt;/span&gt;&lt;br&gt;&lt;span class=&quot;line&quot;&gt;&lt;span class=&quot;preprocessor&quot;&gt;#if !__OBJC2__&lt;/span&gt;&lt;/span&gt;&lt;br&gt;&lt;span class=&quot;line&quot;&gt;    Class super_class                                        OBJC2_UN&lt;span class=&quot;built_in&quot;&gt;AVAILABLE&lt;/span&gt;;&lt;/span&gt;&lt;br&gt;&lt;span class=&quot;line&quot;&gt;    &lt;span class=&quot;keyword&quot;&gt;const&lt;/span&gt; &lt;span class=&quot;keyword&quot;&gt;char&lt;/span&gt; *name                                         OBJC2_UN&lt;span class=&quot;built_in&quot;&gt;AVAILABLE&lt;/span&gt;;&lt;/span&gt;&lt;br&gt;&lt;span class=&quot;line&quot;&gt;    &lt;span class=&quot;keyword&quot;&gt;long&lt;/span&gt; version                                             OBJC2_UN&lt;span class=&quot;built_in&quot;&gt;AVAILABLE&lt;/span&gt;;&lt;/span&gt;&lt;br&gt;&lt;span class=&quot;line&quot;&gt;    &lt;span class=&quot;keyword&quot;&gt;long&lt;/span&gt; info                                                OBJC2_UN&lt;span class=&quot;built_in&quot;&gt;AVAILABLE&lt;/span&gt;;&lt;/span&gt;&lt;br&gt;&lt;span class=&quot;line&quot;&gt;    &lt;span class=&quot;keyword&quot;&gt;long&lt;/span&gt; instance_size                                       OBJC2_UN&lt;span class=&quot;built_in&quot;&gt;AVAILABLE&lt;/span&gt;;&lt;/span&gt;&lt;br&gt;&lt;span class=&quot;line&quot;&gt;    &lt;span class=&quot;keyword&quot;&gt;struct&lt;/span&gt; objc_ivar_list *ivars                             OBJC2_UN&lt;span class=&quot;built_in&quot;&gt;AVAILABLE&lt;/span&gt;;&lt;/span&gt;&lt;br&gt;&lt;span class=&quot;line&quot;&gt;    &lt;span class=&quot;keyword&quot;&gt;struct&lt;/span&gt; objc_method_list **methodLists                    OBJC2_UN&lt;span class=&quot;built_in&quot;&gt;AVAILABLE&lt;/span&gt;;&lt;/span&gt;&lt;br&gt;&lt;span class=&quot;line&quot;&gt;    &lt;span class=&quot;keyword&quot;&gt;struct&lt;/span&gt; objc_cache *cache                                 OBJC2_UN&lt;span class=&quot;built_in&quot;&gt;AVAILABLE&lt;/span&gt;;&lt;/span&gt;&lt;br&gt;&lt;span class=&quot;line&quot;&gt;    &lt;span class=&quot;keyword&quot;&gt;struct&lt;/span&gt; objc_protocol_list *protocols                     OBJC2_UN&lt;span class=&quot;built_in&quot;&gt;AVAILABLE&lt;/span&gt;;&lt;/span&gt;&lt;br&gt;&lt;span class=&quot;line&quot;&gt;&lt;span class=&quot;preprocessor&quot;&gt;#endif&lt;/span&gt;&lt;/span&gt;&lt;br&gt;&lt;span class=&quot;line&quot;&gt;&amp;#125; OBJC2_UN&lt;span class=&quot;built_in&quot;&gt;AVAILABLE&lt;/span&gt;;&lt;/span&gt;&lt;br&gt;&lt;/pre&gt;&lt;/td&gt;&lt;/tr&gt;&lt;/table&gt;&lt;/figure&gt;&lt;/p&gt;
-&lt;ul&gt;
-&lt;li&gt;&lt;code&gt;isa&lt;/code&gt;: 指针指向Class对象的&lt;a href=&quot;#二.3&quot;&gt;元类(MetaClass)&lt;/a&gt;, 元类中记录了类方法列表.&lt;/li&gt;
-&lt;li&gt;&lt;code&gt;super_class&lt;/code&gt;: 指针指向父类. 根类(NSObject)中的super_class指针为空.&lt;/li&gt;
-&lt;li&gt;&lt;code&gt;name&lt;/code&gt;: 类名&lt;/li&gt;
-&lt;li&gt;&lt;code&gt;version&lt;/code&gt;: 类的版本, 默认为0&lt;/li&gt;
-&lt;li&gt;&lt;code&gt;info&lt;/code&gt;: 类的信息, 因为是long型的, 推测是作为标识使用&lt;/li&gt;
-&lt;li&gt;&lt;code&gt;instance_size&lt;/code&gt;: 类的对象的大小&lt;/li&gt;
-&lt;li&gt;&lt;code&gt;ivars&lt;/code&gt;: 存放该类所有成员变量的链表&lt;/li&gt;
-&lt;li&gt;&lt;code&gt;methodLists&lt;/code&gt;: 存放该类所有对象方法的链表&lt;/li&gt;
-&lt;li&gt;&lt;code&gt;cache&lt;/code&gt;: 缓存常用的对象方法, 提高消息分发的效率&lt;/li&gt;
-&lt;li&gt;&lt;code&gt;protocols&lt;/code&gt;: 存放该类的协议的链表&lt;/li&gt;
-&lt;/ul&gt;
-&lt;p&gt;&lt;strong&gt;补充:&lt;/strong&gt;&lt;br&gt;就像&lt;code&gt;id&lt;/code&gt;类型代表对象指针一样, &lt;code&gt;&amp;lt;objc/objc.h&amp;gt;&lt;/code&gt;中定义&lt;code&gt;Class&lt;/code&gt;类型来代替&lt;code&gt;struct objc_class *&lt;/code&gt;:&lt;br&gt;&lt;figure class=&quot;highlight objc&quot;&gt;&lt;table&gt;&lt;tr&gt;&lt;td class=&quot;code&quot;&gt;&lt;pre&gt;&lt;span class=&quot;line&quot;&gt;&lt;span class=&quot;keyword&quot;&gt;typedef&lt;/span&gt; &lt;span class=&quot;keyword&quot;&gt;struct&lt;/span&gt; objc_class *Class;&lt;/span&gt;&lt;br&gt;&lt;/pre&gt;&lt;/td&gt;&lt;/tr&gt;&lt;/table&gt;&lt;/figure&gt;&lt;/p&gt;
-&lt;p&gt;&lt;br&gt;&lt;/p&gt;
-&lt;h3 id=&quot;3-元类-MetaClass&quot;&gt;&lt;a href=&quot;#3-元类-MetaClass&quot; class=&quot;headerlink&quot; title=&quot; 3. 元类(MetaClass) &quot;&gt;&lt;/a&gt;&lt;span id=&quot;二.3&quot;&gt; &lt;strong&gt;3. 元类(MetaClass)&lt;/strong&gt; &lt;/span&gt;&lt;/h3&gt;&lt;p&gt;&lt;strong&gt;概念:&lt;/strong&gt;&lt;br&gt;元类也是一个类, 每个类都有对应的一个元类. 可以通过类中的isa指针找到其对应的元类. 虽然在runtime相关头文件中没有找到MetaClass的声明, 但是在&lt;a href=&quot;http://www.sealiesoftware.com/blog/archive/2009/04/14/objc_explain_Classes_and_metaclasses.html&quot; target=&quot;_blank&quot; rel=&quot;external&quot;&gt;这个博客&lt;/a&gt;中对元类的与类的关系解释中, 我们可以推测出元类结构体和类是相似的, 包含(但不仅有)如下成员:&lt;/p&gt;
-&lt;ul&gt;
-&lt;li&gt;&lt;code&gt;isa&lt;/code&gt;: 指针都是指向根元类(NSObject的元类), 即使是根元类本身的isa也是指向自己&lt;/li&gt;
-&lt;li&gt;&lt;code&gt;super_class&lt;/code&gt;: 指针指向父元类, 根元类指向根类(NSObject)&lt;/li&gt;
-&lt;li&gt;&lt;code&gt;methodLists&lt;/code&gt;: 存放该类的所有类方法的链表&lt;/li&gt;
-&lt;/ul&gt;
-&lt;p&gt;&lt;strong&gt;对象、类、元类的关系图：&lt;/strong&gt;&lt;/p&gt;
-&lt;div style=&quot;text-align: center&quot;&gt;&lt;br&gt;&lt;img src=&quot;/img/runtime/runtime_0.pdf&quot;&gt;&lt;br&gt;&lt;/div&gt;
-
-&lt;h1 id=&quot;三-消息机制&quot;&gt;&lt;a href=&quot;#三-消息机制&quot; class=&quot;headerlink&quot; title=&quot;三. 消息机制&quot;&gt;&lt;/a&gt;&lt;strong&gt;三. 消息机制&lt;/strong&gt;&lt;/h1&gt;&lt;hr&gt;
-&lt;p&gt;我们平常所说的”方法调用”, 其实是不准确的, 因为在Objective-C中, 所谓的”方法调用”本质是消息分发. 比如下面这个”方法调用”:&lt;br&gt;&lt;figure class=&quot;highlight objc&quot;&gt;&lt;table&gt;&lt;tr&gt;&lt;td class=&quot;code&quot;&gt;&lt;pre&gt;&lt;span class=&quot;line&quot;&gt;[receiver message]&lt;/span&gt;&lt;br&gt;&lt;/pre&gt;&lt;/td&gt;&lt;/tr&gt;&lt;/table&gt;&lt;/figure&gt;&lt;/p&gt;
-&lt;p&gt;最终会被编译器转化为:&lt;br&gt;&lt;figure class=&quot;highlight objc&quot;&gt;&lt;table&gt;&lt;tr&gt;&lt;td class=&quot;code&quot;&gt;&lt;pre&gt;&lt;span class=&quot;line&quot;&gt;objc_msgSend(receiver, &lt;span class=&quot;keyword&quot;&gt;@selector&lt;/span&gt;(message))&lt;/span&gt;&lt;br&gt;&lt;/pre&gt;&lt;/td&gt;&lt;/tr&gt;&lt;/table&gt;&lt;/figure&gt;&lt;/p&gt;
-&lt;p&gt;所以说, 消息分发是通过定义在&lt;code&gt;&amp;lt;objc/message.h&amp;gt;&lt;/code&gt;中的&lt;code&gt;objc_msgSend()&lt;/code&gt;方法以及相关的方法来实现的. &lt;/p&gt;
-&lt;p&gt;需要注意的是消息分发是运行时特性, 说白了就是运行的时候, 一条消息才会知道它所对应的方法的实现是什么. 所以运行的时候, 一条消息的传递过程是这样的:&lt;/p&gt;
-&lt;blockquote&gt;
-&lt;ol&gt;
-&lt;li&gt;向对象&lt;code&gt;receiver&lt;/code&gt;对象发送&lt;code&gt;message&lt;/code&gt;消息.&lt;/li&gt;
-&lt;li&gt;通过&lt;code&gt;receiver&lt;/code&gt;对象的&lt;code&gt;isa&lt;/code&gt;指针找到它的Class.&lt;/li&gt;
-&lt;li&gt;在Class结构体中的&lt;code&gt;cache&lt;/code&gt;中查找是否有的&lt;code&gt;message&lt;/code&gt;的selector, 没有的话到&lt;code&gt;methodLists&lt;/code&gt;里面查找. 若有找到&lt;code&gt;message&lt;/code&gt;的selector, 则跳转至对应的方法实现完成此次消息分发.&lt;/li&gt;
-&lt;li&gt;如果没有找到&lt;code&gt;message&lt;/code&gt;的实现, &lt;code&gt;objc_msgSend&lt;/code&gt;会通过当前的Class结构体中的&lt;code&gt;super_class&lt;/code&gt;指针找到它的父Class, 并重复第3点的动作. &lt;/li&gt;
-&lt;li&gt;如果一直没有找到&lt;code&gt;message&lt;/code&gt;的实现, 第3点与第4点会一直重复直到根类(NSObject).&lt;/li&gt;
-&lt;li&gt;如果在根类中依然没有找到&lt;code&gt;message&lt;/code&gt;的实现, 默认(未实现&lt;a href=&quot;https://developer.apple.com/library/ios/documentation/Cocoa/Conceptual/ObjCRuntimeGuide/Articles/ocrtForwarding.html#//apple_ref/doc/uid/TP40008048-CH105-SW1&quot; target=&quot;_blank&quot; rel=&quot;external&quot;&gt;消息转发&lt;/a&gt;方法的情况下)就会抛出&lt;code&gt;unrecognized selector send to instance xxxx&lt;/code&gt;的异常.&lt;/li&gt;
-&lt;/ol&gt;
-&lt;/blockquote&gt;
-&lt;p&gt;这里引用&lt;a href=&quot;https://developer.apple.com/library/ios/documentation/Cocoa/Conceptual/ObjCRuntimeGuide/Articles/ocrtHowMessagingWorks.html#//apple_ref/doc/uid/TP40008048-CH104-SW1&quot; target=&quot;_blank&quot; rel=&quot;external&quot;&gt;Apple官方文档&lt;/a&gt;的消息分发原理插图便于理解:&lt;/p&gt;
-&lt;div style=&quot;text-align: center&quot;&gt;&lt;br&gt;&lt;img src=&quot;/img/runtime/runtime_1.gif&quot;&gt;&lt;br&gt;&lt;/div&gt;
-
-&lt;p&gt;看到这里或许会担心消息分发的过程太过于繁琐, 以至于影响性能? 其实不会的, 一个类中常用的方法会缓存在&lt;code&gt;cache&lt;/code&gt;中, 如上面消息分发流程的第2点所说, 一个对象接收到一条消息之后, 并不是直接去&lt;code&gt;methodLists&lt;/code&gt;查找, 而是先在&lt;code&gt;cache&lt;/code&gt;中查找, 查找不到了再到&lt;code&gt;methodLists&lt;/code&gt;中查找. 这样就能使得消息转发的效率得到保障.&lt;/p&gt;
-&lt;h1 id=&quot;扩展阅读&quot;&gt;&lt;a href=&quot;#扩展阅读&quot; class=&quot;headerlink&quot; title=&quot;扩展阅读&quot;&gt;&lt;/a&gt;扩展阅读&lt;/h1&gt;&lt;hr&gt;
-&lt;p&gt;1.&lt;a href=&quot;https://developer.apple.com/library/mac/documentation/Cocoa/Conceptual/ObjCRuntimeGuide/Introduction/Introduction.html&quot; target=&quot;_blank&quot; rel=&quot;external&quot;&gt;Objective-C Runtime Programming Guide&lt;/a&gt; by Apple&lt;br&gt;2.&lt;a href=&quot;http://southpeak.github.io/blog/2014/10/25/objective-c-runtime-yun-xing-shi-zhi-lei-yu-dui-xiang/&quot; target=&quot;_blank&quot; rel=&quot;external&quot;&gt;Objective-C Runtime 运行时系列文章&lt;/a&gt; by 南峰子&lt;br&gt;3.&lt;a href=&quot;http://yulingtianxia.com/blog/2014/11/05/objective-c-runtime/&quot; target=&quot;_blank&quot; rel=&quot;external&quot;&gt;Objective-C Runtime&lt;/a&gt; by 玉令天下&lt;br&gt;4.&lt;a href=&quot;http://limboy.me/ios/2013/08/03/dynamic-tips-and-tricks-with-objective-c.html&quot; target=&quot;_blank&quot; rel=&quot;external&quot;&gt;(译)Objective-C的动态特性&lt;/a&gt; by Limboy’s HQ&lt;br&gt;5.&lt;a href=&quot;http://blog.ibireme.com/2013/11/26/objective-c-messaging/&quot; target=&quot;_blank&quot; rel=&quot;external&quot;&gt;Objective-C 中的消息与消息转发&lt;/a&gt; by ibireme&lt;br&gt;6.&lt;a href=&quot;http://tech.glowing.com/cn/objective-c-runtime/&quot; target=&quot;_blank&quot; rel=&quot;external&quot;&gt;Objective-C Runtime&lt;/a&gt; by Glow技术团队博客&lt;/p&gt;
-</content>
-    
-    <summary type="html">
-    
-      &lt;h1 id=&quot;一-Runtime&quot;&gt;&lt;a href=&quot;#一-Runtime&quot; class=&quot;headerlink&quot; title=&quot;一. Runtime&quot;&gt;&lt;/a&gt;&lt;strong&gt;一. Runtime&lt;/strong&gt;&lt;/h1&gt;&lt;hr&gt;
-&lt;p&gt;Runtime是一套底层的C语言API. 实际上, 平时我们编写的Objective-C代码, 底层都是基于runtime实现的, 也就是说, 平时我们编写的Objective-C代码, 最终都是转成了底层的runtime代码(C语言代码). Runtime使得Objective-C这门语言的灵活性大大地提升. 有了runtime, 我们可以在应用运行的时候动态操作对象、类、方法, 也因为这个原因, 使得编程有了更多的可能性, 对于开发中遇到的一些比较棘手的问题, 往往用runtime可以优雅地解决, 接下来让我们看看runtime是为何可以如此牛x.&lt;/p&gt;
-&lt;h1 id=&quot;二-Objective-C中类和对象的本质&quot;&gt;&lt;a href=&quot;#二-Objective-C中类和对象的本质&quot; class=&quot;headerlink&quot; title=&quot;二. Objective-C中类和对象的本质&quot;&gt;&lt;/a&gt;&lt;strong&gt;二. Objective-C中类和对象的本质&lt;/strong&gt;&lt;/h1&gt;&lt;hr&gt;
-&lt;h3 id=&quot;1-对象-Instance&quot;&gt;&lt;a href=&quot;#1-对象-Instance&quot; class=&quot;headerlink&quot; title=&quot;1. 对象(Instance)&quot;&gt;&lt;/a&gt;&lt;strong&gt;1. 对象(Instance)&lt;/strong&gt;&lt;/h3&gt;&lt;p&gt;&lt;strong&gt;概念:&lt;/strong&gt;&lt;br&gt;对象的本质是一个结构体, 在&lt;code&gt;&amp;lt;objc/objc.h&amp;gt;&lt;/code&gt;中可以找到它的声明:&lt;br&gt;&lt;figure class=&quot;highlight objc&quot;&gt;&lt;table&gt;&lt;tr&gt;&lt;td class=&quot;code&quot;&gt;&lt;pre&gt;&lt;span class=&quot;line&quot;&gt;&lt;span class=&quot;keyword&quot;&gt;struct&lt;/span&gt; objc_object &amp;#123;&lt;/span&gt;&lt;br&gt;&lt;span class=&quot;line&quot;&gt;    Class isa  OBJC_ISA_&lt;span class=&quot;built_in&quot;&gt;AVAILABILITY&lt;/span&gt;;&lt;/span&gt;&lt;br&gt;&lt;span class=&quot;line&quot;&gt;&amp;#125;;&lt;/span&gt;&lt;br&gt;&lt;/pre&gt;&lt;/td&gt;&lt;/tr&gt;&lt;/table&gt;&lt;/figure&gt;&lt;/p&gt;
-&lt;ul&gt;
-&lt;li&gt;&lt;code&gt;isa&lt;/code&gt;: 指针指向对象所属的&lt;a href=&quot;#二.2&quot;&gt;类(Class)&lt;/a&gt;, Class结构体中包含了成员变量、对象方法等等.  &lt;/li&gt;
-&lt;/ul&gt;
-    
-    </summary>
-    
-      <category term="iOS开发" scheme="http://zzyspace.github.io/categories/iOS%E5%BC%80%E5%8F%91/"/>
-    
-    
-      <category term="runtime" scheme="http://zzyspace.github.io/tags/runtime/"/>
-    
-  </entry>
-  
-  <entry>
-    <title>【iOS开发】Apple Pay 的集成</title>
-    <link href="http://zzyspace.github.io/2016/02/18/apple-pay/"/>
-    <id>http://zzyspace.github.io/2016/02/18/apple-pay/</id>
-    <published>2016-02-18T13:19:14.000Z</published>
-    <updated>2016-08-31T08:53:34.000Z</updated>
-    
-    <content type="html">&lt;p&gt;&lt;img src=&quot;/img/ApplePay/header.jpg&quot; alt=&quot;&quot;&gt;&lt;br&gt;Apple Pay在今天终于在中国大陆地区正式开通. Apple Pay不仅仅在线下支付中可以让你通过指纹刷(zhuang)卡(bi), 更可以在线上支付(App中支付)时, 节省掉很多多余的步骤, 让支付宝与微信支付哭晕在厕所… 蛋扯远了, 接下来我们来看看怎么让你的App也支持Apple Pay吧!&lt;/p&gt;
-&lt;a id=&quot;more&quot;&gt;&lt;/a&gt;
-&lt;h1 id=&quot;App集成Apple-Pay&quot;&gt;&lt;a href=&quot;#App集成Apple-Pay&quot; class=&quot;headerlink&quot; title=&quot;App集成Apple Pay&quot;&gt;&lt;/a&gt;&lt;strong&gt;App集成Apple Pay&lt;/strong&gt;&lt;/h1&gt;&lt;hr&gt;
-&lt;h3 id=&quot;1-创建Merchant-ID&quot;&gt;&lt;a href=&quot;#1-创建Merchant-ID&quot; class=&quot;headerlink&quot; title=&quot;1. 创建Merchant ID&quot;&gt;&lt;/a&gt;&lt;strong&gt;1. 创建Merchant ID&lt;/strong&gt;&lt;/h3&gt;&lt;p&gt;在iOS开发者中心的&lt;a href=&quot;https://developer.apple.com/account/ios/identifiers/merchant/merchantCreate.action&quot; target=&quot;_blank&quot; rel=&quot;external&quot;&gt;Certificates, Identifiers &amp;amp; Profiles页面&lt;/a&gt;中创建一个Merchant ID. (PS:前提是你得有开发者帐号= =)&lt;br&gt;&lt;code&gt;Description&lt;/code&gt;: 这个ID的描述, 建议填写App名称.&lt;br&gt;&lt;code&gt;ID&lt;/code&gt;: Merchent ID的标识符, 一般填写”merchant.&lt;code&gt;BundleID&lt;/code&gt;“, 比如&lt;code&gt;merchant.com.apple.passbook&lt;/code&gt;.&lt;/p&gt;
-&lt;h3 id=&quot;2-工程中配置Apple-Pay&quot;&gt;&lt;a href=&quot;#2-工程中配置Apple-Pay&quot; class=&quot;headerlink&quot; title=&quot;2. 工程中配置Apple Pay&quot;&gt;&lt;/a&gt;&lt;strong&gt;2. 工程中配置Apple Pay&lt;/strong&gt;&lt;/h3&gt;&lt;p&gt;你的开发者帐号拥有Merchant ID之后, 就需要在工程中配置你刚刚创建的Merchant ID.&lt;br&gt;&lt;img src=&quot;/img/ApplePay/image_1.png&quot; alt=&quot;&quot;&gt;&lt;br&gt;按照如图顺序即可在你的工程中激活你的Merchant ID.&lt;/p&gt;
-&lt;hr&gt;
-&lt;h2 id=&quot;未完待续…&quot;&gt;&lt;a href=&quot;#未完待续…&quot; class=&quot;headerlink&quot; title=&quot;未完待续…&quot;&gt;&lt;/a&gt;&lt;strong&gt;未完待续…&lt;/strong&gt;&lt;/h2&gt;&lt;p&gt;Apple Pay需要在支付提供商上面注册商户. 目前Apple Pay支持的提供商有&lt;/p&gt;
-&lt;ol&gt;
-&lt;li&gt;&lt;a href=&quot;https://open.unionpay.com/ajweb/product/detail?id=80&quot; target=&quot;_blank&quot; rel=&quot;external&quot;&gt;CUP&lt;/a&gt; (中国银联) &lt;/li&gt;
-&lt;li&gt;&lt;a href=&quot;https://apple.lianlianpay.com/OpenPlatform/&quot; target=&quot;_blank&quot; rel=&quot;external&quot;&gt;Lianlian Pay&lt;/a&gt; (连连支付) &lt;/li&gt;
-&lt;li&gt;&lt;a href=&quot;https://www.beijing.com.cn/product/ApplePay_ch.jsp&quot; target=&quot;_blank&quot; rel=&quot;external&quot;&gt;PayEase&lt;/a&gt; (首信易支付) &lt;/li&gt;
-&lt;li&gt;&lt;a href=&quot;https://www.yeepay.com/article/specialActivities/queryArticle/56c676b814a6d961550c90eb&quot; target=&quot;_blank&quot; rel=&quot;external&quot;&gt;YeePay&lt;/a&gt; (易宝支付) &lt;/li&gt;
-&lt;/ol&gt;
-&lt;p&gt;如果你的App要上架App Store的话, 在苹果官方&lt;a href=&quot;https://developer.apple.com/app-store/review/guidelines/#apple-pay&quot; target=&quot;_blank&quot; rel=&quot;external&quot;&gt;App Store Review Guidelines&lt;/a&gt;中关于Apple Pay的条款需要特别注意:&lt;/p&gt;
-&lt;blockquote&gt;
-&lt;p&gt;29.1 使用Apple Pay的应用程序必须在出售任何商品或者服务之前为用户提供所有材料的购买信息，否则将会被拒绝。使用Apple Pay的应用程序提供多次付款的，至少要公开再次支付的时间长度，和这种状态将持续到取消为止的每一个时期需要用户提供什么，和将产生的费用，以及如何取消。&lt;/p&gt;
-&lt;p&gt;29.2 使用Apple Pay的应用程序必须正确使用 Apple Pay Human Interface Guidelines 中的Apple Pay标识和用户界面元素，否则将会被拒绝。&lt;/p&gt;
-&lt;p&gt;29.3 使用Apple Pay的应用程序不能提供触犯任何领域范围法律的用于交付的商品或者服务，也不能用作任何非法目的。&lt;/p&gt;
-&lt;p&gt;29.4 使用Apple Pay的应用程序必须提供隐私政策，否则将会被拒绝。 &lt;/p&gt;
-&lt;p&gt;29.5 只有为了促进或提高商品和服务的交付，或者依照法律要求，使用Apple Pay的应用程序才能与第三方分享通过Apple Pay获得的数据&lt;/p&gt;
-&lt;/blockquote&gt;
-&lt;h1 id=&quot;设计规范&quot;&gt;&lt;a href=&quot;#设计规范&quot; class=&quot;headerlink&quot; title=&quot;设计规范&quot;&gt;&lt;/a&gt;&lt;strong&gt;设计规范&lt;/strong&gt;&lt;/h1&gt;&lt;hr&gt;
-&lt;ol&gt;
-&lt;li&gt;&lt;a href=&quot;https://developer.apple.com/apple-pay/Apple-Pay-Identity-Guidelines.pdf&quot; target=&quot;_blank&quot; rel=&quot;external&quot;&gt;Apple Pay 标识指南&lt;/a&gt;&lt;/li&gt;
-&lt;li&gt;&lt;a href=&quot;https://developer.apple.com/services-account/download?path=/ios/apple_pay_resources/Apple_Pay_Resources.zip&quot; target=&quot;_blank&quot; rel=&quot;external&quot;&gt;Apple Pay 图标资源包&lt;/a&gt;&lt;/li&gt;
-&lt;/ol&gt;
-</content>
-    
-    <summary type="html">
-    
-      &lt;p&gt;&lt;img src=&quot;/img/ApplePay/header.jpg&quot; alt=&quot;&quot;&gt;&lt;br&gt;Apple Pay在今天终于在中国大陆地区正式开通. Apple Pay不仅仅在线下支付中可以让你通过指纹刷(zhuang)卡(bi), 更可以在线上支付(App中支付)时, 节省掉很多多余的步骤, 让支付宝与微信支付哭晕在厕所… 蛋扯远了, 接下来我们来看看怎么让你的App也支持Apple Pay吧!&lt;/p&gt;
-    
-    </summary>
-    
-      <category term="iOS开发" scheme="http://zzyspace.github.io/categories/iOS%E5%BC%80%E5%8F%91/"/>
-    
-    
-      <category term="Apple Pay" scheme="http://zzyspace.github.io/tags/Apple-Pay/"/>
-    
-  </entry>
-  
-  <entry>
-    <title>【iOS开发】Associated Objects-为分类添加属性</title>
-    <link href="http://zzyspace.github.io/2016/01/25/associated-objects/"/>
-    <id>http://zzyspace.github.io/2016/01/25/associated-objects/</id>
-    <published>2016-01-25T07:06:34.000Z</published>
-    <updated>2016-08-31T08:53:34.000Z</updated>
-    
-    <content type="html">&lt;p&gt;分类(&lt;code&gt;category&lt;/code&gt;)在iOS开发中的应用非常广泛, 优点譬如给现有的类拓展更多的方法、对一个类的多种功能进行局部化封装等等, 都是非常方便的. 但是也有一个痛点, 就是分类中无法添加属性. 但是&lt;code&gt;Objective-C&lt;/code&gt;的&lt;code&gt;runtime&lt;/code&gt;中有许多黑科技可以帮我们实现很多常规方法下几乎不可能的事情–比如在分类中添加属性.这个黑科技叫做&lt;strong&gt;关联对象&lt;/strong&gt;(&lt;code&gt;Associated Objects&lt;/code&gt;). &lt;/p&gt;
-&lt;h1 id=&quot;Associated-Objects&quot;&gt;&lt;a href=&quot;#Associated-Objects&quot; class=&quot;headerlink&quot; title=&quot;Associated Objects&quot;&gt;&lt;/a&gt;&lt;strong&gt;Associated Objects&lt;/strong&gt;&lt;/h1&gt;&lt;hr&gt;
-&lt;p&gt;关联对象相关的函数有以下3个:&lt;/p&gt;
-&lt;ul&gt;
-&lt;li&gt;&lt;code&gt;objc_setAssociatedObject&lt;/code&gt; : 设置关联对象&lt;/li&gt;
-&lt;li&gt;&lt;code&gt;objc_getAssociatedObject&lt;/code&gt; : 获取关联对象&lt;/li&gt;
-&lt;li&gt;&lt;code&gt;objc_removeAssociatedObjects&lt;/code&gt; : 移除某个对象的所有关联对象&lt;/li&gt;
-&lt;/ul&gt;
-&lt;a id=&quot;more&quot;&gt;&lt;/a&gt;
-&lt;p&gt;从&lt;code&gt;&amp;lt;objc/runtime.h&amp;gt;&lt;/code&gt;中可以找到它的相关函数定义:&lt;/p&gt;
-&lt;h3 id=&quot;1-设置关联对象&quot;&gt;&lt;a href=&quot;#1-设置关联对象&quot; class=&quot;headerlink&quot; title=&quot;1. 设置关联对象&quot;&gt;&lt;/a&gt;&lt;strong&gt;1. 设置关联对象&lt;/strong&gt;&lt;/h3&gt;&lt;figure class=&quot;highlight objc&quot;&gt;&lt;table&gt;&lt;tr&gt;&lt;td class=&quot;code&quot;&gt;&lt;pre&gt;&lt;span class=&quot;line&quot;&gt;&lt;span class=&quot;keyword&quot;&gt;void&lt;/span&gt; objc_setAssociatedObject(&lt;span class=&quot;keyword&quot;&gt;id&lt;/span&gt; object, &lt;span class=&quot;keyword&quot;&gt;const&lt;/span&gt; &lt;span class=&quot;keyword&quot;&gt;void&lt;/span&gt; *key, &lt;span class=&quot;keyword&quot;&gt;id&lt;/span&gt; value, objc_AssociationPolicy policy)&lt;/span&gt;&lt;br&gt;&lt;/pre&gt;&lt;/td&gt;&lt;/tr&gt;&lt;/table&gt;&lt;/figure&gt;
-&lt;ul&gt;
-&lt;li&gt;&lt;code&gt;object&lt;/code&gt; : 需要设置关联对象的对象, &lt;code&gt;id&lt;/code&gt;类型&lt;/li&gt;
-&lt;li&gt;&lt;code&gt;key&lt;/code&gt; : 关联对象的key, &lt;code&gt;const void *&lt;/code&gt;类型 (&lt;em&gt;详细请看下文第4点&lt;/em&gt;)&lt;/li&gt;
-&lt;li&gt;&lt;code&gt;value&lt;/code&gt; : 关联对象的值, &lt;code&gt;id&lt;/code&gt;类型&lt;/li&gt;
-&lt;li&gt;&lt;code&gt;policy&lt;/code&gt; : 关联对象的策略, &lt;code&gt;objc_AssociationPolicy&lt;/code&gt;类型&lt;ul&gt;
-&lt;li&gt;&lt;code&gt;policy&lt;/code&gt;是一个枚举类型, 用于修饰关联对象:&lt;figure class=&quot;highlight objc&quot;&gt;&lt;table&gt;&lt;tr&gt;&lt;td class=&quot;code&quot;&gt;&lt;pre&gt;&lt;span class=&quot;line&quot;&gt;&lt;span class=&quot;keyword&quot;&gt;enum&lt;/span&gt; &amp;#123;&lt;/span&gt;&lt;br&gt;&lt;span class=&quot;line&quot;&gt;        OBJC_ASSO&lt;span class=&quot;built_in&quot;&gt;CIATION_ASSIGN&lt;/span&gt; = &lt;span class=&quot;number&quot;&gt;0&lt;/span&gt;,          &lt;span class=&quot;comment&quot;&gt;// 等价于 @property (assign) 或 @property (unsafe_unretained)&lt;/span&gt;&lt;/span&gt;&lt;br&gt;&lt;span class=&quot;line&quot;&gt;        OBJC_ASSO&lt;span class=&quot;built_in&quot;&gt;CIATION_RETAIN_NONATOMIC&lt;/span&gt; = &lt;span class=&quot;number&quot;&gt;1&lt;/span&gt;,&lt;span class=&quot;comment&quot;&gt;// 等价于 @property (nonatomic, strong)&lt;/span&gt;&lt;/span&gt;&lt;br&gt;&lt;span class=&quot;line&quot;&gt;        OBJC_ASSO&lt;span class=&quot;built_in&quot;&gt;CIATION_COPY_NONATOMIC&lt;/span&gt; = &lt;span class=&quot;number&quot;&gt;3&lt;/span&gt;,  &lt;span class=&quot;comment&quot;&gt;// 等价于 @property (nonatomic, copy)&lt;/span&gt;&lt;/span&gt;&lt;br&gt;&lt;span class=&quot;line&quot;&gt;        OBJC_ASSO&lt;span class=&quot;built_in&quot;&gt;CIATION_RETAIN&lt;/span&gt; = &lt;span class=&quot;number&quot;&gt;01401&lt;/span&gt;,      &lt;span class=&quot;comment&quot;&gt;// 等价于 @property (atomic, strong)&lt;/span&gt;&lt;/span&gt;&lt;br&gt;&lt;span class=&quot;line&quot;&gt;        OBJC_ASSO&lt;span class=&quot;built_in&quot;&gt;CIATION_COPY&lt;/span&gt; = &lt;span class=&quot;number&quot;&gt;01403&lt;/span&gt;         &lt;span class=&quot;comment&quot;&gt;// 等价于 @property (atomic, copy)&lt;/span&gt;&lt;/span&gt;&lt;br&gt;&lt;span class=&quot;line&quot;&gt;&amp;#125;;&lt;/span&gt;&lt;br&gt;&lt;/pre&gt;&lt;/td&gt;&lt;/tr&gt;&lt;/table&gt;&lt;/figure&gt;
-&lt;/li&gt;
-&lt;/ul&gt;
-&lt;/li&gt;
-&lt;/ul&gt;
-&lt;h3 id=&quot;2-获取关联对象&quot;&gt;&lt;a href=&quot;#2-获取关联对象&quot; class=&quot;headerlink&quot; title=&quot;2. 获取关联对象&quot;&gt;&lt;/a&gt;&lt;strong&gt;2. 获取关联对象&lt;/strong&gt;&lt;/h3&gt;&lt;figure class=&quot;highlight objc&quot;&gt;&lt;table&gt;&lt;tr&gt;&lt;td class=&quot;code&quot;&gt;&lt;pre&gt;&lt;span class=&quot;line&quot;&gt;&lt;span class=&quot;keyword&quot;&gt;id&lt;/span&gt; objc_getAssociatedObject(&lt;span class=&quot;keyword&quot;&gt;id&lt;/span&gt; object, &lt;span class=&quot;keyword&quot;&gt;const&lt;/span&gt; &lt;span class=&quot;keyword&quot;&gt;void&lt;/span&gt; *key)&lt;/span&gt;&lt;br&gt;&lt;/pre&gt;&lt;/td&gt;&lt;/tr&gt;&lt;/table&gt;&lt;/figure&gt;
-&lt;ul&gt;
-&lt;li&gt;&lt;code&gt;object&lt;/code&gt; : 获取关联对象的对象, &lt;code&gt;id&lt;/code&gt;类型&lt;/li&gt;
-&lt;li&gt;&lt;code&gt;key&lt;/code&gt; : 关联对象的key, &lt;code&gt;const void *&lt;/code&gt;类型&lt;/li&gt;
-&lt;/ul&gt;
-&lt;h3 id=&quot;3-移除某个对象的所有关联对象&quot;&gt;&lt;a href=&quot;#3-移除某个对象的所有关联对象&quot; class=&quot;headerlink&quot; title=&quot;3. 移除某个对象的所有关联对象&quot;&gt;&lt;/a&gt;&lt;strong&gt;3. 移除某个对象的所有关联对象&lt;/strong&gt;&lt;/h3&gt;&lt;figure class=&quot;highlight objc&quot;&gt;&lt;table&gt;&lt;tr&gt;&lt;td class=&quot;code&quot;&gt;&lt;pre&gt;&lt;span class=&quot;line&quot;&gt;&lt;span class=&quot;keyword&quot;&gt;void&lt;/span&gt; objc_removeAssociatedObjects(&lt;span class=&quot;keyword&quot;&gt;id&lt;/span&gt; object)&lt;/span&gt;&lt;br&gt;&lt;/pre&gt;&lt;/td&gt;&lt;/tr&gt;&lt;/table&gt;&lt;/figure&gt;
-&lt;ul&gt;
-&lt;li&gt;&lt;p&gt;&lt;code&gt;object&lt;/code&gt; : 需要移除所有关联对象的对象, &lt;code&gt;id&lt;/code&gt;类型&lt;/p&gt;
-&lt;p&gt;&lt;em&gt;注: 这个函数是用来移除对象的&lt;strong&gt;所有&lt;/strong&gt;关联对象, 而非移除对象的某个关联对象. 这个函数Apple官方文档是这么说的&lt;/em&gt; :&lt;/p&gt;
-&lt;blockquote&gt;
-&lt;p&gt;You should not use this function for general removal of associations from objects, since it also removes associations that other clients may have added to the object. Typically you should use objc_setAssociatedObject with a nil value to clear an association.&lt;/p&gt;
-&lt;/blockquote&gt;
-&lt;p&gt;&lt;em&gt;意思是如果要移除对象的某个关联对象, 应该使用&lt;code&gt;objc_setAssociatedObject&lt;/code&gt;对参数&lt;code&gt;value&lt;/code&gt;置nil.&lt;/em&gt;&lt;/p&gt;
-&lt;/li&gt;
-&lt;/ul&gt;
-&lt;h3 id=&quot;4-关于参数-key&quot;&gt;&lt;a href=&quot;#4-关于参数-key&quot; class=&quot;headerlink&quot; title=&quot;4. 关于参数-key&quot;&gt;&lt;/a&gt;&lt;strong&gt;4. 关于参数-key&lt;/strong&gt;&lt;/h3&gt;&lt;p&gt;这个key一般只要赋值一个&lt;code&gt;static char&lt;/code&gt;的地址就行, 比如:&lt;br&gt;&lt;figure class=&quot;highlight objc&quot;&gt;&lt;table&gt;&lt;tr&gt;&lt;td class=&quot;code&quot;&gt;&lt;pre&gt;&lt;span class=&quot;line&quot;&gt;&lt;span class=&quot;keyword&quot;&gt;static&lt;/span&gt; &lt;span class=&quot;keyword&quot;&gt;char&lt;/span&gt; kAssociatedObjectKey;&lt;/span&gt;&lt;br&gt;&lt;span class=&quot;line&quot;&gt;&lt;/span&gt;&lt;br&gt;&lt;span class=&quot;line&quot;&gt;objc_getAssociatedObject(&lt;span class=&quot;keyword&quot;&gt;self&lt;/span&gt;, &amp;amp;kAssociatedObjectKey);&lt;/span&gt;&lt;br&gt;&lt;/pre&gt;&lt;/td&gt;&lt;/tr&gt;&lt;/table&gt;&lt;/figure&gt;&lt;/p&gt;
-&lt;p&gt;但是还有更简单的方法, 可以使用&lt;code&gt;selector&lt;/code&gt;:&lt;br&gt;&lt;figure class=&quot;highlight objc&quot;&gt;&lt;table&gt;&lt;tr&gt;&lt;td class=&quot;code&quot;&gt;&lt;pre&gt;&lt;span class=&quot;line&quot;&gt;objc_getAssociatedObject(&lt;span class=&quot;keyword&quot;&gt;self&lt;/span&gt;, &lt;span class=&quot;keyword&quot;&gt;@selector&lt;/span&gt;(associatedObject));&lt;/span&gt;&lt;br&gt;&lt;/pre&gt;&lt;/td&gt;&lt;/tr&gt;&lt;/table&gt;&lt;/figure&gt;&lt;/p&gt;
-&lt;p&gt;或者直接使用&lt;code&gt;_cmd&lt;/code&gt;:&lt;br&gt;&lt;figure class=&quot;highlight objc&quot;&gt;&lt;table&gt;&lt;tr&gt;&lt;td class=&quot;code&quot;&gt;&lt;pre&gt;&lt;span class=&quot;line&quot;&gt;objc_getAssociatedObject(&lt;span class=&quot;keyword&quot;&gt;self&lt;/span&gt;, _cmd);&lt;/span&gt;&lt;br&gt;&lt;/pre&gt;&lt;/td&gt;&lt;/tr&gt;&lt;/table&gt;&lt;/figure&gt;&lt;/p&gt;
-&lt;ul&gt;
-&lt;li&gt;&lt;p&gt;&lt;em&gt;关于&lt;code&gt;_cmd&lt;/code&gt;&lt;/em&gt; :&lt;/p&gt;
-&lt;p&gt;&lt;em&gt;Apple的文档是是这么解释的: &lt;/em&gt;&lt;/p&gt;
-&lt;blockquote&gt;
-&lt;p&gt;The _cmd variable is a hidden argument passed to every method that is the current selector&lt;/p&gt;
-&lt;/blockquote&gt;
-&lt;p&gt;&lt;em&gt;意思就是&lt;code&gt;_cmd&lt;/code&gt;在Objective-C的方法中表示当前方法的&lt;code&gt;selector&lt;/code&gt;, 正如同&lt;code&gt;self&lt;/code&gt;表示调用当前方法的对象(类)一样.&lt;/em&gt;  &lt;/p&gt;
-&lt;/li&gt;
-&lt;/ul&gt;
-&lt;h1 id=&quot;Simple-Example&quot;&gt;&lt;a href=&quot;#Simple-Example&quot; class=&quot;headerlink&quot; title=&quot;Simple Example&quot;&gt;&lt;/a&gt;&lt;strong&gt;Simple Example&lt;/strong&gt;&lt;/h1&gt;&lt;hr&gt;
-&lt;figure class=&quot;highlight objc&quot;&gt;&lt;table&gt;&lt;tr&gt;&lt;td class=&quot;code&quot;&gt;&lt;pre&gt;&lt;span class=&quot;line&quot;&gt;&lt;span class=&quot;class&quot;&gt;&lt;span class=&quot;keyword&quot;&gt;@interface&lt;/span&gt; &lt;span class=&quot;title&quot;&gt;NSObject&lt;/span&gt; (&lt;span class=&quot;title&quot;&gt;AssociatedObject&lt;/span&gt;)&lt;/span&gt;&lt;/span&gt;&lt;br&gt;&lt;span class=&quot;line&quot;&gt;&lt;span class=&quot;keyword&quot;&gt;@property&lt;/span&gt; (&lt;span class=&quot;keyword&quot;&gt;nonatomic&lt;/span&gt;, &lt;span class=&quot;keyword&quot;&gt;strong&lt;/span&gt;) &lt;span class=&quot;keyword&quot;&gt;id&lt;/span&gt; associatedObject;&lt;/span&gt;&lt;br&gt;&lt;span class=&quot;line&quot;&gt;&lt;span class=&quot;keyword&quot;&gt;@end&lt;/span&gt;&lt;/span&gt;&lt;br&gt;&lt;span class=&quot;line&quot;&gt;&lt;/span&gt;&lt;br&gt;&lt;span class=&quot;line&quot;&gt;&lt;span class=&quot;class&quot;&gt;&lt;span class=&quot;keyword&quot;&gt;@implementation&lt;/span&gt; &lt;span class=&quot;title&quot;&gt;NSObject&lt;/span&gt; (&lt;span class=&quot;title&quot;&gt;AssociatedObject&lt;/span&gt;)&lt;/span&gt;&lt;/span&gt;&lt;br&gt;&lt;span class=&quot;line&quot;&gt;&lt;/span&gt;&lt;br&gt;&lt;span class=&quot;line&quot;&gt;&lt;span class=&quot;comment&quot;&gt;/**&lt;/span&gt;&lt;br&gt;&lt;span class=&quot;line&quot;&gt; *  对象的setter&lt;/span&gt;&lt;br&gt;&lt;span class=&quot;line&quot;&gt; */&lt;/span&gt;&lt;/span&gt;&lt;br&gt;&lt;span class=&quot;line&quot;&gt;- (&lt;span class=&quot;keyword&quot;&gt;void&lt;/span&gt;)setAssociatedObject:(&lt;span class=&quot;keyword&quot;&gt;id&lt;/span&gt;)object &amp;#123;&lt;/span&gt;&lt;br&gt;&lt;span class=&quot;line&quot;&gt;     objc_setAssociatedObject(&lt;span class=&quot;keyword&quot;&gt;self&lt;/span&gt;, &lt;span class=&quot;keyword&quot;&gt;@selector&lt;/span&gt;(associatedObject), object, OBJC_ASSO&lt;span class=&quot;built_in&quot;&gt;CIATION_RETAIN_NONATOMIC&lt;/span&gt;);&lt;/span&gt;&lt;br&gt;&lt;span class=&quot;line&quot;&gt;&amp;#125;&lt;/span&gt;&lt;br&gt;&lt;span class=&quot;line&quot;&gt;&lt;/span&gt;&lt;br&gt;&lt;span class=&quot;line&quot;&gt;&lt;span class=&quot;comment&quot;&gt;/**&lt;/span&gt;&lt;br&gt;&lt;span class=&quot;line&quot;&gt; *  对象的getter&lt;/span&gt;&lt;br&gt;&lt;span class=&quot;line&quot;&gt; */&lt;/span&gt;&lt;/span&gt;&lt;br&gt;&lt;span class=&quot;line&quot;&gt;- (&lt;span class=&quot;keyword&quot;&gt;id&lt;/span&gt;)associatedObject &amp;#123;&lt;/span&gt;&lt;br&gt;&lt;span class=&quot;line&quot;&gt;    &lt;span class=&quot;keyword&quot;&gt;return&lt;/span&gt; objc_getAssociatedObject(&lt;span class=&quot;keyword&quot;&gt;self&lt;/span&gt;, &lt;span class=&quot;keyword&quot;&gt;@selector&lt;/span&gt;(associatedObject));&lt;/span&gt;&lt;br&gt;&lt;span class=&quot;line&quot;&gt;&amp;#125;&lt;/span&gt;&lt;br&gt;&lt;span class=&quot;line&quot;&gt;&lt;/span&gt;&lt;br&gt;&lt;span class=&quot;line&quot;&gt;&lt;span class=&quot;keyword&quot;&gt;@end&lt;/span&gt;&lt;/span&gt;&lt;br&gt;&lt;/pre&gt;&lt;/td&gt;&lt;/tr&gt;&lt;/table&gt;&lt;/figure&gt;
-&lt;h1 id=&quot;Tips&quot;&gt;&lt;a href=&quot;#Tips&quot; class=&quot;headerlink&quot; title=&quot;Tips&quot;&gt;&lt;/a&gt;&lt;strong&gt;Tips&lt;/strong&gt;&lt;/h1&gt;&lt;hr&gt;
-&lt;p&gt;最近看到&lt;a href=&quot;http://blog.sunnyxx.com&quot; target=&quot;_blank&quot; rel=&quot;external&quot;&gt;Sunny大神&lt;/a&gt;说的一个关于Associated Object的巧妙运用:&lt;/p&gt;
-&lt;blockquote&gt;
-&lt;p&gt;利用 association 防止多次调进一个方法，总觉得为这种事情去加一个成员变量会让一段逻辑的代码过于分散，喜欢能 self-managed 的函数&lt;/p&gt;
-&lt;/blockquote&gt;
-&lt;figure class=&quot;highlight objc&quot;&gt;&lt;table&gt;&lt;tr&gt;&lt;td class=&quot;code&quot;&gt;&lt;pre&gt;&lt;span class=&quot;line&quot;&gt;&lt;span class=&quot;class&quot;&gt;&lt;span class=&quot;keyword&quot;&gt;@interface&lt;/span&gt; &lt;span class=&quot;title&quot;&gt;Engine&lt;/span&gt; : &lt;span class=&quot;title&quot;&gt;NSObject&lt;/span&gt;&lt;/span&gt;&lt;/span&gt;&lt;br&gt;&lt;span class=&quot;line&quot;&gt;&lt;span class=&quot;keyword&quot;&gt;@end&lt;/span&gt;&lt;/span&gt;&lt;br&gt;&lt;span class=&quot;line&quot;&gt;&lt;/span&gt;&lt;br&gt;&lt;span class=&quot;line&quot;&gt;&lt;span class=&quot;class&quot;&gt;&lt;span class=&quot;keyword&quot;&gt;@implementation&lt;/span&gt; &lt;span class=&quot;title&quot;&gt;Engine&lt;/span&gt;&lt;/span&gt;&lt;/span&gt;&lt;br&gt;&lt;span class=&quot;line&quot;&gt;&lt;/span&gt;&lt;br&gt;&lt;span class=&quot;line&quot;&gt;- (&lt;span class=&quot;keyword&quot;&gt;void&lt;/span&gt;)launch &amp;#123;&lt;/span&gt;&lt;br&gt;&lt;span class=&quot;line&quot;&gt;     &lt;span class=&quot;comment&quot;&gt;// 在对象生命周期内, 不增加 flag 属性的情况下, 放置多次调进这个方法&lt;/span&gt;&lt;/span&gt;&lt;br&gt;&lt;span class=&quot;line&quot;&gt;     &lt;span class=&quot;keyword&quot;&gt;if&lt;/span&gt; (objc_getAssociatedObject(&lt;span class=&quot;keyword&quot;&gt;self&lt;/span&gt;, _cmd)) &lt;span class=&quot;keyword&quot;&gt;return&lt;/span&gt;;&lt;/span&gt;&lt;br&gt;&lt;span class=&quot;line&quot;&gt;     &lt;span class=&quot;keyword&quot;&gt;else&lt;/span&gt; objc_setAssociatedObject(&lt;span class=&quot;keyword&quot;&gt;self&lt;/span&gt;, _cmd, &lt;span class=&quot;string&quot;&gt;@&quot;Launched&quot;&lt;/span&gt;, OBJC_ASSO&lt;span class=&quot;built_in&quot;&gt;CIATION_RETAIN&lt;/span&gt;);&lt;/span&gt;&lt;br&gt;&lt;span class=&quot;line&quot;&gt;&lt;/span&gt;&lt;br&gt;&lt;span class=&quot;line&quot;&gt;     &lt;span class=&quot;built_in&quot;&gt;NSLog&lt;/span&gt;(&lt;span class=&quot;string&quot;&gt;@&quot;launch only once&quot;&lt;/span&gt;);&lt;/span&gt;&lt;br&gt;&lt;span class=&quot;line&quot;&gt;&amp;#125;&lt;/span&gt;&lt;br&gt;&lt;span class=&quot;line&quot;&gt;&lt;/span&gt;&lt;br&gt;&lt;span class=&quot;line&quot;&gt;&lt;span class=&quot;keyword&quot;&gt;@end&lt;/span&gt;&lt;/span&gt;&lt;br&gt;&lt;/pre&gt;&lt;/td&gt;&lt;/tr&gt;&lt;/table&gt;&lt;/figure&gt;
-&lt;p&gt;这个做法相当于是动态的添加了flag属性, 相对与直接使用flag属性来说简直是优雅多了. 我们甚至可以把这两行代码写作一个宏, 更方便于每次的使用.&lt;/p&gt;
-&lt;h3 id=&quot;参考&quot;&gt;&lt;a href=&quot;#参考&quot; class=&quot;headerlink&quot; title=&quot;参考&quot;&gt;&lt;/a&gt;参考&lt;/h3&gt;&lt;p&gt;1.&lt;a href=&quot;http://nshipster.com/associated-objects/&quot; target=&quot;_blank&quot; rel=&quot;external&quot;&gt;Associated Objects&lt;/a&gt; by Mattt&lt;br&gt;2.&lt;a href=&quot;https://developer.apple.com/library/mac/documentation/Cocoa/Reference/ObjCRuntimeRef/index.html#//apple_ref/c/func/objc_getAssociatedObject&quot; target=&quot;_blank&quot; rel=&quot;external&quot;&gt;Objective-C Runtime Reference&lt;/a&gt; by Apple&lt;/p&gt;
-</content>
-    
-    <summary type="html">
-    
-      &lt;p&gt;分类(&lt;code&gt;category&lt;/code&gt;)在iOS开发中的应用非常广泛, 优点譬如给现有的类拓展更多的方法、对一个类的多种功能进行局部化封装等等, 都是非常方便的. 但是也有一个痛点, 就是分类中无法添加属性. 但是&lt;code&gt;Objective-C&lt;/code&gt;的&lt;code&gt;runtime&lt;/code&gt;中有许多黑科技可以帮我们实现很多常规方法下几乎不可能的事情–比如在分类中添加属性.这个黑科技叫做&lt;strong&gt;关联对象&lt;/strong&gt;(&lt;code&gt;Associated Objects&lt;/code&gt;). &lt;/p&gt;
-&lt;h1 id=&quot;Associated-Objects&quot;&gt;&lt;a href=&quot;#Associated-Objects&quot; class=&quot;headerlink&quot; title=&quot;Associated Objects&quot;&gt;&lt;/a&gt;&lt;strong&gt;Associated Objects&lt;/strong&gt;&lt;/h1&gt;&lt;hr&gt;
-&lt;p&gt;关联对象相关的函数有以下3个:&lt;/p&gt;
-&lt;ul&gt;
-&lt;li&gt;&lt;code&gt;objc_setAssociatedObject&lt;/code&gt; : 设置关联对象&lt;/li&gt;
-&lt;li&gt;&lt;code&gt;objc_getAssociatedObject&lt;/code&gt; : 获取关联对象&lt;/li&gt;
-&lt;li&gt;&lt;code&gt;objc_removeAssociatedObjects&lt;/code&gt; : 移除某个对象的所有关联对象&lt;/li&gt;
-&lt;/ul&gt;
-    
-    </summary>
-    
-      <category term="iOS开发" scheme="http://zzyspace.github.io/categories/iOS%E5%BC%80%E5%8F%91/"/>
-    
-    
-      <category term="runtime" scheme="http://zzyspace.github.io/tags/runtime/"/>
-    
-  </entry>
-  
-  <entry>
-    <title>【iOS开发】静态库导致的运行时崩溃问题</title>
-    <link href="http://zzyspace.github.io/2015/10/18/crash-with-static-library/"/>
-    <id>http://zzyspace.github.io/2015/10/18/crash-with-static-library/</id>
-    <published>2015-10-18T12:45:33.000Z</published>
-    <updated>2016-08-31T08:53:34.000Z</updated>
-    
-    <content type="html">&lt;p&gt;使用其他一些第三方静态库时, 如果没有注意按照文档中的提示进行配置, 很容易在程序运行过程中因 “unrecorgnized selector send to instance xxx” 的异常而崩溃. 而且可以发现, 导致崩溃的方法都是Category中的方法.&lt;br&gt;在&lt;a href=&quot;https://developer.apple.com/library/mac/qa/qa1490/_index.html&quot; target=&quot;_blank&quot; rel=&quot;external&quot;&gt;苹果官方文档&lt;/a&gt;中解释到: &lt;/p&gt;
-&lt;blockquote&gt;
-&lt;p&gt;The dynamic nature of Objective-C complicates things slightly. Because the code that implements a method is not determined until the method is actually called, Objective-C does not define linker symbols for methods. Linker symbols are only defined for classes.&lt;br&gt;Since categories are a collection of methods, using a category’s method does not generate an undefined symbol. This means the linker does not know to load an object file defining the category, if the class itself is already defined. This causes the same “selector not recognized” runtime exception you would see for any unimplemented method.&lt;/p&gt;
-&lt;/blockquote&gt;
-&lt;p&gt;翻译过来, 就是因为Objective-C的动态特性使得方法是在运行时才确定的, 所以链接的时候不会为方法(Method)定义连接符号, 而是为类(Class)定义连接符号. 这样当在一个静态库中使用类别来扩展已有类的时候，链接器不知道如何把类原有的方法和类别中的方法整合起来, 所以就导致运行的时候Category的方法无法被找到抛出异常.&lt;/p&gt;
-&lt;a id=&quot;more&quot;&gt;&lt;/a&gt;
-&lt;h1 id=&quot;解决方法-Other-Linker-Flags&quot;&gt;&lt;a href=&quot;#解决方法-Other-Linker-Flags&quot; class=&quot;headerlink&quot; title=&quot;解决方法: Other Linker Flags&quot;&gt;&lt;/a&gt;&lt;strong&gt;解决方法&lt;/strong&gt;: Other Linker Flags&lt;/h1&gt;&lt;hr&gt;
-&lt;ul&gt;
-&lt;li&gt;&lt;h3 id=&quot;ObjC&quot;&gt;&lt;a href=&quot;#ObjC&quot; class=&quot;headerlink&quot; title=&quot;-ObjC&quot;&gt;&lt;/a&gt;&lt;strong&gt;-ObjC&lt;/strong&gt;&lt;/h3&gt;&lt;/li&gt;
-&lt;/ul&gt;
-&lt;p&gt;&lt;a href=&quot;https://developer.apple.com/library/mac/qa/qa1490/_index.html&quot; target=&quot;_blank&quot; rel=&quot;external&quot;&gt;苹果官方文档&lt;/a&gt;对这个flag的解释是这样的:&lt;/p&gt;
-&lt;blockquote&gt;
-&lt;p&gt;Passing the -ObjC option to the linker causes it to load all members of static libraries that implement any Objective-C class or category. This will pickup any category method implementations. But it can make the resulting executable larger, and may pickup unnecessary objects. For this reason it is not on by default.&lt;/p&gt;
-&lt;/blockquote&gt;
-&lt;p&gt;  &lt;code&gt;-ObjC&lt;/code&gt;这个标志选项会让链接器加载静态库所有的Objective-C的类和Category, 这样就能把Category中实现的方法整合起来. 但是由于这样做会使可执行文件变大, 也会整合一些用不到的对象, 所以才没有默认使用-ObjC标志, 而是需要我们手动添加.&lt;/p&gt;
-&lt;ul&gt;
-&lt;li&gt;&lt;h3 id=&quot;all-load&quot;&gt;&lt;a href=&quot;#all-load&quot; class=&quot;headerlink&quot; title=&quot;-all_load&quot;&gt;&lt;/a&gt;&lt;strong&gt;-all_load&lt;/strong&gt;&lt;/h3&gt;&lt;/li&gt;
-&lt;/ul&gt;
-&lt;p&gt;加载所有静态库中的文件. 相比&lt;code&gt;-ObjC&lt;/code&gt;, 不同点就是&lt;code&gt;-all_load&lt;/code&gt;会将所有的(包括非Objective-C)文件都整合到静态库中.&lt;br&gt;&lt;em&gt;&lt;strong&gt;*注意&lt;/strong&gt; : 假如你使用了不止一个静态库，然后又使用了这个参数，那么你很有可能会遇到&lt;code&gt;duplicate symbol&lt;/code&gt;错误，因为不同的库文件里面可能会有相同的目标文件.&lt;/em&gt;&lt;/p&gt;
-&lt;ul&gt;
-&lt;li&gt;&lt;h3 id=&quot;force-load-path-to-archive&quot;&gt;&lt;a href=&quot;#force-load-path-to-archive&quot; class=&quot;headerlink&quot; title=&quot;-force_load (path_to_archive)&quot;&gt;&lt;/a&gt;&lt;strong&gt;-force_load (path_to_archive)&lt;/strong&gt;&lt;/h3&gt;&lt;/li&gt;
-&lt;/ul&gt;
-&lt;p&gt;加载指定路径的静态库. 相比&lt;code&gt;-all_load&lt;/code&gt;, 不同点就是&lt;code&gt;-force_load&lt;/code&gt;只是完全加载了一个库文件，不影响其余库文件的按需加载.&lt;/p&gt;
-&lt;h1 id=&quot;补充&quot;&gt;&lt;a href=&quot;#补充&quot; class=&quot;headerlink&quot; title=&quot;补充:&quot;&gt;&lt;/a&gt;&lt;strong&gt;补充:&lt;/strong&gt;&lt;/h1&gt;&lt;hr&gt;
-&lt;p&gt;使用&lt;code&gt;-all_load&lt;/code&gt;或者&lt;code&gt;-force_load&lt;/code&gt;大部分原因是因为&lt;strong&gt;Xcode4.2之前&lt;/strong&gt;的版本的链接器的bug, 在64位iOS应用环境下当静态库中只有分类而没有类的时候, &lt;code&gt;-ObjC&lt;/code&gt;参数就会失效了. 所以为了兼容&lt;strong&gt;Xcode4.2之前&lt;/strong&gt;的版本, 有两种解决方法:&lt;/p&gt;
-&lt;h4 id=&quot;1-静态库使用者&quot;&gt;&lt;a href=&quot;#1-静态库使用者&quot; class=&quot;headerlink&quot; title=&quot;1. 静态库使用者:&quot;&gt;&lt;/a&gt;&lt;strong&gt;1. 静态库使用者:&lt;/strong&gt;&lt;/h4&gt;&lt;p&gt;使用&lt;code&gt;-all_load&lt;/code&gt;或者&lt;code&gt;-force_load&lt;/code&gt;代替&lt;code&gt;-ObjC&lt;/code&gt;.&lt;/p&gt;
-&lt;h4 id=&quot;2-静态库开发者&quot;&gt;&lt;a href=&quot;#2-静态库开发者&quot; class=&quot;headerlink&quot; title=&quot;2. 静态库开发者:&quot;&gt;&lt;/a&gt;&lt;strong&gt;2. 静态库开发者:&lt;/strong&gt;&lt;/h4&gt;&lt;p&gt;可以通过在分类中添加一个类的声明和实现, 使得Category源文件中不仅仅只有分类, 同时还有类存在来避免链接器的bug, 从而避免了&lt;code&gt;-ObjC&lt;/code&gt;标志失效的麻烦:&lt;/p&gt;
-&lt;figure class=&quot;highlight objc&quot;&gt;&lt;table&gt;&lt;tr&gt;&lt;td class=&quot;code&quot;&gt;&lt;pre&gt;&lt;span class=&quot;line&quot;&gt;&lt;span class=&quot;comment&quot;&gt;/**&lt;/span&gt;&lt;br&gt;&lt;span class=&quot;line&quot;&gt; *   NSObject+Addition.m&lt;/span&gt;&lt;br&gt;&lt;span class=&quot;line&quot;&gt; */&lt;/span&gt;&lt;/span&gt;&lt;br&gt;&lt;span class=&quot;line&quot;&gt;&lt;/span&gt;&lt;br&gt;&lt;span class=&quot;line&quot;&gt;&lt;span class=&quot;comment&quot;&gt;// add a dummy class&lt;/span&gt;&lt;/span&gt;&lt;br&gt;&lt;span class=&quot;line&quot;&gt;&lt;span class=&quot;class&quot;&gt;&lt;span class=&quot;keyword&quot;&gt;@interface&lt;/span&gt; &lt;span class=&quot;title&quot;&gt;DUMMY_CLASS_NSObject_Addition&lt;/span&gt; : &lt;span class=&quot;title&quot;&gt;NSObject&lt;/span&gt;&lt;/span&gt;&lt;/span&gt;&lt;br&gt;&lt;span class=&quot;line&quot;&gt;&lt;span class=&quot;keyword&quot;&gt;@end&lt;/span&gt;&lt;/span&gt;&lt;br&gt;&lt;span class=&quot;line&quot;&gt;&lt;span class=&quot;class&quot;&gt;&lt;span class=&quot;keyword&quot;&gt;@implementation&lt;/span&gt; &lt;span class=&quot;title&quot;&gt;DUMMY_CLASS_NSObject_Addition&lt;/span&gt;&lt;/span&gt;&lt;/span&gt;&lt;br&gt;&lt;span class=&quot;line&quot;&gt;&lt;span class=&quot;keyword&quot;&gt;@end&lt;/span&gt;&lt;/span&gt;&lt;br&gt;&lt;span class=&quot;line&quot;&gt;&lt;/span&gt;&lt;br&gt;&lt;span class=&quot;line&quot;&gt;&lt;span class=&quot;class&quot;&gt;&lt;span class=&quot;keyword&quot;&gt;@implementation&lt;/span&gt; &lt;span class=&quot;title&quot;&gt;NSObject&lt;/span&gt; (&lt;span class=&quot;title&quot;&gt;Addition&lt;/span&gt;)&lt;/span&gt;&lt;/span&gt;&lt;br&gt;&lt;span class=&quot;line&quot;&gt;&lt;span class=&quot;comment&quot;&gt;// some category methods...&lt;/span&gt;&lt;/span&gt;&lt;br&gt;&lt;span class=&quot;line&quot;&gt;&lt;span class=&quot;keyword&quot;&gt;@end&lt;/span&gt;&lt;/span&gt;&lt;br&gt;&lt;/pre&gt;&lt;/td&gt;&lt;/tr&gt;&lt;/table&gt;&lt;/figure&gt;
-&lt;p&gt;但是&lt;strong&gt;Xcode4.2之后&lt;/strong&gt;, 只要使用&lt;code&gt;-ObjC&lt;/code&gt;即可. 具体可以参看stackoverflow的&lt;a href=&quot;http://stackoverflow.com/questions/2567498/objective-c-categories-in-static-library/2615407#2615407&quot; target=&quot;_blank&quot; rel=&quot;external&quot;&gt;这个回答&lt;/a&gt;.&lt;/p&gt;
-</content>
-    
-    <summary type="html">
-    
-      &lt;p&gt;使用其他一些第三方静态库时, 如果没有注意按照文档中的提示进行配置, 很容易在程序运行过程中因 “unrecorgnized selector send to instance xxx” 的异常而崩溃. 而且可以发现, 导致崩溃的方法都是Category中的方法.&lt;br&gt;在&lt;a href=&quot;https://developer.apple.com/library/mac/qa/qa1490/_index.html&quot;&gt;苹果官方文档&lt;/a&gt;中解释到: &lt;/p&gt;
-&lt;blockquote&gt;
-&lt;p&gt;The dynamic nature of Objective-C complicates things slightly. Because the code that implements a method is not determined until the method is actually called, Objective-C does not define linker symbols for methods. Linker symbols are only defined for classes.&lt;br&gt;Since categories are a collection of methods, using a category’s method does not generate an undefined symbol. This means the linker does not know to load an object file defining the category, if the class itself is already defined. This causes the same “selector not recognized” runtime exception you would see for any unimplemented method.&lt;/p&gt;
-&lt;/blockquote&gt;
-&lt;p&gt;翻译过来, 就是因为Objective-C的动态特性使得方法是在运行时才确定的, 所以链接的时候不会为方法(Method)定义连接符号, 而是为类(Class)定义连接符号. 这样当在一个静态库中使用类别来扩展已有类的时候，链接器不知道如何把类原有的方法和类别中的方法整合起来, 所以就导致运行的时候Category的方法无法被找到抛出异常.&lt;/p&gt;
-    
-    </summary>
-    
-      <category term="iOS开发" scheme="http://zzyspace.github.io/categories/iOS%E5%BC%80%E5%8F%91/"/>
-    
-    
-      <category term="Other Linker Flags" scheme="http://zzyspace.github.io/tags/Other-Linker-Flags/"/>
-    
-  </entry>
-  
-  <entry>
     <title>【iOS越狱】使用OpenSSH调试可执行文件</title>
-    <link href="http://zzyspace.github.io/2015/10/12/openssh-debug-executable-file/"/>
-    <id>http://zzyspace.github.io/2015/10/12/openssh-debug-executable-file/</id>
-    <published>2015-10-11T16:04:56.000Z</published>
-    <updated>2016-08-31T08:53:34.000Z</updated>
+    <link href="http://zzyspace.github.io/2015/08/08/openssh-debug-executable-file/"/>
+    <id>http://zzyspace.github.io/2015/08/08/openssh-debug-executable-file/</id>
+    <published>2015-08-08T09:43:23.000Z</published>
+    <updated>2016-09-07T08:05:24.000Z</updated>
     
-    <content type="html">&lt;h1 id=&quot;一-连接设备&quot;&gt;&lt;a href=&quot;#一-连接设备&quot; class=&quot;headerlink&quot; title=&quot;一. 连接设备&quot;&gt;&lt;/a&gt;&lt;strong&gt;一. 连接设备&lt;/strong&gt;&lt;/h1&gt;&lt;hr&gt;
-&lt;h3 id=&quot;1-连接&quot;&gt;&lt;a href=&quot;#1-连接&quot; class=&quot;headerlink&quot; title=&quot;1. 连接&quot;&gt;&lt;/a&gt;&lt;strong&gt;1. 连接&lt;/strong&gt;&lt;/h3&gt;&lt;p&gt;通过USB连接:&lt;/p&gt;
+    <content type="html">&lt;h1 id=&quot;连接设备&quot;&gt;&lt;a href=&quot;#连接设备&quot; class=&quot;headerlink&quot; title=&quot;连接设备&quot;&gt;&lt;/a&gt;连接设备&lt;/h1&gt;&lt;hr&gt;
+&lt;h3 id=&quot;1-连接&quot;&gt;&lt;a href=&quot;#1-连接&quot; class=&quot;headerlink&quot; title=&quot;1. 连接&quot;&gt;&lt;/a&gt;1. 连接&lt;/h3&gt;&lt;p&gt;通过USB连接:&lt;/p&gt;
 &lt;figure class=&quot;highlight vim&quot;&gt;&lt;table&gt;&lt;tr&gt;&lt;td class=&quot;code&quot;&gt;&lt;pre&gt;&lt;span class=&quot;line&quot;&gt;$ ssh -&lt;span class=&quot;keyword&quot;&gt;p&lt;/span&gt; &lt;span class=&quot;number&quot;&gt;2222&lt;/span&gt; root@localhost&lt;/span&gt;&lt;br&gt;&lt;/pre&gt;&lt;/td&gt;&lt;/tr&gt;&lt;/table&gt;&lt;/figure&gt;
+&lt;a id=&quot;more&quot;&gt;&lt;/a&gt;
 &lt;p&gt;通过局域网连接:&lt;/p&gt;
 &lt;figure class=&quot;highlight vim&quot;&gt;&lt;table&gt;&lt;tr&gt;&lt;td class=&quot;code&quot;&gt;&lt;pre&gt;&lt;span class=&quot;line&quot;&gt;$ ssh root@&lt;span class=&quot;number&quot;&gt;192.168&lt;/span&gt;.&lt;span class=&quot;number&quot;&gt;9.126&lt;/span&gt;&lt;/span&gt;&lt;br&gt;&lt;/pre&gt;&lt;/td&gt;&lt;/tr&gt;&lt;/table&gt;&lt;/figure&gt;
-&lt;h3 id=&quot;2-输入密码&quot;&gt;&lt;a href=&quot;#2-输入密码&quot; class=&quot;headerlink&quot; title=&quot;2. 输入密码&quot;&gt;&lt;/a&gt;&lt;strong&gt;2. 输入密码&lt;/strong&gt;&lt;/h3&gt;&lt;p&gt;连接后, 终端会提示:&lt;/p&gt;
+&lt;h3 id=&quot;2-输入密码&quot;&gt;&lt;a href=&quot;#2-输入密码&quot; class=&quot;headerlink&quot; title=&quot;2. 输入密码&quot;&gt;&lt;/a&gt;2. 输入密码&lt;/h3&gt;&lt;p&gt;连接后, 终端会提示:&lt;/p&gt;
 &lt;figure class=&quot;highlight&quot;&gt;&lt;table&gt;&lt;tr&gt;&lt;td class=&quot;code&quot;&gt;&lt;pre&gt;&lt;span class=&quot;line&quot;&gt;The authenticity of host &#39;192.168.9.126 (192.168.9.126)&#39; can&#39;t be established.&lt;/span&gt;&lt;br&gt;&lt;span class=&quot;line&quot;&gt;RSA key fingerprint is xxxx.&lt;/span&gt;&lt;br&gt;&lt;span class=&quot;line&quot;&gt;Are you sure you want to continue connecting (yes/no)?&lt;/span&gt;&lt;br&gt;&lt;/pre&gt;&lt;/td&gt;&lt;/tr&gt;&lt;/table&gt;&lt;/figure&gt;
 &lt;p&gt;此时输入yes同意连接, 然后根据提示输入OpenSSH的默认密码:&lt;code&gt;alpine&lt;/code&gt;. 到此已经成功连接iOS设备, 并进入了iOS设备的&lt;code&gt;/var/root&lt;/code&gt;文件夹下.&lt;/p&gt;
-&lt;a id=&quot;more&quot;&gt;&lt;/a&gt;
-&lt;h1 id=&quot;二-传输可执行文件&quot;&gt;&lt;a href=&quot;#二-传输可执行文件&quot; class=&quot;headerlink&quot; title=&quot;二. 传输可执行文件&quot;&gt;&lt;/a&gt;&lt;strong&gt;二. 传输可执行文件&lt;/strong&gt;&lt;/h1&gt;&lt;hr&gt;
+&lt;h1 id=&quot;传输可执行文件&quot;&gt;&lt;a href=&quot;#传输可执行文件&quot; class=&quot;headerlink&quot; title=&quot;传输可执行文件&quot;&gt;&lt;/a&gt;传输可执行文件&lt;/h1&gt;&lt;hr&gt;
 &lt;p&gt; 从服务器上下载文件&lt;/p&gt;
 &lt;figure class=&quot;highlight&quot;&gt;&lt;table&gt;&lt;tr&gt;&lt;td class=&quot;code&quot;&gt;&lt;pre&gt;&lt;span class=&quot;line&quot;&gt;$ scp username@servername:/path/filename&lt;/span&gt;&lt;br&gt;&lt;/pre&gt;&lt;/td&gt;&lt;/tr&gt;&lt;/table&gt;&lt;/figure&gt;
 &lt;p&gt;上传本地文件到服务器&lt;/p&gt;
 &lt;figure class=&quot;highlight&quot;&gt;&lt;table&gt;&lt;tr&gt;&lt;td class=&quot;code&quot;&gt;&lt;pre&gt;&lt;span class=&quot;line&quot;&gt;$ scp /path/filename username@servername:/path&lt;/span&gt;&lt;br&gt;&lt;/pre&gt;&lt;/td&gt;&lt;/tr&gt;&lt;/table&gt;&lt;/figure&gt;
 &lt;p&gt;&lt;strong&gt;注意&lt;/strong&gt;: 执行这两个命令所在的目录为Mac而不是iPhone&lt;/p&gt;
-&lt;h1 id=&quot;三-执行可执行文件&quot;&gt;&lt;a href=&quot;#三-执行可执行文件&quot; class=&quot;headerlink&quot; title=&quot;三. 执行可执行文件&quot;&gt;&lt;/a&gt;&lt;strong&gt;三. 执行可执行文件&lt;/strong&gt;&lt;/h1&gt;&lt;hr&gt;
+&lt;h1 id=&quot;执行可执行文件&quot;&gt;&lt;a href=&quot;#执行可执行文件&quot; class=&quot;headerlink&quot; title=&quot;执行可执行文件&quot;&gt;&lt;/a&gt;执行可执行文件&lt;/h1&gt;&lt;hr&gt;
 &lt;p&gt;传完可执行文件后, 此时可执行文件并没有权限, 所以要执行以下命令给权限:&lt;/p&gt;
 &lt;figure class=&quot;highlight vim&quot;&gt;&lt;table&gt;&lt;tr&gt;&lt;td class=&quot;code&quot;&gt;&lt;pre&gt;&lt;span class=&quot;line&quot;&gt;chmod &lt;span class=&quot;keyword&quot;&gt;a&lt;/span&gt;+&lt;span class=&quot;keyword&quot;&gt;x&lt;/span&gt; ExecutableFile&lt;/span&gt;&lt;br&gt;&lt;/pre&gt;&lt;/td&gt;&lt;/tr&gt;&lt;/table&gt;&lt;/figure&gt;
 &lt;p&gt;执行当前目录下的可执行文件:&lt;/p&gt;
 &lt;figure class=&quot;highlight vim&quot;&gt;&lt;table&gt;&lt;tr&gt;&lt;td class=&quot;code&quot;&gt;&lt;pre&gt;&lt;span class=&quot;line&quot;&gt;./ExecutableFile&lt;/span&gt;&lt;br&gt;&lt;/pre&gt;&lt;/td&gt;&lt;/tr&gt;&lt;/table&gt;&lt;/figure&gt;
-&lt;h1 id=&quot;白苹果的解决方案&quot;&gt;&lt;a href=&quot;#白苹果的解决方案&quot; class=&quot;headerlink&quot; title=&quot;白苹果的解决方案&quot;&gt;&lt;/a&gt;&lt;strong&gt;白苹果的解决方案&lt;/strong&gt;&lt;/h1&gt;&lt;hr&gt;
+&lt;h1 id=&quot;白苹果的解决方案&quot;&gt;&lt;a href=&quot;#白苹果的解决方案&quot; class=&quot;headerlink&quot; title=&quot;白苹果的解决方案&quot;&gt;&lt;/a&gt;白苹果的解决方案&lt;/h1&gt;&lt;hr&gt;
 &lt;p&gt;一般情况下, 只要没有动到系统文件, 白苹果之后还是有救的, 可以进入安全模式. 安全模式下会禁用所有插件, 如果能成功进入安全模式, 手机就能再次连接电脑了, 同时就有可能恢复之前错误的操作.&lt;/p&gt;
-&lt;h3 id=&quot;进入安全模式的方法&quot;&gt;&lt;a href=&quot;#进入安全模式的方法&quot; class=&quot;headerlink&quot; title=&quot;进入安全模式的方法:&quot;&gt;&lt;/a&gt;&lt;strong&gt;进入安全模式的方法:&lt;/strong&gt;&lt;/h3&gt;&lt;ol&gt;
-&lt;li&gt;同时按住home键和电源键&lt;/li&gt;
-&lt;li&gt;重新出现苹果标志的时候, 放开home键和电源键, 然后按住音量+键不放&lt;/li&gt;
-&lt;li&gt;正常情况下就可以进入安全模式了&lt;/li&gt;
-&lt;/ol&gt;
+&lt;h3 id=&quot;进入安全模式的方法&quot;&gt;&lt;a href=&quot;#进入安全模式的方法&quot; class=&quot;headerlink&quot; title=&quot;进入安全模式的方法:&quot;&gt;&lt;/a&gt;进入安全模式的方法:&lt;/h3&gt;&lt;blockquote&gt;
+&lt;p&gt;1.同时按住home键和电源键&lt;br&gt;2.重新出现苹果标志的时候, 放开home键和电源键, 然后按住音量+键不放&lt;br&gt;3.正常情况下就可以进入安全模式了&lt;/p&gt;
+&lt;/blockquote&gt;
 </content>
     
     <summary type="html">
     
-      &lt;h1 id=&quot;一-连接设备&quot;&gt;&lt;a href=&quot;#一-连接设备&quot; class=&quot;headerlink&quot; title=&quot;一. 连接设备&quot;&gt;&lt;/a&gt;&lt;strong&gt;一. 连接设备&lt;/strong&gt;&lt;/h1&gt;&lt;hr&gt;
-&lt;h3 id=&quot;1-连接&quot;&gt;&lt;a href=&quot;#1-连接&quot; class=&quot;headerlink&quot; title=&quot;1. 连接&quot;&gt;&lt;/a&gt;&lt;strong&gt;1. 连接&lt;/strong&gt;&lt;/h3&gt;&lt;p&gt;通过USB连接:&lt;/p&gt;
+      &lt;h1 id=&quot;连接设备&quot;&gt;&lt;a href=&quot;#连接设备&quot; class=&quot;headerlink&quot; title=&quot;连接设备&quot;&gt;&lt;/a&gt;连接设备&lt;/h1&gt;&lt;hr&gt;
+&lt;h3 id=&quot;1-连接&quot;&gt;&lt;a href=&quot;#1-连接&quot; class=&quot;headerlink&quot; title=&quot;1. 连接&quot;&gt;&lt;/a&gt;1. 连接&lt;/h3&gt;&lt;p&gt;通过USB连接:&lt;/p&gt;
 &lt;figure class=&quot;highlight vim&quot;&gt;&lt;table&gt;&lt;tr&gt;&lt;td class=&quot;code&quot;&gt;&lt;pre&gt;&lt;span class=&quot;line&quot;&gt;$ ssh -&lt;span class=&quot;keyword&quot;&gt;p&lt;/span&gt; &lt;span class=&quot;number&quot;&gt;2222&lt;/span&gt; root@localhost&lt;/span&gt;&lt;br&gt;&lt;/pre&gt;&lt;/td&gt;&lt;/tr&gt;&lt;/table&gt;&lt;/figure&gt;
-&lt;p&gt;通过局域网连接:&lt;/p&gt;
-&lt;figure class=&quot;highlight vim&quot;&gt;&lt;table&gt;&lt;tr&gt;&lt;td class=&quot;code&quot;&gt;&lt;pre&gt;&lt;span class=&quot;line&quot;&gt;$ ssh root@&lt;span class=&quot;number&quot;&gt;192.168&lt;/span&gt;.&lt;span class=&quot;number&quot;&gt;9.126&lt;/span&gt;&lt;/span&gt;&lt;br&gt;&lt;/pre&gt;&lt;/td&gt;&lt;/tr&gt;&lt;/table&gt;&lt;/figure&gt;
-&lt;h3 id=&quot;2-输入密码&quot;&gt;&lt;a href=&quot;#2-输入密码&quot; class=&quot;headerlink&quot; title=&quot;2. 输入密码&quot;&gt;&lt;/a&gt;&lt;strong&gt;2. 输入密码&lt;/strong&gt;&lt;/h3&gt;&lt;p&gt;连接后, 终端会提示:&lt;/p&gt;
-&lt;figure class=&quot;highlight&quot;&gt;&lt;table&gt;&lt;tr&gt;&lt;td class=&quot;code&quot;&gt;&lt;pre&gt;&lt;span class=&quot;line&quot;&gt;The authenticity of host &#39;192.168.9.126 (192.168.9.126)&#39; can&#39;t be established.&lt;/span&gt;&lt;br&gt;&lt;span class=&quot;line&quot;&gt;RSA key fingerprint is xxxx.&lt;/span&gt;&lt;br&gt;&lt;span class=&quot;line&quot;&gt;Are you sure you want to continue connecting (yes/no)?&lt;/span&gt;&lt;br&gt;&lt;/pre&gt;&lt;/td&gt;&lt;/tr&gt;&lt;/table&gt;&lt;/figure&gt;
-&lt;p&gt;此时输入yes同意连接, 然后根据提示输入OpenSSH的默认密码:&lt;code&gt;alpine&lt;/code&gt;. 到此已经成功连接iOS设备, 并进入了iOS设备的&lt;code&gt;/var/root&lt;/code&gt;文件夹下.&lt;/p&gt;
     
     </summary>
     
@@ -572,22 +584,30 @@
   </entry>
   
   <entry>
-    <title>【iOS Tip】将图片、声音、nib(xib)等资源打包为Bundle</title>
+    <title>【iOS Tip】将资源打包为Bundle</title>
     <link href="http://zzyspace.github.io/2015/05/21/package-bundle/"/>
     <id>http://zzyspace.github.io/2015/05/21/package-bundle/</id>
     <published>2015-05-21T15:55:58.000Z</published>
-    <updated>2016-08-31T08:53:34.000Z</updated>
+    <updated>2016-09-07T08:03:24.000Z</updated>
     
     <content type="html">&lt;p&gt;在编写第三方库时, 如果需要用到一些图片、声音资源, 甚至是nib(xib), 就需要把这些资源打包成一个bundle. 一开始在其他第三方库中看到bundle的时候, 觉得它好像是一个很高级的东西. 但是事实上, bundle就是一个普通得不能再普通的文件夹, 只是加上了&lt;code&gt;.bundle&lt;/code&gt;后缀, 一下子就高大上了起来.&lt;br&gt;加上&lt;code&gt;.bundle&lt;/code&gt;后缀的文件夹, 会被Mac识别为一个包. 将文件夹以包的形式存在, 可以当作一个整体方便地移动, 也可以让别人不至于不小心改动到库所依赖的资源. &lt;/p&gt;
-&lt;h1 id=&quot;步骤&quot;&gt;&lt;a href=&quot;#步骤&quot; class=&quot;headerlink&quot; title=&quot;步骤&quot;&gt;&lt;/a&gt;&lt;strong&gt;步骤&lt;/strong&gt;&lt;/h1&gt;&lt;p&gt;1.将资源放到文件夹中, 重命名文件夹为&lt;code&gt;xxx.bundle&lt;/code&gt;&lt;/p&gt;
-&lt;p&gt;2.若bundle中有使用到xib文件, 需要使用命令把xib文件转换为nib文件:&lt;br&gt;&lt;figure class=&quot;highlight vim&quot;&gt;&lt;table&gt;&lt;tr&gt;&lt;td class=&quot;code&quot;&gt;&lt;pre&gt;&lt;span class=&quot;line&quot;&gt;$ ibtool --errors --warnings --output-format human-readable-text --compile &lt;span class=&quot;keyword&quot;&gt;file&lt;/span&gt;.nib &lt;span class=&quot;keyword&quot;&gt;file&lt;/span&gt;.xib&lt;/span&gt;&lt;br&gt;&lt;/pre&gt;&lt;/td&gt;&lt;/tr&gt;&lt;/table&gt;&lt;/figure&gt;&lt;/p&gt;
+&lt;a id=&quot;more&quot;&gt;&lt;/a&gt;
+&lt;h1 id=&quot;步骤&quot;&gt;&lt;a href=&quot;#步骤&quot; class=&quot;headerlink&quot; title=&quot;步骤&quot;&gt;&lt;/a&gt;步骤&lt;/h1&gt;&lt;hr&gt;
+&lt;ul&gt;
+&lt;li&gt;&lt;h3 id=&quot;1-将资源放到文件夹中-重命名文件夹为xxx-bundle&quot;&gt;&lt;a href=&quot;#1-将资源放到文件夹中-重命名文件夹为xxx-bundle&quot; class=&quot;headerlink&quot; title=&quot;1. 将资源放到文件夹中, 重命名文件夹为xxx.bundle&quot;&gt;&lt;/a&gt;1. 将资源放到文件夹中, 重命名文件夹为&lt;code&gt;xxx.bundle&lt;/code&gt;&lt;/h3&gt;&lt;/li&gt;
+&lt;li&gt;&lt;h3 id=&quot;2-若bundle中有使用到xib文件-需要使用命令把xib文件转换为nib文件&quot;&gt;&lt;a href=&quot;#2-若bundle中有使用到xib文件-需要使用命令把xib文件转换为nib文件&quot; class=&quot;headerlink&quot; title=&quot;2. 若bundle中有使用到xib文件, 需要使用命令把xib文件转换为nib文件:&quot;&gt;&lt;/a&gt;2. 若bundle中有使用到xib文件, 需要使用命令把xib文件转换为nib文件:&lt;/h3&gt;&lt;figure class=&quot;highlight vim&quot;&gt;&lt;table&gt;&lt;tr&gt;&lt;td class=&quot;code&quot;&gt;&lt;pre&gt;&lt;span class=&quot;line&quot;&gt;$ ibtool --errors --warnings --output-format human-readable-text --compile &lt;span class=&quot;keyword&quot;&gt;file&lt;/span&gt;.nib &lt;span class=&quot;keyword&quot;&gt;file&lt;/span&gt;.xib&lt;/span&gt;&lt;br&gt;&lt;/pre&gt;&lt;/td&gt;&lt;/tr&gt;&lt;/table&gt;&lt;/figure&gt;
+&lt;/li&gt;
+&lt;/ul&gt;
 &lt;p&gt;*如果不转换, 读取的时候会导致如下错误:&lt;br&gt;&lt;figure class=&quot;highlight vhdl&quot;&gt;&lt;table&gt;&lt;tr&gt;&lt;td class=&quot;code&quot;&gt;&lt;pre&gt;&lt;span class=&quot;line&quot;&gt;Terminating app due &lt;span class=&quot;keyword&quot;&gt;to&lt;/span&gt; uncaught exception &lt;/span&gt;&lt;br&gt;&lt;span class=&quot;line&quot;&gt;&lt;span class=&quot;attribute&quot;&gt;&#39;NSInternalInconsistencyException&lt;/span&gt;&#39;, reason: &lt;span class=&quot;attribute&quot;&gt;&#39;Could&lt;/span&gt; &lt;span class=&quot;keyword&quot;&gt;not&lt;/span&gt; load NIB &lt;span class=&quot;keyword&quot;&gt;in&lt;/span&gt; bundle:&lt;/span&gt;&lt;br&gt;&lt;span class=&quot;line&quot;&gt; &lt;span class=&quot;attribute&quot;&gt;&#39;NSBundle&lt;/span&gt; &amp;lt;/var/mobile/Applications/C6718DB8-&lt;span class=&quot;number&quot;&gt;0&lt;/span&gt;C0F-&lt;span class=&quot;number&quot;&gt;4&lt;/span&gt;D38-&lt;span class=&quot;number&quot;&gt;84E6&lt;/span&gt;-&lt;span class=&quot;number&quot;&gt;55&lt;/span&gt;C145279957&lt;/span&gt;&lt;br&gt;&lt;span class=&quot;line&quot;&gt;/Documents/asset-&lt;span class=&quot;number&quot;&gt;4&lt;/span&gt;.bundle&amp;gt; (&lt;span class=&quot;keyword&quot;&gt;not&lt;/span&gt; yet loaded)&#39; &lt;span class=&quot;keyword&quot;&gt;with&lt;/span&gt; name &lt;span class=&quot;attribute&quot;&gt;&#39;file&lt;/span&gt;&#39;&#39;&lt;/span&gt;&lt;br&gt;&lt;/pre&gt;&lt;/td&gt;&lt;/tr&gt;&lt;/table&gt;&lt;/figure&gt;&lt;/p&gt;
-&lt;p&gt;3.把bundle拖进工程, 此时通过以下方法即可取到ZYBannerView.bundle&lt;br&gt;&lt;figure class=&quot;highlight groovy&quot;&gt;&lt;table&gt;&lt;tr&gt;&lt;td class=&quot;code&quot;&gt;&lt;pre&gt;&lt;span class=&quot;line&quot;&gt;NSBundle *bundle = [NSBundle &lt;span class=&quot;string&quot;&gt;bundleWithPath:&lt;/span&gt;[[NSBundle mainBundle] &lt;span class=&quot;string&quot;&gt;pathForResource:&lt;/span&gt;@&lt;span class=&quot;string&quot;&gt;&quot;xxx&quot;&lt;/span&gt; &lt;span class=&quot;string&quot;&gt;ofType:&lt;/span&gt;@&lt;span class=&quot;string&quot;&gt;&quot;bundle&quot;&lt;/span&gt;]];&lt;/span&gt;&lt;br&gt;&lt;/pre&gt;&lt;/td&gt;&lt;/tr&gt;&lt;/table&gt;&lt;/figure&gt;&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;&lt;h3 id=&quot;3-把bundle拖进工程-此时通过以下方法即可取到ZYBannerView-bundle&quot;&gt;&lt;a href=&quot;#3-把bundle拖进工程-此时通过以下方法即可取到ZYBannerView-bundle&quot; class=&quot;headerlink&quot; title=&quot;3. 把bundle拖进工程, 此时通过以下方法即可取到ZYBannerView.bundle&quot;&gt;&lt;/a&gt;3. 把bundle拖进工程, 此时通过以下方法即可取到ZYBannerView.bundle&lt;/h3&gt;&lt;figure class=&quot;highlight groovy&quot;&gt;&lt;table&gt;&lt;tr&gt;&lt;td class=&quot;code&quot;&gt;&lt;pre&gt;&lt;span class=&quot;line&quot;&gt;NSBundle *bundle = [NSBundle &lt;span class=&quot;string&quot;&gt;bundleWithPath:&lt;/span&gt;[[NSBundle mainBundle] &lt;span class=&quot;string&quot;&gt;pathForResource:&lt;/span&gt;@&lt;span class=&quot;string&quot;&gt;&quot;xxx&quot;&lt;/span&gt; &lt;span class=&quot;string&quot;&gt;ofType:&lt;/span&gt;@&lt;span class=&quot;string&quot;&gt;&quot;bundle&quot;&lt;/span&gt;]];&lt;/span&gt;&lt;br&gt;&lt;/pre&gt;&lt;/td&gt;&lt;/tr&gt;&lt;/table&gt;&lt;/figure&gt;
+&lt;/li&gt;
+&lt;/ul&gt;
 </content>
     
     <summary type="html">
     
-      &lt;p&gt;在编写第三方库时, 如果需要用到一些图片、声音资源, 甚至是nib(xib), 就需要把这些资源打包成一个bundle. 一开始在其他第三方库中看到bundle的时候, 觉得它好像是一个很高级的东西. 但是事实上, bundle就是一个普通得不能再普通的文件夹, 只是加上了
+      &lt;p&gt;在编写第三方库时, 如果需要用到一些图片、声音资源, 甚至是nib(xib), 就需要把这些资源打包成一个bundle. 一开始在其他第三方库中看到bundle的时候, 觉得它好像是一个很高级的东西. 但是事实上, bundle就是一个普通得不能再普通的文件夹, 只是加上了&lt;code&gt;.bundle&lt;/code&gt;后缀, 一下子就高大上了起来.&lt;br&gt;加上&lt;code&gt;.bundle&lt;/code&gt;后缀的文件夹, 会被Mac识别为一个包. 将文件夹以包的形式存在, 可以当作一个整体方便地移动, 也可以让别人不至于不小心改动到库所依赖的资源. &lt;/p&gt;
     
     </summary>
     
@@ -599,36 +619,34 @@
   </entry>
   
   <entry>
-    <title>【iOS Tip】UIImage的renderingMode</title>
+    <title>【iOS Tip】UIImage 的 renderingMode</title>
     <link href="http://zzyspace.github.io/2015/03/29/uiimage-rendering-mode/"/>
     <id>http://zzyspace.github.io/2015/03/29/uiimage-rendering-mode/</id>
     <published>2015-03-29T06:32:22.000Z</published>
-    <updated>2016-08-31T08:53:34.000Z</updated>
+    <updated>2016-09-07T08:04:25.000Z</updated>
     
     <content type="html">&lt;p&gt;很多人在第一次使用UITabBar的时候, 都会遇到一个摸不着头脑的问题:&lt;br&gt;明明UI给的图片是这样的 ↓&lt;br&gt;&lt;img src=&quot;/img/UIImageRenderingMode/renderingMode_0.png&quot; alt=&quot;&quot;&gt;&lt;br&gt;可是用到tabBar中却变成了这样 ↓&lt;br&gt;&lt;img src=&quot;/img/UIImageRenderingMode/renderingMode_1.png&quot; alt=&quot;&quot;&gt;&lt;br&gt;&lt;strong&gt;WTF!&lt;/strong&gt; 咋还自己变色了呢? &lt;img src=&quot;/img/UIImageRenderingMode/renderingMode_2.jpg&quot; alt=&quot;&quot;&gt;&lt;br&gt;其实以上的现象都是源于UIImage的一个属性&lt;code&gt;renderingMode&lt;/code&gt;.&lt;/p&gt;
-&lt;h1 id=&quot;UIImageRenderingMode&quot;&gt;&lt;a href=&quot;#UIImageRenderingMode&quot; class=&quot;headerlink&quot; title=&quot;UIImageRenderingMode&quot;&gt;&lt;/a&gt;&lt;strong&gt;UIImageRenderingMode&lt;/strong&gt;&lt;/h1&gt;&lt;hr&gt;
-&lt;h3 id=&quot;1-概念&quot;&gt;&lt;a href=&quot;#1-概念&quot; class=&quot;headerlink&quot; title=&quot;1. 概念&quot;&gt;&lt;/a&gt;&lt;strong&gt;1. 概念&lt;/strong&gt;&lt;/h3&gt;&lt;figure class=&quot;highlight objc&quot;&gt;&lt;table&gt;&lt;tr&gt;&lt;td class=&quot;code&quot;&gt;&lt;pre&gt;&lt;span class=&quot;line&quot;&gt;&lt;span class=&quot;keyword&quot;&gt;@property&lt;/span&gt;(&lt;span class=&quot;keyword&quot;&gt;nonatomic&lt;/span&gt;, &lt;span class=&quot;keyword&quot;&gt;readonly&lt;/span&gt;) &lt;span class=&quot;built_in&quot;&gt;UIImageRenderingMode&lt;/span&gt; renderingMode &lt;span class=&quot;built_in&quot;&gt;NS_AVAILABLE_IOS&lt;/span&gt;(&lt;span class=&quot;number&quot;&gt;7&lt;/span&gt;_0);&lt;/span&gt;&lt;br&gt;&lt;/pre&gt;&lt;/td&gt;&lt;/tr&gt;&lt;/table&gt;&lt;/figure&gt;
 &lt;a id=&quot;more&quot;&gt;&lt;/a&gt;
+&lt;h1 id=&quot;UIImageRenderingMode&quot;&gt;&lt;a href=&quot;#UIImageRenderingMode&quot; class=&quot;headerlink&quot; title=&quot;UIImageRenderingMode&quot;&gt;&lt;/a&gt;UIImageRenderingMode&lt;/h1&gt;&lt;hr&gt;
+&lt;h3 id=&quot;1-概念&quot;&gt;&lt;a href=&quot;#1-概念&quot; class=&quot;headerlink&quot; title=&quot;1. 概念&quot;&gt;&lt;/a&gt;1. 概念&lt;/h3&gt;&lt;figure class=&quot;highlight objc&quot;&gt;&lt;table&gt;&lt;tr&gt;&lt;td class=&quot;code&quot;&gt;&lt;pre&gt;&lt;span class=&quot;line&quot;&gt;&lt;span class=&quot;keyword&quot;&gt;@property&lt;/span&gt;(&lt;span class=&quot;keyword&quot;&gt;nonatomic&lt;/span&gt;, &lt;span class=&quot;keyword&quot;&gt;readonly&lt;/span&gt;) &lt;span class=&quot;built_in&quot;&gt;UIImageRenderingMode&lt;/span&gt; renderingMode &lt;span class=&quot;built_in&quot;&gt;NS_AVAILABLE_IOS&lt;/span&gt;(&lt;span class=&quot;number&quot;&gt;7&lt;/span&gt;_0);&lt;/span&gt;&lt;br&gt;&lt;/pre&gt;&lt;/td&gt;&lt;/tr&gt;&lt;/table&gt;&lt;/figure&gt;
 &lt;p&gt;&lt;code&gt;UIImageRenderingMode&lt;/code&gt;是一个枚举值, 如下:&lt;br&gt;&lt;figure class=&quot;highlight objc&quot;&gt;&lt;table&gt;&lt;tr&gt;&lt;td class=&quot;code&quot;&gt;&lt;pre&gt;&lt;span class=&quot;line&quot;&gt;&lt;span class=&quot;keyword&quot;&gt;typedef&lt;/span&gt; &lt;span class=&quot;built_in&quot;&gt;NS_ENUM&lt;/span&gt;(&lt;span class=&quot;built_in&quot;&gt;NSInteger&lt;/span&gt;, &lt;span class=&quot;built_in&quot;&gt;UIImageRenderingMode&lt;/span&gt;) &amp;#123;&lt;/span&gt;&lt;br&gt;&lt;span class=&quot;line&quot;&gt;    &lt;span class=&quot;built_in&quot;&gt;UIImageRenderingModeAutomatic&lt;/span&gt;,      &lt;span class=&quot;comment&quot;&gt;// 根据图片的使用环境和所处的绘图上下文自动调整渲染模式.&lt;/span&gt;&lt;/span&gt;&lt;br&gt;&lt;span class=&quot;line&quot;&gt;    &lt;span class=&quot;built_in&quot;&gt;UIImageRenderingModeAlwaysOriginal&lt;/span&gt;, &lt;span class=&quot;comment&quot;&gt;// 始终渲染图片的原始状态, 不会将其当做一个模板(template).&lt;/span&gt;&lt;/span&gt;&lt;br&gt;&lt;span class=&quot;line&quot;&gt;    &lt;span class=&quot;built_in&quot;&gt;UIImageRenderingModeAlwaysTemplate&lt;/span&gt;, &lt;span class=&quot;comment&quot;&gt;// 始终把图片当做模板来渲染, 忽略掉了图片的颜色信息.&lt;/span&gt;&lt;/span&gt;&lt;br&gt;&lt;span class=&quot;line&quot;&gt;&amp;#125; &lt;span class=&quot;built_in&quot;&gt;NS_ENUM_AVAILABLE_IOS&lt;/span&gt;(&lt;span class=&quot;number&quot;&gt;7&lt;/span&gt;_0);&lt;/span&gt;&lt;br&gt;&lt;/pre&gt;&lt;/td&gt;&lt;/tr&gt;&lt;/table&gt;&lt;/figure&gt;&lt;/p&gt;
 &lt;p&gt;创建一个UIImage的时候, 默认的&lt;strong&gt;renderingMode&lt;/strong&gt;为&lt;code&gt;UIImageRenderingModeAutomatic&lt;/code&gt;. 这种情况下, 图片会根据当前所处的上下文来决定是渲染图片的原始状态或是当做模板来渲染.&lt;br&gt;例如&lt;code&gt;UINavigationBar&lt;/code&gt;、&lt;code&gt;UITabBar&lt;/code&gt;、&lt;code&gt;UIToolBar&lt;/code&gt;、&lt;code&gt;UISegmentedControl&lt;/code&gt;这些控件, 会自动把其上面的图片(foreground images)当做模板来渲染; 而&lt;code&gt;UIImageView&lt;/code&gt;、&lt;code&gt;UIWebView&lt;/code&gt;则会渲染图片的原始状态.&lt;/p&gt;
 &lt;blockquote&gt;
 &lt;p&gt;关于&lt;strong&gt;模板(template)&lt;/strong&gt;: 上文中提到的模板, 其实作用就是忽略掉了图片的所有不透明的颜色信息, 取而代之的是它所在的控件的&lt;code&gt;tintColor&lt;/code&gt;. &lt;/p&gt;
 &lt;/blockquote&gt;
-&lt;h3 id=&quot;2-应用&quot;&gt;&lt;a href=&quot;#2-应用&quot; class=&quot;headerlink&quot; title=&quot;2. 应用&quot;&gt;&lt;/a&gt;&lt;strong&gt;2. 应用&lt;/strong&gt;&lt;/h3&gt;&lt;p&gt;根据上面对&lt;strong&gt;renderingMode&lt;/strong&gt;的描述, 我们就可以很容易联想到导致文章开头那个现象的原因:&lt;/p&gt;
+&lt;h3 id=&quot;2-应用&quot;&gt;&lt;a href=&quot;#2-应用&quot; class=&quot;headerlink&quot; title=&quot;2. 应用&quot;&gt;&lt;/a&gt;2. 应用&lt;/h3&gt;&lt;p&gt;根据上面对&lt;strong&gt;renderingMode&lt;/strong&gt;的描述, 我们就可以很容易联想到导致文章开头那个现象的原因:&lt;/p&gt;
 &lt;ul&gt;
 &lt;li&gt;UITabBar会自动将图片当做模板来渲染&lt;/li&gt;
 &lt;li&gt;UITabBar默认的&lt;code&gt;tintColor&lt;/code&gt;是系统的亮蓝色&lt;/li&gt;
 &lt;/ul&gt;
 &lt;p&gt;所以, 相应的解决方法也有两种:&lt;br&gt;&lt;strong&gt;1.设置图片的renderingMode为&lt;code&gt;UIImageRenderingModeAlwaysOriginal&lt;/code&gt;&lt;/strong&gt;&lt;br&gt;&lt;figure class=&quot;highlight objc&quot;&gt;&lt;table&gt;&lt;tr&gt;&lt;td class=&quot;code&quot;&gt;&lt;pre&gt;&lt;span class=&quot;line&quot;&gt;&lt;span class=&quot;built_in&quot;&gt;UIImage&lt;/span&gt; *selectedImage = [&lt;span class=&quot;built_in&quot;&gt;UIImage&lt;/span&gt; imageNamed:selectedImageName];&lt;/span&gt;&lt;br&gt;&lt;span class=&quot;line&quot;&gt;originalSelectedImage = [selectedImage imageWithRenderingMode:&lt;span class=&quot;built_in&quot;&gt;UIImageRenderingModeAlwaysOriginal&lt;/span&gt;];&lt;/span&gt;&lt;br&gt;&lt;span class=&quot;line&quot;&gt;&lt;/span&gt;&lt;br&gt;&lt;span class=&quot;line&quot;&gt;viewController&lt;span class=&quot;variable&quot;&gt;.tabBarItem&lt;/span&gt;&lt;span class=&quot;variable&quot;&gt;.selectedImage&lt;/span&gt; = originalSelectedImage;&lt;/span&gt;&lt;br&gt;&lt;/pre&gt;&lt;/td&gt;&lt;/tr&gt;&lt;/table&gt;&lt;/figure&gt;&lt;/p&gt;
 &lt;p&gt;&lt;strong&gt;2.设置UITabBar的&lt;code&gt;tintColor&lt;/code&gt;为我们所要的颜色.&lt;/strong&gt;&lt;br&gt;&lt;figure class=&quot;highlight objc&quot;&gt;&lt;table&gt;&lt;tr&gt;&lt;td class=&quot;code&quot;&gt;&lt;pre&gt;&lt;span class=&quot;line&quot;&gt;tabBar&lt;span class=&quot;variable&quot;&gt;.tintColor&lt;/span&gt; = kAppMainColor;&lt;/span&gt;&lt;br&gt;&lt;/pre&gt;&lt;/td&gt;&lt;/tr&gt;&lt;/table&gt;&lt;/figure&gt;&lt;/p&gt;
-&lt;h3 id=&quot;3-其他&quot;&gt;&lt;a href=&quot;#3-其他&quot; class=&quot;headerlink&quot; title=&quot;3. 其他&quot;&gt;&lt;/a&gt;&lt;strong&gt;3. 其他&lt;/strong&gt;&lt;/h3&gt;&lt;p&gt;如果总是在代码中设置&lt;strong&gt;renderingMode&lt;/strong&gt;也是比较麻烦的, 还有一个更佳便捷的设置方法, 如下图在&lt;code&gt;Images.xcassets&lt;/code&gt;里面选中相应的图片, 在右侧的工具栏中的&lt;code&gt;Render As&lt;/code&gt;字段选择相应的&lt;strong&gt;renderingMode&lt;/strong&gt;就可以了.&lt;br&gt;&lt;img src=&quot;/img/UIImageRenderingMode/renderingMode_3.png&quot; alt=&quot;&quot;&gt;&lt;/p&gt;
+&lt;h3 id=&quot;3-其他&quot;&gt;&lt;a href=&quot;#3-其他&quot; class=&quot;headerlink&quot; title=&quot;3. 其他&quot;&gt;&lt;/a&gt;3. 其他&lt;/h3&gt;&lt;p&gt;如果总是在代码中设置&lt;strong&gt;renderingMode&lt;/strong&gt;也是比较麻烦的, 还有一个更佳便捷的设置方法, 如下图在&lt;code&gt;Images.xcassets&lt;/code&gt;里面选中相应的图片, 在右侧的工具栏中的&lt;code&gt;Render As&lt;/code&gt;字段选择相应的&lt;strong&gt;renderingMode&lt;/strong&gt;就可以了.&lt;br&gt;&lt;img src=&quot;/img/UIImageRenderingMode/renderingMode_3.png&quot; alt=&quot;&quot;&gt;&lt;/p&gt;
 </content>
     
     <summary type="html">
     
       &lt;p&gt;很多人在第一次使用UITabBar的时候, 都会遇到一个摸不着头脑的问题:&lt;br&gt;明明UI给的图片是这样的 ↓&lt;br&gt;&lt;img src=&quot;/img/UIImageRenderingMode/renderingMode_0.png&quot; alt=&quot;&quot;&gt;&lt;br&gt;可是用到tabBar中却变成了这样 ↓&lt;br&gt;&lt;img src=&quot;/img/UIImageRenderingMode/renderingMode_1.png&quot; alt=&quot;&quot;&gt;&lt;br&gt;&lt;strong&gt;WTF!&lt;/strong&gt; 咋还自己变色了呢? &lt;img src=&quot;/img/UIImageRenderingMode/renderingMode_2.jpg&quot; alt=&quot;&quot;&gt;&lt;br&gt;其实以上的现象都是源于UIImage的一个属性&lt;code&gt;renderingMode&lt;/code&gt;.&lt;/p&gt;
-&lt;h1 id=&quot;UIImageRenderingMode&quot;&gt;&lt;a href=&quot;#UIImageRenderingMode&quot; class=&quot;headerlink&quot; title=&quot;UIImageRenderingMode&quot;&gt;&lt;/a&gt;&lt;strong&gt;UIImageRenderingMode&lt;/strong&gt;&lt;/h1&gt;&lt;hr&gt;
-&lt;h3 id=&quot;1-概念&quot;&gt;&lt;a href=&quot;#1-概念&quot; class=&quot;headerlink&quot; title=&quot;1. 概念&quot;&gt;&lt;/a&gt;&lt;strong&gt;1. 概念&lt;/strong&gt;&lt;/h3&gt;&lt;figure class=&quot;highlight objc&quot;&gt;&lt;table&gt;&lt;tr&gt;&lt;td class=&quot;code&quot;&gt;&lt;pre&gt;&lt;span class=&quot;line&quot;&gt;&lt;span class=&quot;keyword&quot;&gt;@property&lt;/span&gt;(&lt;span class=&quot;keyword&quot;&gt;nonatomic&lt;/span&gt;, &lt;span class=&quot;keyword&quot;&gt;readonly&lt;/span&gt;) &lt;span class=&quot;built_in&quot;&gt;UIImageRenderingMode&lt;/span&gt; renderingMode &lt;span class=&quot;built_in&quot;&gt;NS_AVAILABLE_IOS&lt;/span&gt;(&lt;span class=&quot;number&quot;&gt;7&lt;/span&gt;_0);&lt;/span&gt;&lt;br&gt;&lt;/pre&gt;&lt;/td&gt;&lt;/tr&gt;&lt;/table&gt;&lt;/figure&gt;
     
     </summary>
     

@@ -8,20 +8,20 @@ Apple Pay在今天终于在中国大陆地区正式开通. Apple Pay不仅仅在
 
 <!--more-->
 
-# **App集成Apple Pay**
+# App集成Apple Pay
 ---
-### **1. 创建Merchant ID**
+### 1. 创建Merchant ID
 在iOS开发者中心的[Certificates, Identifiers & Profiles页面](https://developer.apple.com/account/ios/identifiers/merchant/merchantCreate.action)中创建一个Merchant ID. (PS:前提是你得有开发者帐号= =)
 `Description`: 这个ID的描述, 建议填写App名称.
 `ID`: Merchent ID的标识符, 一般填写"merchant.`BundleID`", 比如`merchant.com.apple.passbook`.
 
-### **2. 工程中配置Apple Pay**
+### 2. 工程中配置Apple Pay
 你的开发者帐号拥有Merchant ID之后, 就需要在工程中配置你刚刚创建的Merchant ID.
 ![](/img/ApplePay/image_1.png)
 按照如图顺序即可在你的工程中激活你的Merchant ID.
 
 ---
-**未完待续...**
+(未完待续...)
 ---
 
 Apple Pay需要在支付提供商上面注册商户. 目前Apple Pay支持的提供商有
@@ -42,7 +42,8 @@ Apple Pay需要在支付提供商上面注册商户. 目前Apple Pay支持的提
  
 > 29.5 只有为了促进或提高商品和服务的交付，或者依照法律要求，使用Apple Pay的应用程序才能与第三方分享通过Apple Pay获得的数据
 
-# **设计规范**
+# 设计规范
 ---
 1. [Apple Pay 标识指南](https://developer.apple.com/apple-pay/Apple-Pay-Identity-Guidelines.pdf)
 2. [Apple Pay 图标资源包](https://developer.apple.com/services-account/download?path=/ios/apple_pay_resources/Apple_Pay_Resources.zip)
+

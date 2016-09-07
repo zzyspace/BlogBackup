@@ -1,10 +1,12 @@
 title: 【Linux】常用命令行
-date: 2016-04-08 17:43:23
+date: 2015-10-12 00:04:56
 categories: iOS Tips
 tags: [Linux]
 ---
 
 ![](/img/terminal-command/header.png)
+
+<!--more-->
 
 ### **热键**
 ---
@@ -12,8 +14,6 @@ tags: [Linux]
 - 终止命令: `ctrl`+`c`
 - 光标移动至行首: `ctrl`+`a`
 - 光标移动至行尾: `ctrl`+`e`
-
-<!--more-->
 
 ### **路径操作**
 ---
@@ -100,7 +100,7 @@ $ find . -name "*.m" -or -name "*.h" -or -name "*.xib" -or -name "*.c" |xargs gr
 $ git config --global alias.lg "log --color --graph --pretty=format:'%Cred%h%Creset -%C(yellow)%d%Creset %s %Cgreen(%cr) %C(bold blue)<%an>%Creset' --abbrev-commit"
 ```
 
-### **参考**
+### 参考
 ---
 1. [linux常用基本命令详解](http://blog.csdn.net/xiaoguaihai/article/details/8705992)
 2. [Git教程-廖雪峰](http://www.liaoxuefeng.com/wiki/0013739516305929606dd18361248578c67b8067c8c017b000/)
