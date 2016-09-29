@@ -5,7 +5,7 @@
   <link href="/atom.xml" rel="self"/>
   
   <link href="http://zzyspace.github.io/"/>
-  <updated>2016-09-07T07:46:25.000Z</updated>
+  <updated>2016-09-29T02:55:14.000Z</updated>
   <id>http://zzyspace.github.io/</id>
   
   <author>
@@ -14,6 +14,83 @@
   </author>
   
   <generator uri="http://hexo.io/">Hexo</generator>
+  
+  <entry>
+    <title>【iOS 开发】UIAlertController 的那点事儿</title>
+    <link href="http://zzyspace.github.io/2016/09/28/uialertcontroller-button-exploration/"/>
+    <id>http://zzyspace.github.io/2016/09/28/uialertcontroller-button-exploration/</id>
+    <published>2016-09-28T13:55:25.000Z</published>
+    <updated>2016-09-29T02:55:14.000Z</updated>
+    
+    <content type="html">&lt;p&gt;本来一直很愉快地用着 UIAlertController, 一直到有一天, 测试妹纸把两台测试机摔在我面前, 一刀架在我脖子上质问我: 这两台手机的弹窗怎么一个是 Cancel 粗体, 一个是 OK 粗体?! 给我改! 本着&lt;del&gt;小命为重&lt;/del&gt;与测试妹纸和谐发展的原则与理念, 我开始探究 UIAlertController 这个奇葩的现象…&lt;/p&gt;
+&lt;a id=&quot;more&quot;&gt;&lt;/a&gt;
+&lt;h1 id=&quot;UIAlertController&quot;&gt;&lt;a href=&quot;#UIAlertController&quot; class=&quot;headerlink&quot; title=&quot;UIAlertController&quot;&gt;&lt;/a&gt;UIAlertController&lt;/h1&gt;&lt;hr&gt;
+&lt;p&gt;先来说说一个常规的 Alert 风格的 UIAlertController 在各个系统版本中的表现是怎么样的 (UIAlertView 的表现与 UIAlertController 相同):&lt;/p&gt;
+&lt;figure class=&quot;highlight objc&quot;&gt;&lt;table&gt;&lt;tr&gt;&lt;td class=&quot;code&quot;&gt;&lt;pre&gt;&lt;span class=&quot;line&quot;&gt;&lt;span class=&quot;comment&quot;&gt;// 创建 UIAlertController 与按钮&lt;/span&gt;&lt;/span&gt;&lt;br&gt;&lt;span class=&quot;line&quot;&gt;&lt;span class=&quot;built_in&quot;&gt;UIAlertController&lt;/span&gt; *alert = [&lt;span class=&quot;built_in&quot;&gt;UIAlertController&lt;/span&gt; alertControllerWithTitle:&lt;span class=&quot;string&quot;&gt;@&quot;Title&quot;&lt;/span&gt;&lt;/span&gt;&lt;br&gt;&lt;span class=&quot;line&quot;&gt;                                                               message:&lt;span class=&quot;string&quot;&gt;@&quot;message&quot;&lt;/span&gt;&lt;/span&gt;&lt;br&gt;&lt;span class=&quot;line&quot;&gt;                                                        preferredStyle:&lt;span class=&quot;built_in&quot;&gt;UIAlertControllerStyleAlert&lt;/span&gt;];&lt;/span&gt;&lt;br&gt;&lt;span class=&quot;line&quot;&gt;&lt;span class=&quot;built_in&quot;&gt;UIAlertAction&lt;/span&gt; *cancelAction = [&lt;span class=&quot;built_in&quot;&gt;UIAlertAction&lt;/span&gt; actionWithTitle:&lt;span class=&quot;string&quot;&gt;@&quot;Cancel&quot;&lt;/span&gt;&lt;/span&gt;&lt;br&gt;&lt;span class=&quot;line&quot;&gt;                                                       style:&lt;span class=&quot;built_in&quot;&gt;UIAlertActionStyleCancel&lt;/span&gt;&lt;/span&gt;&lt;br&gt;&lt;span class=&quot;line&quot;&gt;                                                     handler:&lt;span class=&quot;literal&quot;&gt;nil&lt;/span&gt;];&lt;/span&gt;&lt;br&gt;&lt;span class=&quot;line&quot;&gt;&lt;span class=&quot;built_in&quot;&gt;UIAlertAction&lt;/span&gt; *okAction = [&lt;span class=&quot;built_in&quot;&gt;UIAlertAction&lt;/span&gt; actionWithTitle:&lt;span class=&quot;string&quot;&gt;@&quot;OK&quot;&lt;/span&gt;&lt;/span&gt;&lt;br&gt;&lt;span class=&quot;line&quot;&gt;                                                   style:&lt;span class=&quot;built_in&quot;&gt;UIAlertActionStyleDefault&lt;/span&gt;&lt;/span&gt;&lt;br&gt;&lt;span class=&quot;line&quot;&gt;                                                 handler:&lt;span class=&quot;literal&quot;&gt;nil&lt;/span&gt;];&lt;/span&gt;&lt;br&gt;&lt;span class=&quot;line&quot;&gt;&lt;span class=&quot;built_in&quot;&gt;UIAlertAction&lt;/span&gt; *otherAction = [&lt;span class=&quot;built_in&quot;&gt;UIAlertAction&lt;/span&gt; actionWithTitle:&lt;span class=&quot;string&quot;&gt;@&quot;Other&quot;&lt;/span&gt;&lt;/span&gt;&lt;br&gt;&lt;span class=&quot;line&quot;&gt;                                                      style:&lt;span class=&quot;built_in&quot;&gt;UIAlertActionStyleDefault&lt;/span&gt;&lt;/span&gt;&lt;br&gt;&lt;span class=&quot;line&quot;&gt;                                                    handler:&lt;span class=&quot;literal&quot;&gt;nil&lt;/span&gt;];&lt;/span&gt;&lt;br&gt;&lt;span class=&quot;line&quot;&gt;                                                 &lt;/span&gt;&lt;br&gt;&lt;span class=&quot;line&quot;&gt;&lt;span class=&quot;comment&quot;&gt;// 添加按钮&lt;/span&gt;&lt;/span&gt;&lt;br&gt;&lt;span class=&quot;line&quot;&gt;[alert addAction:cancelAction];&lt;/span&gt;&lt;br&gt;&lt;span class=&quot;line&quot;&gt;[alert addAction:okAction];&lt;/span&gt;&lt;br&gt;&lt;span class=&quot;line&quot;&gt;&lt;span class=&quot;comment&quot;&gt;/*&lt;/span&gt;&lt;br&gt;&lt;span class=&quot;line&quot;&gt;[alert addAction:otherAction]; // 三个按钮的情况&lt;/span&gt;&lt;br&gt;&lt;span class=&quot;line&quot;&gt;*/&lt;/span&gt;&lt;/span&gt;&lt;br&gt;&lt;span class=&quot;line&quot;&gt;&lt;/span&gt;&lt;br&gt;&lt;span class=&quot;line&quot;&gt;&lt;span class=&quot;comment&quot;&gt;// 显示 UIAlertController&lt;/span&gt;&lt;/span&gt;&lt;br&gt;&lt;span class=&quot;line&quot;&gt;[&lt;span class=&quot;keyword&quot;&gt;self&lt;/span&gt; presentViewController:alert animated:&lt;span class=&quot;literal&quot;&gt;YES&lt;/span&gt; completion:&lt;span class=&quot;literal&quot;&gt;nil&lt;/span&gt;];&lt;/span&gt;&lt;br&gt;&lt;/pre&gt;&lt;/td&gt;&lt;/tr&gt;&lt;/table&gt;&lt;/figure&gt;
+&lt;ul&gt;
+&lt;li&gt;&lt;strong&gt;iOS 7.0 - iOS 8.2 :&lt;/strong&gt;&lt;/li&gt;
+&lt;/ul&gt;
+&lt;div style=&quot;text-align: left; float: left; vertical-align: top;width: 50%;&quot;&gt;&lt;img src=&quot;/img/alert-exploration/2Button_less_than_8_2.png&quot;&gt;&lt;br&gt;&lt;/div&gt;&lt;div style=&quot;text-align: left;  display: inline-block; vertical-align: top; width: 50%;&quot;&gt;&lt;img src=&quot;/img/alert-exploration/3Button.png&quot;&gt;&lt;br&gt;&lt;/div&gt;
+
+&lt;ul&gt;
+&lt;li&gt;&lt;strong&gt;iOS 8.3+ :&lt;/strong&gt;&lt;/li&gt;
+&lt;/ul&gt;
+&lt;div style=&quot;text-align: left; float: left; vertical-align: top;width: 50%;&quot;&gt;&lt;img src=&quot;/img/alert-exploration/2Button_greater_then_8_3.png&quot;&gt;&lt;br&gt;&lt;/div&gt;&lt;div style=&quot;text-align: left;  display: inline-block; vertical-align: top; width: 50%;&quot;&gt;&lt;img src=&quot;/img/alert-exploration/3Button.png&quot;&gt;&lt;br&gt;&lt;/div&gt;
+
+
+&lt;p&gt;根据上面的测试, UIAlertController 的 &lt;code&gt;UIAlertActionStyleCancel&lt;/code&gt; 类型按钮或 UIAlertView 的 &lt;code&gt;cancelButton&lt;/code&gt; (后面统称为 &lt;code&gt;取消按钮&lt;/code&gt;) 的行为表现可以总结为下表:&lt;/p&gt;
+&lt;table&gt;
+&lt;thead&gt;
+&lt;tr&gt;
+&lt;th&gt;&lt;/th&gt;
+&lt;th&gt;底部2个Button&lt;/th&gt;
+&lt;th&gt;底部3个Button及以上&lt;/th&gt;
+&lt;/tr&gt;
+&lt;/thead&gt;
+&lt;tbody&gt;
+&lt;tr&gt;
+&lt;td&gt;iOS 7.0 - iOS 8.2&lt;/td&gt;
+&lt;td&gt;左方 \ 细体&lt;/td&gt;
+&lt;td&gt;最下方 \ 粗体&lt;/td&gt;
+&lt;/tr&gt;
+&lt;tr&gt;
+&lt;td&gt;iOS 8.3 +&lt;/td&gt;
+&lt;td&gt;左方 \ 粗体&lt;/td&gt;
+&lt;td&gt;最下方 \ 粗体&lt;/td&gt;
+&lt;/tr&gt;
+&lt;/tbody&gt;
+&lt;/table&gt;
+&lt;h1 id=&quot;矛盾&quot;&gt;&lt;a href=&quot;#矛盾&quot; class=&quot;headerlink&quot; title=&quot;矛盾&quot;&gt;&lt;/a&gt;矛盾&lt;/h1&gt;&lt;hr&gt;
+&lt;p&gt;上面提到三个及以上按钮的情况下, 取消按钮一直是在最下方且加粗这个没有什么问题了. 但是两个按钮的情况下, 可能就会有一些矛盾:&lt;/p&gt;
+&lt;h3 id=&quot;需求1&quot;&gt;&lt;a href=&quot;#需求1&quot; class=&quot;headerlink&quot; title=&quot;需求1:&quot;&gt;&lt;/a&gt;需求1:&lt;/h3&gt;&lt;p&gt;假如你家产品对弹窗的要求是这样的: &lt;strong&gt;确认按钮一定要是粗体&lt;/strong&gt;因为用户有时候看都不看就往加粗的按钮点. 那么你只能根据系统的版本来分别创建弹窗: iOS 8.3 及以上确认的文字和逻辑在取消按钮下进行, iOS 8.3以下的按照原逻辑… 或者直接用第三方的弹窗库.&lt;/p&gt;
+&lt;h3 id=&quot;需求2&quot;&gt;&lt;a href=&quot;#需求2&quot; class=&quot;headerlink&quot; title=&quot;需求2:&quot;&gt;&lt;/a&gt;需求2:&lt;/h3&gt;&lt;p&gt;假如你家产品对弹窗的要求更高了: &lt;strong&gt;确认按钮一定要是粗体且在右边&lt;/strong&gt;. &lt;del&gt;那么你只能辞职了.&lt;/del&gt; iOS 8.3以下是符合这个需求的. 但是 iOS 8.3 及以上怎么办呢? iOS 9 之后 UIAlertController 新增了一个属性&lt;/p&gt;
+&lt;figure class=&quot;highlight objc&quot;&gt;&lt;table&gt;&lt;tr&gt;&lt;td class=&quot;code&quot;&gt;&lt;pre&gt;&lt;span class=&quot;line&quot;&gt;&lt;span class=&quot;keyword&quot;&gt;@property&lt;/span&gt; (&lt;span class=&quot;keyword&quot;&gt;nonatomic&lt;/span&gt;, &lt;span class=&quot;keyword&quot;&gt;strong&lt;/span&gt;, nullable) &lt;span class=&quot;built_in&quot;&gt;UIAlertAction&lt;/span&gt; *preferredAction &lt;span class=&quot;built_in&quot;&gt;NS_AVAILABLE_IOS&lt;/span&gt;(&lt;span class=&quot;number&quot;&gt;9&lt;/span&gt;_0);&lt;/span&gt;&lt;br&gt;&lt;/pre&gt;&lt;/td&gt;&lt;/tr&gt;&lt;/table&gt;&lt;/figure&gt;
+&lt;p&gt;右边的按钮设置了这个属性之后, 这个按钮就会变成粗体的. 这样就能使 iOS 7.0 - iOS 8.2 和 iOS 9.0+ 的弹窗符合需求了. 那么 iOS 8.3 与 iOS 8.4 怎么办? &lt;del&gt;我也不知道&lt;/del&gt;目前似乎无法很好的做到, 如果你有好的方案, 欢迎留言交流.&lt;/p&gt;
+&lt;h1 id=&quot;小结&quot;&gt;&lt;a href=&quot;#小结&quot; class=&quot;headerlink&quot; title=&quot;小结&quot;&gt;&lt;/a&gt;小结&lt;/h1&gt;&lt;hr&gt;
+&lt;h3 id=&quot;弹窗有三个及以上按钮的情况下&quot;&gt;&lt;a href=&quot;#弹窗有三个及以上按钮的情况下&quot; class=&quot;headerlink&quot; title=&quot;弹窗有三个及以上按钮的情况下:&quot;&gt;&lt;/a&gt;弹窗有三个及以上按钮的情况下:&lt;/h3&gt;&lt;ul&gt;
+&lt;li&gt;&lt;strong&gt;iOS 7.0 之后所有系统版本&lt;/strong&gt;的, 取消按钮一直是在最下方且加粗.&lt;/li&gt;
+&lt;/ul&gt;
+&lt;h3 id=&quot;弹窗有两个按钮的情况下&quot;&gt;&lt;a href=&quot;#弹窗有两个按钮的情况下&quot; class=&quot;headerlink&quot; title=&quot;弹窗有两个按钮的情况下:&quot;&gt;&lt;/a&gt;弹窗有两个按钮的情况下:&lt;/h3&gt;&lt;ul&gt;
+&lt;li&gt;&lt;strong&gt;iOS 8.3 以前&lt;/strong&gt;, &lt;strong&gt;取消按钮可以根据添加的顺序决定其位置, 但左方的按钮始终为细体, 右方的按钮始终为粗体.&lt;/strong&gt; &lt;/li&gt;
+&lt;li&gt;&lt;strong&gt;iOS 8.3 及以后&lt;/strong&gt;, 苹果统一了弹窗中取消按钮的规则: &lt;strong&gt;无论取消按钮添加的顺序如何, 取消按钮始终在左方且为粗体.&lt;/strong&gt;&lt;/li&gt;
+&lt;li&gt;&lt;strong&gt;iOS 9.0 及以后&lt;/strong&gt;, 设置&lt;code&gt;-setPreferredAction:&lt;/code&gt;之后, 该 Action 就变为加粗的字体, 且取消按钮将不会被加粗. 也就是说, &lt;strong&gt;&lt;code&gt;-setPreferredAction:&lt;/code&gt;之后, 该 Action 粗体的优先级大于取消按钮.&lt;/strong&gt;&lt;/li&gt;
+&lt;/ul&gt;
+</content>
+    
+    <summary type="html">
+    
+      &lt;p&gt;本来一直很愉快地用着 UIAlertController, 一直到有一天, 测试妹纸把两台测试机摔在我面前, 一刀架在我脖子上质问我: 这两台手机的弹窗怎么一个是 Cancel 粗体, 一个是 OK 粗体?! 给我改! 本着&lt;del&gt;小命为重&lt;/del&gt;与测试妹纸和谐发展的原则与理念, 我开始探究 UIAlertController 这个奇葩的现象…&lt;/p&gt;
+    
+    </summary>
+    
+      <category term="iOS开发" scheme="http://zzyspace.github.io/categories/iOS%E5%BC%80%E5%8F%91/"/>
+    
+    
+      <category term="UIAlertController" scheme="http://zzyspace.github.io/tags/UIAlertController/"/>
+    
+      <category term="UIAlertView" scheme="http://zzyspace.github.io/tags/UIAlertView/"/>
+    
+  </entry>
   
   <entry>
     <title>【iOS开发】DNS解析失败的处理 (支持IPv6)</title>
