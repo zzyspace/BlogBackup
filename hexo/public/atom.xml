@@ -244,11 +244,11 @@
   </entry>
   
   <entry>
-    <title>【iOS开发】Objective-c Runtime小记</title>
+    <title>【iOS开发】Objective-C Runtime小记</title>
     <link href="http://zzyspace.github.io/2016/03/16/objective-c-runtime/"/>
     <id>http://zzyspace.github.io/2016/03/16/objective-c-runtime/</id>
     <published>2016-03-16T09:16:08.000Z</published>
-    <updated>2016-09-07T07:48:50.000Z</updated>
+    <updated>2016-09-29T07:39:46.000Z</updated>
     
     <content type="html">&lt;h1 id=&quot;Runtime&quot;&gt;&lt;a href=&quot;#Runtime&quot; class=&quot;headerlink&quot; title=&quot;Runtime&quot;&gt;&lt;/a&gt;Runtime&lt;/h1&gt;&lt;hr&gt;
 &lt;p&gt;Runtime是一套底层的C语言API. 实际上, 平时我们编写的Objective-C代码, 底层都是基于runtime实现的, 也就是说, 平时我们编写的Objective-C代码, 最终都是转成了底层的runtime代码(C语言代码). Runtime使得Objective-C这门语言的灵活性大大地提升. 有了runtime, 我们可以在应用运行的时候动态操作对象、类、方法, 也因为这个原因, 使得编程有了更多的可能性, 对于开发中遇到的一些比较棘手的问题, 往往用runtime可以优雅地解决, 接下来让我们看看runtime是为何可以如此牛x.&lt;/p&gt;
@@ -696,11 +696,11 @@
   </entry>
   
   <entry>
-    <title>【iOS Tip】UIImage 的 renderingMode</title>
+    <title>【iOS Tip】UIImage 的渲染模式</title>
     <link href="http://zzyspace.github.io/2015/03/29/uiimage-rendering-mode/"/>
     <id>http://zzyspace.github.io/2015/03/29/uiimage-rendering-mode/</id>
     <published>2015-03-29T06:32:22.000Z</published>
-    <updated>2016-09-07T08:04:25.000Z</updated>
+    <updated>2016-09-29T07:41:10.000Z</updated>
     
     <content type="html">&lt;p&gt;很多人在第一次使用UITabBar的时候, 都会遇到一个摸不着头脑的问题:&lt;br&gt;明明UI给的图片是这样的 ↓&lt;br&gt;&lt;img src=&quot;/img/UIImageRenderingMode/renderingMode_0.png&quot; alt=&quot;&quot;&gt;&lt;br&gt;可是用到tabBar中却变成了这样 ↓&lt;br&gt;&lt;img src=&quot;/img/UIImageRenderingMode/renderingMode_1.png&quot; alt=&quot;&quot;&gt;&lt;br&gt;&lt;strong&gt;WTF!&lt;/strong&gt; 咋还自己变色了呢? &lt;img src=&quot;/img/UIImageRenderingMode/renderingMode_2.jpg&quot; alt=&quot;&quot;&gt;&lt;br&gt;其实以上的现象都是源于UIImage的一个属性&lt;code&gt;renderingMode&lt;/code&gt;.&lt;/p&gt;
 &lt;a id=&quot;more&quot;&gt;&lt;/a&gt;

@@ -1,4 +1,4 @@
-title: 【iOS Tip】UIImage 的 renderingMode
+title: 【iOS Tip】UIImage 的渲染模式
 date: 2015-03-29 14:32:22
 categories: iOS Tips
 tags: [UI]
