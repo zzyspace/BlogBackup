@@ -9,3 +9,6 @@
 3. 页内跳转
 [1.xxx](#1.xxx)
 ### <span id="1.xxx">1.xxx</span>
+
+4. 强制分页 (转 PDF 时有效果)
+<div style="page-break-after: always;"></div>
