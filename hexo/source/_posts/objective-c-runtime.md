@@ -111,7 +111,7 @@ objc_msgSend(receiver, @selector(message))
 # 扩展阅读
 ---
 1.[Objective-C Runtime Programming Guide](https://developer.apple.com/library/mac/documentation/Cocoa/Conceptual/ObjCRuntimeGuide/Introduction/Introduction.html) by Apple
-2.[Objective-C Runtime 运行时系列文章](http://southpeak.github.io/blog/2014/10/25/objective-c-runtime-yun-xing-shi-zhi-lei-yu-dui-xiang/) by 南峰子
+2.[Objective-C Runtime 运行时系列文章](http://southpeak.github.io/2014/10/25/objective-c-runtime-1/) by 南峰子
 3.[Objective-C Runtime](http://yulingtianxia.com/blog/2014/11/05/objective-c-runtime/) by 玉令天下
 4.[(译)Objective-C的动态特性](http://limboy.me/ios/2013/08/03/dynamic-tips-and-tricks-with-objective-c.html) by Limboy’s HQ
 5.[Objective-C 中的消息与消息转发](http://blog.ibireme.com/2013/11/26/objective-c-messaging/) by ibireme

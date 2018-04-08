@@ -5,7 +5,7 @@
   <link href="/atom.xml" rel="self"/>
   
   <link href="http://zzyspace.github.io/"/>
-  <updated>2016-09-29T02:55:14.000Z</updated>
+  <updated>2018-04-08T14:50:20.450Z</updated>
   <id>http://zzyspace.github.io/</id>
   
   <author>
@@ -20,7 +20,7 @@
     <link href="http://zzyspace.github.io/2016/09/28/uialertcontroller-button-exploration/"/>
     <id>http://zzyspace.github.io/2016/09/28/uialertcontroller-button-exploration/</id>
     <published>2016-09-28T13:55:25.000Z</published>
-    <updated>2016-09-29T02:55:14.000Z</updated>
+    <updated>2018-04-08T14:50:20.450Z</updated>
     
     <content type="html">&lt;p&gt;本来一直很愉快地用着 UIAlertController, 一直到有一天, 测试妹纸把两台测试机摔在我面前, 一刀架在我脖子上质问我: 这两台手机的弹窗怎么一个是 Cancel 粗体, 一个是 OK 粗体?! 给我改! 本着&lt;del&gt;小命为重&lt;/del&gt;与测试妹纸和谐发展的原则与理念, 我开始探究 UIAlertController 这个奇葩的现象…&lt;/p&gt;
 &lt;a id=&quot;more&quot;&gt;&lt;/a&gt;
@@ -97,7 +97,7 @@
     <link href="http://zzyspace.github.io/2016/09/07/dns-resolving/"/>
     <id>http://zzyspace.github.io/2016/09/07/dns-resolving/</id>
     <published>2016-09-07T05:23:03.000Z</published>
-    <updated>2016-09-07T07:46:25.000Z</updated>
+    <updated>2018-04-08T14:50:20.448Z</updated>
     
     <content type="html">&lt;p&gt;&lt;img src=&quot;/img/dns/header.png&quot; alt=&quot;&quot;&gt;&lt;/p&gt;
 &lt;p&gt;在之前做的一个项目中, 网络请求常常会出现以下错误:&lt;br&gt;&lt;code&gt;Error Domain=NSURLErrorDomain Code=-1003 &amp;quot;A server with the specified hostname could not be found.&amp;quot;&lt;/code&gt;&lt;br&gt;错误提示也很明显地指出了原因: 指定域名的服务器无法被找到. 其实这个问题跟自己项目的代码无关, 跟服务端也没有关系, 真正的原因是来自于DNS (Domain Name System). &lt;/p&gt;
@@ -143,7 +143,7 @@
     <link href="http://zzyspace.github.io/2016/08/07/summary-of-localization/"/>
     <id>http://zzyspace.github.io/2016/08/07/summary-of-localization/</id>
     <published>2016-08-07T10:31:18.000Z</published>
-    <updated>2016-09-07T07:47:41.000Z</updated>
+    <updated>2018-04-08T14:50:20.449Z</updated>
     
     <content type="html">&lt;h1 id=&quot;默认语言&quot;&gt;&lt;a href=&quot;#默认语言&quot; class=&quot;headerlink&quot; title=&quot;默认语言&quot;&gt;&lt;/a&gt;默认语言&lt;/h1&gt;&lt;hr&gt;
 &lt;p&gt;如果一台设备的语言为法语, 但是你所做的本地化只有英语\中文\德语, 那么应用安装后会默认显示Info.plist中&lt;code&gt;Localization native development region&lt;/code&gt;字段所设置的地区语言(如果没有这个字段就默认英语).&lt;/p&gt;
@@ -192,7 +192,7 @@
     <link href="http://zzyspace.github.io/2016/03/20/reduce-xcode-build-times/"/>
     <id>http://zzyspace.github.io/2016/03/20/reduce-xcode-build-times/</id>
     <published>2016-03-20T07:46:56.000Z</published>
-    <updated>2016-09-07T07:44:43.000Z</updated>
+    <updated>2018-04-08T14:50:20.449Z</updated>
     
     <content type="html">&lt;p&gt;&lt;img src=&quot;/img/reduce-xcode-build-times/title.png&quot; alt=&quot;&quot;&gt;&lt;br&gt;平常在调试工程的时候, 特别是大工程, 浪费在编译上的时间加起来也是个不小的数目. 我戏成它为&lt;strong&gt;带薪编译&lt;/strong&gt;. 带薪编译一来呢浪费公司资源, 二来使得开发效率大大降低. 所以提高Xcode的编译速度还是非常有必要的. 关于通过更改一些Xcode的配置来提升编译速度&lt;a href=&quot;http://blog.csdn.net/zhaoxy_thu/article/details/30073485?utm_source=tuicool&amp;amp;utm_medium=referral&quot; target=&quot;_blank&quot; rel=&quot;external&quot;&gt;这篇文章&lt;/a&gt;已经列举除了几个不错的方法, 这里就不再多说.&lt;/p&gt;
 &lt;p&gt;这篇文章主要讲的是从&lt;strong&gt;硬件方面&lt;/strong&gt;来提升Xcode的编译速度. 因为对比了现在日常使用的Mac mini和MacBook Pro, 在CPU和内存基本没有差别的情况下, 相比MacBook Pro的SSD, Mac mini的机械硬盘的表现实在是惨不忍睹. 这也是拖慢了编译速度的主要元凶. &lt;del&gt;所以, 去换一个SSD吧.(Excuse me?)&lt;/del&gt;&lt;/p&gt;
@@ -248,7 +248,7 @@
     <link href="http://zzyspace.github.io/2016/03/16/objective-c-runtime/"/>
     <id>http://zzyspace.github.io/2016/03/16/objective-c-runtime/</id>
     <published>2016-03-16T09:16:08.000Z</published>
-    <updated>2016-09-29T07:39:46.000Z</updated>
+    <updated>2018-04-08T15:03:58.568Z</updated>
     
     <content type="html">&lt;h1 id=&quot;Runtime&quot;&gt;&lt;a href=&quot;#Runtime&quot; class=&quot;headerlink&quot; title=&quot;Runtime&quot;&gt;&lt;/a&gt;Runtime&lt;/h1&gt;&lt;hr&gt;
 &lt;p&gt;Runtime是一套底层的C语言API. 实际上, 平时我们编写的Objective-C代码, 底层都是基于runtime实现的, 也就是说, 平时我们编写的Objective-C代码, 最终都是转成了底层的runtime代码(C语言代码). Runtime使得Objective-C这门语言的灵活性大大地提升. 有了runtime, 我们可以在应用运行的时候动态操作对象、类、方法, 也因为这个原因, 使得编程有了更多的可能性, 对于开发中遇到的一些比较棘手的问题, 往往用runtime可以优雅地解决, 接下来让我们看看runtime是为何可以如此牛x.&lt;/p&gt;
@@ -304,7 +304,7 @@
 
 &lt;p&gt;看到这里或许会担心消息分发的过程太过于繁琐, 以至于影响性能? 其实不会的, 一个类中常用的方法会缓存在&lt;code&gt;cache&lt;/code&gt;中, 如上面消息分发流程的第2点所说, 一个对象接收到一条消息之后, 并不是直接去&lt;code&gt;methodLists&lt;/code&gt;查找, 而是先在&lt;code&gt;cache&lt;/code&gt;中查找, 查找不到了再到&lt;code&gt;methodLists&lt;/code&gt;中查找. 这样就能使得消息转发的效率得到保障.&lt;/p&gt;
 &lt;h1 id=&quot;扩展阅读&quot;&gt;&lt;a href=&quot;#扩展阅读&quot; class=&quot;headerlink&quot; title=&quot;扩展阅读&quot;&gt;&lt;/a&gt;扩展阅读&lt;/h1&gt;&lt;hr&gt;
-&lt;p&gt;1.&lt;a href=&quot;https://developer.apple.com/library/mac/documentation/Cocoa/Conceptual/ObjCRuntimeGuide/Introduction/Introduction.html&quot; target=&quot;_blank&quot; rel=&quot;external&quot;&gt;Objective-C Runtime Programming Guide&lt;/a&gt; by Apple&lt;br&gt;2.&lt;a href=&quot;http://southpeak.github.io/blog/2014/10/25/objective-c-runtime-yun-xing-shi-zhi-lei-yu-dui-xiang/&quot; target=&quot;_blank&quot; rel=&quot;external&quot;&gt;Objective-C Runtime 运行时系列文章&lt;/a&gt; by 南峰子&lt;br&gt;3.&lt;a href=&quot;http://yulingtianxia.com/blog/2014/11/05/objective-c-runtime/&quot; target=&quot;_blank&quot; rel=&quot;external&quot;&gt;Objective-C Runtime&lt;/a&gt; by 玉令天下&lt;br&gt;4.&lt;a href=&quot;http://limboy.me/ios/2013/08/03/dynamic-tips-and-tricks-with-objective-c.html&quot; target=&quot;_blank&quot; rel=&quot;external&quot;&gt;(译)Objective-C的动态特性&lt;/a&gt; by Limboy’s HQ&lt;br&gt;5.&lt;a href=&quot;http://blog.ibireme.com/2013/11/26/objective-c-messaging/&quot; target=&quot;_blank&quot; rel=&quot;external&quot;&gt;Objective-C 中的消息与消息转发&lt;/a&gt; by ibireme&lt;br&gt;6.&lt;a href=&quot;http://tech.glowing.com/cn/objective-c-runtime/&quot; target=&quot;_blank&quot; rel=&quot;external&quot;&gt;Objective-C Runtime&lt;/a&gt; by Glow技术团队博客&lt;/p&gt;
+&lt;p&gt;1.&lt;a href=&quot;https://developer.apple.com/library/mac/documentation/Cocoa/Conceptual/ObjCRuntimeGuide/Introduction/Introduction.html&quot; target=&quot;_blank&quot; rel=&quot;external&quot;&gt;Objective-C Runtime Programming Guide&lt;/a&gt; by Apple&lt;br&gt;2.&lt;a href=&quot;http://southpeak.github.io/2014/10/25/objective-c-runtime-1/&quot; target=&quot;_blank&quot; rel=&quot;external&quot;&gt;Objective-C Runtime 运行时系列文章&lt;/a&gt; by 南峰子&lt;br&gt;3.&lt;a href=&quot;http://yulingtianxia.com/blog/2014/11/05/objective-c-runtime/&quot; target=&quot;_blank&quot; rel=&quot;external&quot;&gt;Objective-C Runtime&lt;/a&gt; by 玉令天下&lt;br&gt;4.&lt;a href=&quot;http://limboy.me/ios/2013/08/03/dynamic-tips-and-tricks-with-objective-c.html&quot; target=&quot;_blank&quot; rel=&quot;external&quot;&gt;(译)Objective-C的动态特性&lt;/a&gt; by Limboy’s HQ&lt;br&gt;5.&lt;a href=&quot;http://blog.ibireme.com/2013/11/26/objective-c-messaging/&quot; target=&quot;_blank&quot; rel=&quot;external&quot;&gt;Objective-C 中的消息与消息转发&lt;/a&gt; by ibireme&lt;br&gt;6.&lt;a href=&quot;http://tech.glowing.com/cn/objective-c-runtime/&quot; target=&quot;_blank&quot; rel=&quot;external&quot;&gt;Objective-C Runtime&lt;/a&gt; by Glow技术团队博客&lt;/p&gt;
 </content>
     
     <summary type="html">
@@ -326,7 +326,7 @@
     <link href="http://zzyspace.github.io/2016/02/18/apple-pay/"/>
     <id>http://zzyspace.github.io/2016/02/18/apple-pay/</id>
     <published>2016-02-18T13:19:14.000Z</published>
-    <updated>2016-09-07T07:49:51.000Z</updated>
+    <updated>2018-04-08T14:50:20.447Z</updated>
     
     <content type="html">&lt;p&gt;&lt;img src=&quot;/img/ApplePay/header.jpg&quot; alt=&quot;&quot;&gt;&lt;br&gt;Apple Pay在今天终于在中国大陆地区正式开通. Apple Pay不仅仅在线下支付中可以让你通过指纹刷(zhuang)卡(bi), 更可以在线上支付(App中支付)时, 节省掉很多多余的步骤, 让支付宝与微信支付哭晕在厕所… 蛋扯远了, 接下来我们来看看怎么让你的App也支持Apple Pay吧!&lt;/p&gt;
 &lt;a id=&quot;more&quot;&gt;&lt;/a&gt;
@@ -374,7 +374,7 @@
     <link href="http://zzyspace.github.io/2016/01/25/associated-objects/"/>
     <id>http://zzyspace.github.io/2016/01/25/associated-objects/</id>
     <published>2016-01-25T07:06:34.000Z</published>
-    <updated>2016-09-07T07:50:43.000Z</updated>
+    <updated>2018-04-08T14:50:20.448Z</updated>
     
     <content type="html">&lt;p&gt;分类(&lt;code&gt;category&lt;/code&gt;)在iOS开发中的应用非常广泛, 优点譬如给现有的类拓展更多的方法、对一个类的多种功能进行局部化封装等等, 都是非常方便的. 但是也有一个痛点, 就是分类中无法添加属性. 但是&lt;code&gt;Objective-C&lt;/code&gt;的&lt;code&gt;runtime&lt;/code&gt;中有许多黑科技可以帮我们实现很多常规方法下几乎不可能的事情–比如在分类中添加属性.这个黑科技叫做&lt;strong&gt;关联对象&lt;/strong&gt;(&lt;code&gt;Associated Objects&lt;/code&gt;). &lt;/p&gt;
 &lt;a id=&quot;more&quot;&gt;&lt;/a&gt;
@@ -454,7 +454,7 @@
     <link href="http://zzyspace.github.io/2015/10/18/crash-with-static-library/"/>
     <id>http://zzyspace.github.io/2015/10/18/crash-with-static-library/</id>
     <published>2015-10-18T12:45:33.000Z</published>
-    <updated>2016-09-07T07:59:42.000Z</updated>
+    <updated>2018-04-08T14:50:20.448Z</updated>
     
     <content type="html">&lt;p&gt;使用其他一些第三方静态库时, 如果没有注意按照文档中的提示进行配置, 很容易在程序运行过程中因 “unrecorgnized selector send to instance xxx” 的异常而崩溃. 而且可以发现, 导致崩溃的方法都是Category中的方法. &lt;/p&gt;
 &lt;a id=&quot;more&quot;&gt;&lt;/a&gt;
@@ -512,7 +512,7 @@
     <link href="http://zzyspace.github.io/2015/10/12/frequently-used-terminal-command/"/>
     <id>http://zzyspace.github.io/2015/10/12/frequently-used-terminal-command/</id>
     <published>2015-10-11T16:04:56.000Z</published>
-    <updated>2016-09-07T08:05:23.000Z</updated>
+    <updated>2018-04-08T14:50:20.448Z</updated>
     
     <content type="html">&lt;p&gt;&lt;img src=&quot;/img/terminal-command/header.png&quot; alt=&quot;&quot;&gt;&lt;/p&gt;
 &lt;a id=&quot;more&quot;&gt;&lt;/a&gt;
@@ -616,7 +616,7 @@
     <link href="http://zzyspace.github.io/2015/08/08/openssh-debug-executable-file/"/>
     <id>http://zzyspace.github.io/2015/08/08/openssh-debug-executable-file/</id>
     <published>2015-08-08T09:43:23.000Z</published>
-    <updated>2016-09-07T08:05:24.000Z</updated>
+    <updated>2018-04-08T14:50:20.449Z</updated>
     
     <content type="html">&lt;h1 id=&quot;连接设备&quot;&gt;&lt;a href=&quot;#连接设备&quot; class=&quot;headerlink&quot; title=&quot;连接设备&quot;&gt;&lt;/a&gt;连接设备&lt;/h1&gt;&lt;hr&gt;
 &lt;h3 id=&quot;1-连接&quot;&gt;&lt;a href=&quot;#1-连接&quot; class=&quot;headerlink&quot; title=&quot;1. 连接&quot;&gt;&lt;/a&gt;1. 连接&lt;/h3&gt;&lt;p&gt;通过USB连接:&lt;/p&gt;
@@ -665,7 +665,7 @@
     <link href="http://zzyspace.github.io/2015/05/21/package-bundle/"/>
     <id>http://zzyspace.github.io/2015/05/21/package-bundle/</id>
     <published>2015-05-21T15:55:58.000Z</published>
-    <updated>2016-09-07T08:03:24.000Z</updated>
+    <updated>2018-04-08T14:50:20.449Z</updated>
     
     <content type="html">&lt;p&gt;在编写第三方库时, 如果需要用到一些图片、声音资源, 甚至是nib(xib), 就需要把这些资源打包成一个bundle. 一开始在其他第三方库中看到bundle的时候, 觉得它好像是一个很高级的东西. 但是事实上, bundle就是一个普通得不能再普通的文件夹, 只是加上了&lt;code&gt;.bundle&lt;/code&gt;后缀, 一下子就高大上了起来.&lt;br&gt;加上&lt;code&gt;.bundle&lt;/code&gt;后缀的文件夹, 会被Mac识别为一个包. 将文件夹以包的形式存在, 可以当作一个整体方便地移动, 也可以让别人不至于不小心改动到库所依赖的资源. &lt;/p&gt;
 &lt;a id=&quot;more&quot;&gt;&lt;/a&gt;
@@ -700,7 +700,7 @@
     <link href="http://zzyspace.github.io/2015/03/29/uiimage-rendering-mode/"/>
     <id>http://zzyspace.github.io/2015/03/29/uiimage-rendering-mode/</id>
     <published>2015-03-29T06:32:22.000Z</published>
-    <updated>2016-09-29T07:41:10.000Z</updated>
+    <updated>2018-04-08T14:50:20.450Z</updated>
     
     <content type="html">&lt;p&gt;很多人在第一次使用UITabBar的时候, 都会遇到一个摸不着头脑的问题:&lt;br&gt;明明UI给的图片是这样的 ↓&lt;br&gt;&lt;img src=&quot;/img/UIImageRenderingMode/renderingMode_0.png&quot; alt=&quot;&quot;&gt;&lt;br&gt;可是用到tabBar中却变成了这样 ↓&lt;br&gt;&lt;img src=&quot;/img/UIImageRenderingMode/renderingMode_1.png&quot; alt=&quot;&quot;&gt;&lt;br&gt;&lt;strong&gt;WTF!&lt;/strong&gt; 咋还自己变色了呢? &lt;img src=&quot;/img/UIImageRenderingMode/renderingMode_2.jpg&quot; alt=&quot;&quot;&gt;&lt;br&gt;其实以上的现象都是源于UIImage的一个属性&lt;code&gt;renderingMode&lt;/code&gt;.&lt;/p&gt;
 &lt;a id=&quot;more&quot;&gt;&lt;/a&gt;
